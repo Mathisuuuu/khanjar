@@ -52,26 +52,8 @@ const parts = [
   },
 ];
 
-/** Griffin Lab en bref, en tête de la partie 1. */
-const facts = [
-  { value: "4e – 5e année", label: "étudiants en finance et en informatique" },
-  { value: "3 ans", label: "de trading, dont 1 an en algorithmique" },
-  { value: "6 mois +", label: "de préparation avant le lancement" },
-  { value: "100 % gratuit", label: "l'entraide et le partage avant tout" },
-];
-
 function Pending({ children = "À DÉFINIR" }: { children?: string }) {
   return <span className={styles.pending}>{children}</span>;
-}
-
-function PartHeader({ id, index, title, children }: { id: string; index: string; title: string; children: React.ReactNode }) {
-  return (
-    <header className={styles.part} id={id}>
-      <p className={styles.partKicker}>PARTIE {index}</p>
-      <h2>{title}</h2>
-      <p>{children}</p>
-    </header>
-  );
 }
 
 export default function AboutPage() {
@@ -99,18 +81,7 @@ export default function AboutPage() {
         </nav>
 
         <div>
-          <PartHeader id="qui-sommes-nous" index="1" title="Qui nous sommes">
-            Des étudiants passionnés de trading algorithmique, et un projet ouvert à tous.
-          </PartHeader>
-
-          <ul className={styles.facts} aria-label="Griffin Lab en bref">
-            {facts.map((fact) => (
-              <li key={fact.label}>
-                <b>{fact.value}</b>
-                <span>{fact.label}</span>
-              </li>
-            ))}
-          </ul>
+          <span id="qui-sommes-nous" className={styles.anchor} aria-hidden="true" />
 
           <article className={styles.rule} id="mission">
             <p className={styles.number}>01</p>
@@ -186,9 +157,7 @@ export default function AboutPage() {
             </div>
           </article>
 
-          <PartHeader id="regles" index="2" title="Règles de contribution">
-            Comment proposer, comment ta stratégie est évaluée et ce que tu obtiens.
-          </PartHeader>
+          <span id="regles" className={styles.anchor} aria-hidden="true" />
 
           <article className={styles.rule} id="format">
             <p className={styles.number}>ARTICLE 1</p>

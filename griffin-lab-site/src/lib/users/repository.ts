@@ -22,6 +22,8 @@ export type CreateUserResult = { user: User } | { conflict: "email" | "pseudo" }
 
 export interface UserRepository {
   findByEmail(email: string): Promise<User | null>;
+  findById(id: string): Promise<User | null>;
+  updatePassword(id: string, passwordHash: string): Promise<void>;
   /** Crée le compte et son pseudo (non vérifié). */
   create(input: Pick<User, "email" | "name" | "passwordHash">): Promise<CreateUserResult>;
 }
@@ -49,6 +51,18 @@ class PostgresUserRepository implements UserRepository {
     const db = await getDb();
     const [row] = await db.query<UserRow>("SELECT * FROM users WHERE email = $1", [email.toLowerCase()]);
     return row ? toUser(row) : null;
+  }
+
+  async findById(id: string) {
+    if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+    const db = await getDb();
+    const [row] = await db.query<UserRow>("SELECT * FROM users WHERE id = $1", [id]);
+    return row ? toUser(row) : null;
+  }
+
+  async updatePassword(id: string, passwordHash: string) {
+    const db = await getDb();
+    await db.query("UPDATE users SET password_hash = $1 WHERE id = $2", [passwordHash, id]);
   }
 
   async create(input: Pick<User, "email" | "name" | "passwordHash">): Promise<CreateUserResult> {

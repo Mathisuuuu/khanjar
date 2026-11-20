@@ -1,30 +1,32 @@
-.card {
-  display: grid;
-  gap: 24px;
-  max-width: 560px;
-  margin: 0 auto;
-  padding: 28px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 24px;
+/* Page « Mon compte » : en-tête, sommaire collant, sections en cartes */
+
+.page {
+  padding-top: 48px;
+  padding-bottom: 96px;
 }
 
-.profile {
+.hero {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
+  margin-bottom: 32px;
+  padding: 28px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), transparent 50%), var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
 }
 
 .avatar {
   flex: none;
   display: grid;
   place-items: center;
-  width: 56px;
-  height: 56px;
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
   object-fit: cover;
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 30px;
+  font-weight: 700;
   background: var(--accent-dim);
   box-shadow: inset 0 0 0 1.5px rgba(34, 197, 94, 0.5);
   color: var(--accent-2);
@@ -32,37 +34,32 @@
 
 .identity {
   flex: 1;
-  min-width: 0;
+  min-width: 220px;
 }
 
 .identity h1 {
-  font-size: 22px;
-  letter-spacing: -0.02em;
+  font-size: clamp(24px, 3vw, 32px);
+  letter-spacing: -0.03em;
 }
 
-.identity span {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.identity p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 4px;
   font-size: 14px;
   color: var(--fg-3);
+  overflow-wrap: anywhere;
 }
 
-.change {
-  display: inline-block;
-  margin-top: 4px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--accent);
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
 }
 
-.change:hover {
-  text-decoration: underline;
-}
-
-.provider {
-  flex: none;
+.badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -73,12 +70,411 @@
   color: var(--fg-2);
 }
 
-.actions {
+.badgeOk {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: rgba(34, 197, 94, 0.08);
+  color: var(--accent-2);
+}
+
+.badgeAdmin {
+  border-color: rgba(245, 181, 36, 0.45);
+  background: rgba(245, 181, 36, 0.08);
+  color: var(--amber);
+}
+
+.heroActions {
   display: flex;
   flex-wrap: wrap;
+  gap: 8px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.nav {
+  position: sticky;
+  top: 92px;
+  display: grid;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.nav a {
+  padding: 8px 12px;
+  border-radius: 10px;
+  color: var(--fg-3);
+  transition: background 0.2s, color 0.2s;
+}
+
+.nav a:hover {
+  background: var(--card);
+  color: var(--fg);
+}
+
+.nav .navDanger {
+  margin-top: 8px;
+  color: var(--red);
+}
+
+.sections {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.section {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  padding: 26px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  scroll-margin-top: 96px;
+}
+
+.section h2 {
+  font-size: 21px;
+  letter-spacing: -0.02em;
+}
+
+.section h3 {
+  margin-top: 6px;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.sectionLead {
+  margin-top: -8px;
+  font-size: 14.5px;
+  color: var(--fg-3);
+}
+
+.hint,
+.empty {
+  font-size: 13.5px;
+  color: var(--fg-3);
+}
+
+.hint a,
+.empty a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.hint a:hover,
+.empty a:hover {
+  text-decoration: underline;
+}
+
+/* Formulaires */
+.form {
+  display: grid;
+  gap: 12px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.field > span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-2);
+}
+
+.field input {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  border-radius: 10px;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+}
+
+.field small {
+  font-size: 12.5px;
+  color: var(--fg-3);
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.formFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.linkButton {
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-3);
+  cursor: pointer;
+}
+
+.linkButton:hover {
+  color: var(--fg);
+}
+
+/* Détails et statistiques */
+.details {
+  display: grid;
   gap: 10px;
 }
 
+.details div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.details dt {
+  color: var(--fg-3);
+}
+
+.details dd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-wrap: anywhere;
+}
+
+.verified,
+.unverified {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.verified {
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--accent-2);
+}
+
+.unverified {
+  background: rgba(245, 181, 36, 0.12);
+  color: var(--amber);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.stats div {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg);
+}
+
+.stats dt {
+  font-size: 12.5px;
+  color: var(--fg-3);
+}
+
+.stats dd {
+  margin-top: 4px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.positive {
+  color: var(--accent-2);
+}
+
+.list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+}
+
+.list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.listMain {
+  display: grid;
+  min-width: 0;
+}
+
+.listMain b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14.5px;
+}
+
+.listMain small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12.5px;
+  color: var(--fg-3);
+}
+
+.twoCols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  list-style: none;
+}
+
+.chips a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  font-size: 13.5px;
+  transition: border-color 0.2s;
+}
+
+.chips a:hover {
+  border-color: var(--accent);
+}
+
+.chips i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.chips small {
+  color: var(--fg-3);
+}
+
+/* Accès au bot */
+.access {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  border: 1px solid var(--border-2);
+  border-radius: 14px;
+  background: var(--bg);
+}
+
+.access b {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+
+.access p {
+  font-size: 14.5px;
+  color: var(--fg-2);
+}
+
+.accessOk {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: rgba(34, 197, 94, 0.06);
+}
+
+.accessOk b {
+  color: var(--accent-2);
+}
+
+.accessActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Données */
+.download {
+  justify-self: start;
+  padding: 10px 16px;
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: border-color 0.2s;
+}
+
+.download:hover {
+  border-color: var(--accent);
+}
+
+/* Suppression */
+.danger {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.danger h2 {
+  color: var(--red);
+}
+
+.dangerButton {
+  justify-self: start;
+  padding: 10px 16px;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--red);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dangerButton:hover {
+  background: rgba(239, 68, 68, 0.16);
+}
+
+.dangerButton:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Discord */
 .discord {
   display: flex;
   align-items: center;
@@ -104,17 +500,7 @@
   color: var(--fg-3);
 }
 
-@media (max-width: 480px) {
-  .card {
-    padding: 20px 16px;
-  }
-
-  .profile {
-    flex-wrap: wrap;
-  }
-}
-
-/* ---------- Anonymat ---------- */
+/* ---------- Anonymat (VisibilityForm) ---------- */
 
 .visibility {
   display: grid;
@@ -183,4 +569,51 @@
 .failed {
   font-size: 13px;
   color: var(--red);
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .nav {
+    position: static;
+    grid-auto-flow: column;
+    overflow-x: auto;
+  }
+
+  .nav a {
+    white-space: nowrap;
+  }
+
+  .nav .navDanger {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding-top: 28px;
+  }
+
+  .hero,
+  .section {
+    padding: 20px 16px;
+  }
+
+  .avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fieldRow,
+  .twoCols {
+    grid-template-columns: 1fr;
+  }
 }

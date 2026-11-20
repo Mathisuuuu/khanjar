@@ -173,7 +173,7 @@
   }
 }
 
-/* Page à deux parties (À propos) : sommaire groupé et en-tête de partie */
+/* Page à deux parties (À propos) : sommaire groupé, ancres des parties */
 .tocGroup {
   display: grid;
   gap: 2px;
@@ -198,51 +198,6 @@
   color: var(--accent);
 }
 
-.part {
-  position: relative;
-  margin-bottom: 40px;
-  padding: 28px 28px 26px;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0) 55%), var(--card);
-  scroll-margin-top: 96px;
-}
-
-.part::before {
-  content: "";
-  position: absolute;
-  top: 26px;
-  bottom: 26px;
-  left: 0;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--accent);
-}
-
-.part h2 {
-  margin: 6px 0 8px;
-  font-size: clamp(26px, 3.2vw, 36px);
-  letter-spacing: -0.03em;
-}
-
-.part p {
-  max-width: 62ch;
-  font-size: 16px;
-  color: var(--fg-2);
-}
-
-.partKicker {
-  font-family: var(--mono);
-  font-size: 12px !important;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  color: var(--accent) !important;
-}
-
-.partActions {
-  margin: -8px 0 72px;
-}
-
 @media (max-width: 1000px) {
   .tocGroup {
     display: contents;
@@ -251,41 +206,6 @@
   .toc .tocTitle {
     padding: 6px 10px;
   }
-
-  .part {
-    padding: 22px 20px;
-  }
-}
-
-/* Chiffres clés de la partie « Qui nous sommes » */
-.facts {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0 0 44px;
-  padding: 0;
-  list-style: none;
-}
-
-.facts li {
-  display: grid;
-  gap: 4px;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.facts b {
-  font-size: 19px;
-  letter-spacing: -0.02em;
-  color: var(--fg);
-}
-
-.facts span {
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--fg-3);
 }
 
 .rule a:not([class]) {
@@ -301,8 +221,8 @@
   margin-top: 18px;
 }
 
-@media (max-width: 1100px) {
-  .facts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+/* ancre invisible de chaque partie (#qui-sommes-nous, #regles) */
+.anchor {
+  display: block;
+  scroll-margin-top: 96px;
 }
