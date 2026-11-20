@@ -1,0 +1,218 @@
+.wrap {
+  display: grid;
+  gap: 22px;
+}
+
+.form {
+  display: grid;
+  gap: 18px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.sentTo {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 4px 8px;
+  font-size: 14px;
+  color: var(--fg-3);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.sentTo strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.sentTo button,
+.resend button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sentTo button:hover,
+.resend button:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.resend button:disabled {
+  color: var(--fg-3);
+  font-weight: 500;
+  cursor: default;
+}
+
+.emailField {
+  display: grid;
+  gap: 6px;
+}
+
+.emailField label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-2);
+}
+
+.emailField input {
+  min-height: 44px;
+  padding: 11px 13px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  border-radius: 10px;
+}
+
+.emailField input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+}
+
+/* Les six cases */
+.boxes {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.box {
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 4 / 5;
+  padding: 0;
+  font-family: var(--mono);
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--fg);
+  caret-color: var(--accent);
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  border-radius: 14px;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s, transform 0.15s;
+}
+
+.box:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.16);
+  transform: translateY(-1px);
+}
+
+.filled {
+  background: rgba(34, 197, 94, 0.07);
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.box[aria-invalid="true"] {
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+.shake {
+  animation: shake 0.35s;
+}
+
+@keyframes shake {
+  20%,
+  60% {
+    transform: translateX(-4px);
+  }
+  40%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shake {
+    animation: none;
+  }
+}
+
+.boxes:disabled .box {
+  opacity: 0.6;
+}
+
+.error {
+  padding: 10px 12px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--red);
+  font-size: 13.5px;
+  text-align: center;
+}
+
+.notice {
+  padding: 10px 12px;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  border-radius: 10px;
+  background: rgba(34, 197, 94, 0.08);
+  font-size: 13.5px;
+  text-align: center;
+}
+
+.submit {
+  min-height: 48px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #04140a;
+  font: inherit;
+  font-size: 15.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 12px 32px -14px rgba(34, 197, 94, 0.8);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.submit:active {
+  transform: scale(0.98);
+}
+
+.submit:disabled {
+  opacity: 0.45;
+  cursor: default;
+  box-shadow: none;
+}
+
+.resend {
+  display: grid;
+  gap: 10px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--fg-3);
+  text-align: center;
+}
+
+@media (max-width: 400px) {
+  .boxes {
+    gap: 7px;
+  }
+
+  .box {
+    font-size: 23px;
+    border-radius: 11px;
+  }
+}

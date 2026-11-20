@@ -223,6 +223,12 @@ const MIGRATIONS: string[] = [
     PRIMARY KEY (book_id, at)
   );
   `,
+
+  /* 7 : code de vérification à 6 chiffres (en plus du lien), avec compteur d'essais */ `
+  ALTER TABLE email_tokens DROP CONSTRAINT IF EXISTS email_tokens_purpose_check;
+  ALTER TABLE email_tokens ADD CONSTRAINT email_tokens_purpose_check CHECK (purpose IN ('verify', 'verify_code'));
+  ALTER TABLE email_tokens ADD COLUMN attempts integer NOT NULL DEFAULT 0;
+  `,
 ];
 
 export async function migrate(db: Database): Promise<void> {

@@ -26,6 +26,10 @@ export async function sendMail(mail: Mail): Promise<void> {
   if (!isMailConfigured()) {
     if (process.env.NODE_ENV === "production") throw new Error("Envoi d'e-mails non configuré (SMTP_URL, MAIL_FROM).");
     console.log(`\n[e-mail de développement] À : ${mail.to}\nObjet : ${mail.subject}\n\n${mail.text}\n`);
+    // aperçu du rendu HTML : data/dernier-email.html (dossier ignoré par git)
+    const { mkdir, writeFile } = await import("node:fs/promises");
+    await mkdir("data", { recursive: true });
+    await writeFile("data/dernier-email.html", mail.html).catch(() => undefined);
     return;
   }
   transport ??= createTransport(process.env.SMTP_URL);

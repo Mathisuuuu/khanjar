@@ -1,6 +1,7 @@
 "use server";
 
 import { AuthError, CredentialsSignin } from "next-auth";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { signIn, signOut } from "@/auth";
 import { isProviderConfigured, type OAuthProviderId } from "@/lib/auth-providers";
@@ -10,7 +11,8 @@ import { safeCallbackUrl } from "@/lib/safe-redirect";
 import { hashPassword } from "@/lib/users/password";
 import { getUserRepository } from "@/lib/users/repository";
 import { signInSchema, signUpSchema } from "@/lib/users/schema";
-import { confirmEmailToken, sendVerificationEmail } from "@/lib/users/verification";
+import { confirmEmailCode, confirmEmailToken, sendVerificationEmail } from "@/lib/users/verification";
+import { VERIFY_COOKIE } from "@/lib/users/verify-cookie";
 
 /**
  * Actions serveur des pages /connexion, /verification et /compte.
@@ -30,6 +32,17 @@ export type AuthFormState = {
 };
 
 const TOO_MANY = "Trop de tentatives. Réessaie dans quelques minutes.";
+
+/** Adresse en attente de code, gardée dans un cookie (jamais dans l'URL). */
+async function rememberPendingEmail(email: string) {
+  (await cookies()).set(VERIFY_COOKIE, email, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24,
+  });
+}
 
 function firstErrors(issues: { path: (string | number)[]; message: string }[]): AuthFormState["fieldErrors"] {
   const errors: AuthFormState["fieldErrors"] = {};
@@ -57,11 +70,8 @@ export async function signInWithEmail(_prev: AuthFormState, formData: FormData):
   } catch (error) {
     if (error instanceof CredentialsSignin && error.code === "rate_limited") return { values, error: TOO_MANY };
     if (error instanceof CredentialsSignin && error.code === "unverified") {
-      return {
-        values,
-        unverifiedEmail: parsed.data.email,
-        error: "Confirme d'abord ton adresse : clique sur le lien reçu par e-mail.",
-      };
+      await rememberPendingEmail(parsed.data.email);
+      redirect("/verification?attente=1");
     }
     if (error instanceof AuthError && error.type === "AccessDenied") {
       return { values, error: "Ce compte a été suspendu par l'équipe Griffin Lab." };
@@ -103,10 +113,8 @@ export async function signUpWithEmail(_prev: AuthFormState, formData: FormData):
       error: "Compte créé, mais l'e-mail de confirmation n'est pas parti. Réessaie avec « Renvoyer l'e-mail ».",
     };
   }
-  return {
-    values: { email },
-    notice: `Compte créé ! Clique sur le lien envoyé à ${email} pour l'activer, puis connecte-toi.`,
-  };
+  await rememberPendingEmail(email);
+  redirect("/verification");
 }
 
 /** Renvoie l'e-mail de confirmation. Réponse identique que le compte existe ou non. */
@@ -128,12 +136,37 @@ export async function resendVerification(_prev: AuthFormState, formData: FormDat
       return { values: { email }, unverifiedEmail: email, error: "L'e-mail n'est pas parti. Réessaie plus tard." };
     }
   }
-  return { values: { email }, notice: `Si un compte en attente existe pour ${email}, un nouveau lien vient d'être envoyé.` };
+  await rememberPendingEmail(email);
+  return { values: { email }, notice: `Si un compte en attente existe pour ${email}, un nouveau code vient d'être envoyé.` };
+}
+
+export type CodeFormState = { error?: string; expired?: boolean };
+
+/** Formulaire du code à 6 chiffres de la page /verification. */
+export async function verifyCode(_prev: CodeFormState, formData: FormData): Promise<CodeFormState> {
+  const parsed = signInSchema.shape.email.safeParse(formData.get("email"));
+  if (!parsed.success) return { error: "Indique l'adresse e-mail de ton compte." };
+  const email = parsed.data;
+  const code = String(formData.get("code") ?? "").replace(/\D/g, "");
+  if (code.length !== 6) return { error: "Le code contient 6 chiffres." };
+
+  const allowed =
+    (await consume(`code:ip:${await clientIp()}`, 30, 60 * 60)) && (await consume(`code:email:${email}`, 10, 15 * 60));
+  if (!allowed) return { error: TOO_MANY };
+
+  const result = await confirmEmailCode(email, code);
+  if (result === "wrong") return { error: "Code incorrect. Vérifie les chiffres et réessaie." };
+  if (result === "expired") {
+    return { expired: true, error: "Ce code a expiré ou a trop servi. Demande un nouveau code ci-dessous." };
+  }
+  (await cookies()).delete(VERIFY_COOKIE);
+  redirect("/connexion?verifie=1");
 }
 
 /** Bouton « Confirmer mon adresse » de la page /verification. */
 export async function confirmEmail(token: string) {
   const ok = await confirmEmailToken(token);
+  if (ok) (await cookies()).delete(VERIFY_COOKIE);
   redirect(ok ? "/connexion?verifie=1" : "/verification?invalide=1");
 }
 
