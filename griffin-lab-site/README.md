@@ -1,6 +1,6 @@
 # Griffin Lab — site web
 
-Site de **Griffin Lab**, le bot de trading algorithmique construit par sa communauté : on propose une idée, un script ou un papier SSRN ; si la stratégie passe le script de test, elle entre dans une boucle du bot et son auteur débloque 100 % du bot.
+Site de **Griffin Lab**, le bot de trading algorithmique construit par sa communauté : on propose une idée, un script ou un papier SSRN ; si la stratégie passe le script de test, elle entre dans un book du bot et son auteur débloque 100 % du bot.
 
 ## Stack
 
@@ -94,7 +94,7 @@ src/
 
 ## Modifier le contenu
 
-Tous les chiffres affichés (boucles, compteurs de stratégies, contrôles du script de test, progression du bot) sont dans [`src/content/home.ts`](src/content/home.ts). **Ce sont des exemples simulés** : remplace-les par les vrais résultats avant diffusion.
+Tous les chiffres affichés (books, compteurs de stratégies, contrôles du script de test, progression du bot) sont dans [`src/content/home.ts`](src/content/home.ts). **Ce sont des exemples simulés** : remplace-les par les vrais résultats avant diffusion.
 
 La courbe « Sharpe du bot à chaque stratégie ajoutée » lit `improvementSteps` : ajoute une ligne à chaque stratégie intégrée pour montrer la progression du bot.
 

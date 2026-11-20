@@ -11,7 +11,7 @@
   box-shadow: 0 40px 120px -30px rgba(0, 0, 0, 0.9);
 }
 
-/* Grilles de colonnes : boucles et stratégies */
+/* Grilles de colonnes : books et stratégies */
 .loopGrid {
   grid-template-columns: minmax(0, 1fr) 200px 140px 80px 84px;
 }

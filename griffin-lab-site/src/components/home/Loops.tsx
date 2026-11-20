@@ -8,7 +8,7 @@ import { ImprovementStats } from "./ImprovementStats";
 import styles from "./Loops.module.css";
 
 /**
- * Section 04 : une nouvelle stratégie validée est comparée à chaque boucle.
+ * Section 04 : une nouvelle stratégie validée est comparée à chaque book.
  * Elle rejoint celle où sa corrélation est sous le seuil ; les autres lui
  * sont fermées. En dessous, la progression du bot entier.
  */
@@ -19,7 +19,7 @@ const loopRgb: Record<LoopColor, string> = {
   amber: "245,181,36",
 };
 
-/** Ordonnées (viewBox 0–300) du centre de chaque ligne de boucle : 3 lignes de même hauteur. */
+/** Ordonnées (viewBox 0–300) du centre de chaque ligne de book : 3 lignes de même hauteur. */
 const rowCenter = (index: number, count: number) => ((index + 0.5) / count) * 300;
 
 export async function Loops() {
@@ -31,9 +31,9 @@ export async function Loops() {
   const limit = formatNumber(CORRELATION_LIMIT, 1);
 
   return (
-    <Section id="boucles" tone="alt">
-      <SectionHeading kicker="04 · Les boucles" title="Chaque stratégie ajoutée rend le bot meilleur." align="center">
-        Le bot est fait de boucles de stratégies peu corrélées. Une stratégie validée rejoint la boucle où elle apporte
+    <Section id="books" tone="alt">
+      <SectionHeading kicker="04 · Les books" title="Chaque stratégie ajoutée rend le bot meilleur." align="center">
+        Le bot est fait de books de stratégies peu corrélées. Une stratégie validée rejoint le book où elle apporte
         de la diversification : là où sa corrélation reste sous {limit}.
       </SectionHeading>
 
@@ -46,11 +46,11 @@ export async function Loops() {
           <b className={styles.strategyName}>{newStrategyExample.name}</b>
           <span className={styles.strategyMeta}>score {newStrategyExample.score}/100 · validée</span>
           <span className={styles.strategyRule}>
-            cherche une boucle où <em>ρ &lt; {limit}</em>
+            cherche un book où <em>ρ &lt; {limit}</em>
           </span>
         </div>
 
-        {/* Liaisons vers chaque boucle */}
+        {/* Liaisons vers chaque book */}
         <div className={styles.links}>
           <svg viewBox="0 0 100 300" preserveAspectRatio="none" aria-hidden="true">
             {routes.map((r, i) => {
@@ -66,7 +66,7 @@ export async function Loops() {
           </svg>
         </div>
 
-        {/* Boucles */}
+        {/* Books */}
         <ul className={styles.loops}>
           {routes.map((r) => (
             <li key={r.loop.id} className={styles.loopRow}>

@@ -16,7 +16,7 @@ const checkExplanations = [
   "Que la stratégie marche sur des données qu'elle n'a pas vues.",
   "Que la perte maximale reste maîtrisée.",
   "Que le résultat ne dépend pas de l'ordre des trades.",
-  "La corrélation avec chaque boucle. La stratégie rejoint une boucle avec laquelle elle est peu corrélée.",
+  "La corrélation avec chaque book. La stratégie rejoint un book avec lequel elle est peu corrélée.",
 ];
 
 const sections = [
@@ -74,7 +74,7 @@ export default function RulesPage() {
             <h2>Le script de test</h2>
             <p>
               Toutes les propositions passent les mêmes cinq contrôles. Les quatre premiers décident si la stratégie
-              est validée ; le dernier choisit la boucle qui l&apos;accueille. Elle reçoit ensuite un score sur 100.
+              est validée ; le dernier choisit le book qui l&apos;accueille. Elle reçoit ensuite un score sur 100.
             </p>
             <div className={styles.tableWrap}>
               <table>
@@ -97,19 +97,19 @@ export default function RulesPage() {
               </table>
             </div>
 
-            <h3>Les boucles</h3>
+            <h3>Les books</h3>
             <p>
-              Le bot est formé de plusieurs boucles reliées entre elles. Une boucle regroupe des stratégies peu
-              corrélées les unes aux autres. Chaque stratégie validée qui rejoint une boucle améliore le bot entier.
+              Le bot est formé de plusieurs books reliés entre eux. Un book regroupe des stratégies peu
+              corrélées les unes aux autres. Chaque stratégie validée qui rejoint un book améliore le bot entier.
             </p>
             <ul>
-              <li>Si ta stratégie a une corrélation inférieure à 0,3 avec une boucle, elle s&apos;y connecte.</li>
+              <li>Si ta stratégie a une corrélation inférieure à 0,3 avec un book, elle s&apos;y connecte.</li>
               <li>
-                Si elle est trop corrélée à une boucle (0,3 ou plus), elle n&apos;est pas rejetée pour autant : elle
-                est dirigée vers une autre boucle.
+                Si elle est trop corrélée à un book (0,3 ou plus), elle n&apos;est pas rejetée pour autant : elle
+                est dirigée vers un autre book.
               </li>
               <li>
-                Si elle est trop corrélée à toutes les boucles existantes : création d&apos;une nouvelle boucle ou mise
+                Si elle est trop corrélée à tous les books existants : création d&apos;un nouveau book ou mise
                 en attente <Pending />
               </li>
             </ul>
@@ -129,7 +129,7 @@ export default function RulesPage() {
                 <StatusPill status="testing" /> le script de test est en cours.
               </li>
               <li>
-                <StatusPill status="validated" /> les contrôles sont réussis : la stratégie entre dans une boucle.
+                <StatusPill status="validated" /> les contrôles sont réussis : la stratégie entre dans un book.
               </li>
               <li>
                 <StatusPill status="rejected" /> au moins un contrôle échoue. La raison t&apos;est donnée (par exemple

@@ -55,12 +55,12 @@ export const loops: Loop[] = [
   },
 ];
 
-/** Seuil de corrélation au-dessous duquel une stratégie peut rejoindre une boucle. */
+/** Seuil de corrélation au-dessous duquel une stratégie peut rejoindre un book. */
 export const CORRELATION_LIMIT = 0.3;
 
 /**
- * Exemple du schéma « Les boucles » : corrélation d'une nouvelle stratégie
- * avec chaque boucle. Elle rejoint la seule boucle sous le seuil.
+ * Exemple du schéma « Les books » : corrélation d'une nouvelle stratégie
+ * avec chaque book. Elle rejoint le seul book sous le seuil.
  */
 export const newStrategyExample = {
   name: "NQ Momentum",
@@ -170,7 +170,7 @@ export const checks: Check[] = [
   { name: "Hors échantillon", threshold: "2024–2025" },
   { name: "Drawdown max", threshold: "< 10 %" },
   { name: "Monte Carlo", threshold: "1 000 tirages" },
-  { name: "Placement en boucle", threshold: "ρ < 0,3" },
+  { name: "Placement dans un book", threshold: "ρ < 0,3" },
 ];
 
 export type TerminalLine = {
@@ -214,8 +214,8 @@ export const improvementSteps: { strategies: number; sharpe: number; maxDrawdown
 
 /** Ce que débloque une stratégie validée (section « La contrepartie »). */
 export const perks = [
-  { icon: "layers", title: "Toutes les boucles", text: "Chaque stratégie de chaque boucle du bot." },
+  { icon: "layers", title: "Tous les books", text: "Chaque stratégie de chaque book du bot." },
   { icon: "activity", title: "Signaux en temps réel", text: "Chaque entrée et sortie, au moment où elle se produit." },
   { icon: "zap", title: "Exécution automatique", text: "Le bot exécute pour toi, sans intervention." },
-  { icon: "refresh", title: "Chaque amélioration", text: "Toutes les nouvelles stratégies et boucles du bot." },
+  { icon: "refresh", title: "Chaque amélioration", text: "Toutes les nouvelles stratégies et tous les nouveaux books du bot." },
 ] as const;

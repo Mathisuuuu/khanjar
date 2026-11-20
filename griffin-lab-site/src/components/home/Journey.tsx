@@ -13,7 +13,7 @@ export function Journey() {
       <div className={styles.frame}>
         <svg viewBox="0 0 960 300" role="img" aria-labelledby="journey-title">
           <title id="journey-title">
-            Proposer, puis script de test, puis décision. Si validée : la stratégie entre dans une boucle peu corrélée,
+            Proposer, puis script de test, puis décision. Si validée : la stratégie entre dans un book peu corrélé,
             le bot s&apos;améliore, et l&apos;auteur obtient l&apos;accès à 100 % du bot. Si rejetée : la raison est
             donnée, l&apos;auteur peut l&apos;améliorer et la renvoyer.
           </title>
@@ -47,7 +47,7 @@ export function Journey() {
             <line className={styles.flowing} x1="607" y1="74" x2="700" y2="74" stroke="#22C55E" strokeWidth="1.5" markerEnd="url(#journey-arrow-ok)" />
             <text x="652" y="64" fill="#22C55E" fontSize="12" className={styles.mono}>oui</text>
             <rect x="704" y="40" width="246" height="68" rx="12" fill="#111214" stroke="#22C55E" />
-            <text x="827" y="79" fill="#F7F8F8" fontSize="15" fontWeight="600">Entre dans une boucle</text>
+            <text x="827" y="79" fill="#F7F8F8" fontSize="15" fontWeight="600">Entre dans un book</text>
             <line className={styles.flowing} x1="827" y1="110" x2="827" y2="186" stroke="#22C55E" strokeWidth="1.5" markerEnd="url(#journey-arrow-ok)" />
             <rect x="704" y="190" width="246" height="72" rx="12" fill="rgba(34,197,94,.12)" stroke="#22C55E" strokeWidth="2" />
             <text x="827" y="231" fill="#4ADE80" fontSize="16" fontWeight="700">Accès à 100 % du bot</text>

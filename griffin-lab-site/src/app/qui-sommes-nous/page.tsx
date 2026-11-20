@@ -62,7 +62,7 @@ export default function AboutPage() {
             <p className={styles.number}>03</p>
             <h2>Notre méthode</h2>
             <p>
-              Comment nous testons les stratégies, comment nous construisons les boucles et comment nous publions nos
+              Comment nous testons les stratégies, comment nous construisons les books et comment nous publions nos
               recherches. <ToWrite />
             </p>
           </article>

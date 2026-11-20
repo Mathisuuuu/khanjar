@@ -235,6 +235,11 @@ const MIGRATIONS: string[] = [
   ALTER TABLE email_tokens ADD CONSTRAINT email_tokens_purpose_check
     CHECK (purpose IN ('verify', 'verify_code', 'reset', 'reset_code'));
   `,
+
+  /* 9 : « boucle » devient « book » dans les textes */ `
+  UPDATE books SET description = 'Le book principal du bot.'
+    WHERE letter = 'A' AND description = 'La boucle principale du bot.';
+  `,
 ];
 
 export async function migrate(db: Database): Promise<void> {

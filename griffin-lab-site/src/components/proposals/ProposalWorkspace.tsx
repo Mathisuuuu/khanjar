@@ -41,7 +41,7 @@ export function ProposalWorkspace({ defaultPseudo }: { defaultPseudo: string }) 
           <li>Ta proposition entre dans la file avec le statut « En file ».</li>
           <li>Elle passe les cinq contrôles du script de test : statut « En test ».</li>
           <li>
-            Validée : elle entre dans une boucle et tu débloques 100 % du bot. Rejetée : tu reçois la raison et tu peux
+            Validée : elle entre dans un book et tu débloques 100 % du bot. Rejetée : tu reçois la raison et tu peux
             la renvoyer.
           </li>
         </ol>

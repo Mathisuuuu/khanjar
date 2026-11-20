@@ -1,4 +1,4 @@
-/* Scène : stratégie | liaisons | boucles */
+/* Scène : stratégie | liaisons | books */
 .stage {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(60px, 0.45fr) minmax(0, 1.25fr);
@@ -68,7 +68,7 @@
 }
 
 /* Liaisons */
-/* le SVG est en absolu pour suivre la hauteur des boucles sans l'imposer */
+/* le SVG est en absolu pour suivre la hauteur des books sans l'imposer */
 .links {
   position: relative;
 }
@@ -100,7 +100,7 @@
   stroke-dasharray: 3 6;
 }
 
-/* Boucles : trois lignes de même hauteur (alignées sur les liaisons) */
+/* Books : trois lignes de même hauteur (alignées sur les liaisons) */
 .loops {
   display: grid;
   grid-template-rows: repeat(3, 1fr);

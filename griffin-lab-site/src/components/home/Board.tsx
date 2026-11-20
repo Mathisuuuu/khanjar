@@ -7,7 +7,7 @@ import { Sparkline } from "./Sparkline";
 import styles from "./Board.module.css";
 
 /**
- * Tableau du bot affiché sous le hero : les boucles (avec leur courbe de la
+ * Tableau du bot affiché sous le hero : les books (avec leur courbe de la
  * semaine) puis l'état des stratégies proposées.
  */
 
@@ -43,15 +43,15 @@ export async function Board() {
   const totalStrategies = strategyStats.reduce((sum, stat) => sum + stat.total, 0);
 
   return (
-    <figure className={styles.board} aria-label="Aperçu du bot : boucles et stratégies proposées">
-      {/* Boucles */}
+    <figure className={styles.board} aria-label="Aperçu du bot : books et stratégies proposées">
+      {/* Books */}
       <div className={`${styles.group} ${styles.loopGrid}`}>
         <b className={styles.groupTitle}>
           <svg viewBox="0 0 18 18" aria-hidden="true">
             <circle cx="6" cy="9" r="4.2" fill="none" stroke="#38BDF8" strokeWidth="1.8" />
             <circle cx="12" cy="9" r="4.2" fill="none" stroke="#38BDF8" strokeWidth="1.8" />
           </svg>
-          Boucles <span className={styles.count}>{loops.length}</span>
+          Books <span className={styles.count}>{loops.length}</span>
         </b>
         <span className={`${styles.col} ${styles.hideMd}`}>Rendement · semaine</span>
         <span className={`${styles.col} ${styles.hideMd}`}>Sharpe</span>
@@ -121,8 +121,8 @@ export async function Board() {
 
       <figcaption className={styles.caption}>
         <span>
-          Une boucle regroupe plusieurs stratégies décorrélées. Quand deux stratégies sont corrélées, la nouvelle
-          rejoint une autre boucle.
+          Un book regroupe plusieurs stratégies décorrélées. Quand deux stratégies sont corrélées, la nouvelle
+          rejoint un autre book.
         </span>
         <Link href="/proposer">Voir la vraie file</Link>
       </figcaption>
