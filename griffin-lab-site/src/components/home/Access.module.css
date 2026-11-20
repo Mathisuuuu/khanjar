@@ -1,3 +1,12 @@
+/* Palette pastel de la section (bleu → cyan, bleu → violet, vert tendre → jaune) */
+.box {
+  --sky: #b3e9fb;
+  --blue: #c5d9fb;
+  --lilac: #e4d0fb;
+  --lime: #d8f5bd;
+  --sun: #fcec8d;
+}
+
 .box {
   position: relative;
   display: grid;
@@ -113,10 +122,27 @@
   transition: opacity 0.5s, transform 0.5s, border-color 0.5s;
 }
 
+/* une couleur par avantage */
+.perk {
+  --tint: var(--sky);
+}
+
+.perk:nth-child(2) {
+  --tint: var(--lilac);
+}
+
+.perk:nth-child(3) {
+  --tint: var(--sun);
+}
+
+.perk:nth-child(4) {
+  --tint: var(--blue);
+}
+
 .perk svg {
   flex: none;
   margin-top: 2px;
-  color: var(--accent);
+  color: var(--tint);
 }
 
 .perk b {
@@ -132,7 +158,8 @@
 .open .perk {
   opacity: 1;
   transform: none;
-  border-color: rgba(34, 197, 94, 0.25);
+  border-color: color-mix(in srgb, var(--tint) 30%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tint) 7%, transparent), rgba(0, 0, 0, 0.25) 60%);
 }
 
 @media (max-width: 1000px) {

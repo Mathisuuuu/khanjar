@@ -8,7 +8,7 @@ export function Hero() {
   return (
     <section className={styles.hero}>
       <div className={`container ${styles.copy}`}>
-        <Link href="/regles" className={`glass ${styles.announce}`}>
+        <Link href="/a-propos#regles" className={`glass ${styles.announce}`}>
           <span className={styles.new}>Nouveau</span>
           Les règles de contribution sont en ligne
           <Icon name="arrowRight" size={16} />

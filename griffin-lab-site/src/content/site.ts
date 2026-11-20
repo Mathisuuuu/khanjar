@@ -15,10 +15,9 @@ export type NavLink = { href: string; label: string };
 
 export const mainNav: NavLink[] = [
   { href: "/#concept", label: "Concept" },
-  { href: "/qui-sommes-nous", label: "Qui nous sommes" },
   { href: "/recherches", label: "Recherches" },
   { href: "/books", label: "Books" },
-  { href: "/regles", label: "Règles" },
+  { href: "/a-propos", label: "À propos" },
 ];
 
 export const footerNav: NavLink[] = [
@@ -26,8 +25,8 @@ export const footerNav: NavLink[] = [
   { href: "/proposer", label: "Proposer" },
   { href: "/recherches", label: "Recherches" },
   { href: "/books", label: "Books" },
-  { href: "/qui-sommes-nous", label: "Qui nous sommes" },
-  { href: "/regles", label: "Règles" },
+  { href: "/a-propos#qui-sommes-nous", label: "Qui nous sommes" },
+  { href: "/a-propos#regles", label: "Règles" },
   { href: "/#test", label: "Script de test" },
   { href: "/connexion", label: "Connexion" },
 ];

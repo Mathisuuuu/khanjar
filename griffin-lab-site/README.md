@@ -59,8 +59,7 @@ src/
 │  ├─ globals.css            Jetons de design, effet « liquid glass », utilitaires
 │  ├─ page.tsx               Accueil (assemble les sections)
 │  ├─ proposer/              Formulaire + file des propositions
-│  ├─ regles/                Règles de contribution
-│  ├─ qui-sommes-nous/       Présentation de l'équipe (même mise en page que les Règles, contenu à rédiger)
+│  ├─ a-propos/              Qui nous sommes (partie 1) et règles de contribution (partie 2) ; /qui-sommes-nous et /regles y redirigent
 │  ├─ recherches/            Liste des groupes, création, page d'un groupe + actions serveur
 │  ├─ moderation/            Changement de statut (jeton requis, non indexée)
 │  ├─ connexion/             Page de connexion + actions serveur (connexion, inscription, déconnexion)

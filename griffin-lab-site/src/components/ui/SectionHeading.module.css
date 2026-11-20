@@ -21,14 +21,15 @@
   font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
+  /* --kicker : couleur propre à une section (vert par défaut) */
+  color: var(--kicker, var(--accent));
 }
 
 .kicker::before {
   content: "";
   width: 24px;
   height: 1px;
-  background: var(--accent);
+  background: var(--kicker, var(--accent));
 }
 
 .center .kicker {

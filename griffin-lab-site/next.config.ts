@@ -43,6 +43,13 @@ const nextConfig: NextConfig = {
     // publications de recherche : jusqu'à 5 pièces jointes de 10 Mo
     serverActions: { bodySizeLimit: "52mb" },
   },
+  // « Qui nous sommes » et « Règles » sont fusionnées dans /a-propos
+  async redirects() {
+    return [
+      { source: "/qui-sommes-nous", destination: "/a-propos#qui-sommes-nous", permanent: true },
+      { source: "/regles", destination: "/a-propos#regles", permanent: true },
+    ];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

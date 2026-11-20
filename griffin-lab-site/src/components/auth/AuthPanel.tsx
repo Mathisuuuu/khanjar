@@ -82,7 +82,7 @@ export function AuthPanel({ providers, callbackUrl, verified = false, reset = fa
       </p>
 
       <p className={styles.legal}>
-        En continuant, tu acceptes les <Link href="/regles">règles de contribution</Link>.
+        En continuant, tu acceptes les <Link href="/a-propos#regles">règles de contribution</Link>.
       </p>
     </div>
   );

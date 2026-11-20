@@ -245,7 +245,7 @@ export function ProposalForm({ onSubmitted, defaultPseudo }: ProposalFormProps) 
           <label className={styles.checkbox}>
             <input type="checkbox" checked={values.acceptRules} onChange={update("acceptRules")} aria-describedby={describedBy("acceptRules")} />
             <span>
-              J&apos;ai lu les <Link href="/regles">règles de contribution</Link> et je comprends que les résultats du test
+              J&apos;ai lu les <Link href="/a-propos#regles">règles de contribution</Link> et je comprends que les résultats du test
               sont simulés.
             </span>
           </label>

@@ -22,7 +22,7 @@ export function FinalCta() {
             Proposer ma stratégie
             <Icon name="arrowRight" />
           </Button>
-          <Button href="/regles" variant="glass">
+          <Button href="/a-propos#regles" variant="glass">
             Lire les règles
           </Button>
         </div>
