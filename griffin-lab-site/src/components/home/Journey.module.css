@@ -1,0 +1,40 @@
+.frame {
+  padding: 36px 28px;
+  overflow-x: auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+.frame svg {
+  display: block;
+  width: 100%;
+  min-width: 760px;
+  height: auto;
+}
+
+.flowing {
+  stroke-dasharray: 6 6;
+  animation: dash 1.2s linear infinite;
+}
+
+@media (max-width: 640px) {
+  .frame {
+    padding: 20px 12px;
+  }
+}
+
+.frame text {
+  font-family: var(--sans);
+}
+
+.frame text.mono {
+  font-family: var(--mono);
+}
+
+/* Les keyframes sont locales : CSS Modules renomme les animations de chaque fichier. */
+@keyframes dash {
+  to {
+    stroke-dashoffset: -12;
+  }
+}

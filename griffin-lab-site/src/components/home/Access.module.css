@@ -1,0 +1,193 @@
+.box {
+  position: relative;
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 40px;
+  align-items: center;
+  padding: 36px 40px;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--card-2), var(--card));
+  border: 1px solid var(--border);
+  border-radius: 24px;
+}
+
+.lockColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+.lock {
+  display: grid;
+  place-items: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 28px;
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  transition: all 0.6s;
+}
+
+.lock svg {
+  width: 56px;
+  height: 56px;
+  color: var(--fg-3);
+  transition: color 0.6s;
+}
+
+.shackle {
+  transform-origin: 16px 11px;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.open .lock {
+  border-color: var(--accent);
+  box-shadow: 0 0 60px -10px rgba(34, 197, 94, 0.6);
+}
+
+.open .lock svg {
+  color: var(--accent);
+}
+
+.open .shackle {
+  transform: translate(0, -4px) rotate(-18deg);
+}
+
+.progress {
+  width: 100%;
+  max-width: 260px;
+}
+
+.progressTop {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--fg-3);
+}
+
+.progressTop b {
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.track {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #16a34a, var(--accent-2));
+  transition: width 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.perksTitle {
+  font-size: 24px;
+  letter-spacing: -0.02em;
+}
+
+.perks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.perk {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  opacity: 0.35;
+  transform: translateY(6px);
+  transition: opacity 0.5s, transform 0.5s, border-color 0.5s;
+}
+
+.perk svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--accent);
+}
+
+.perk b {
+  display: block;
+  font-size: 15px;
+}
+
+.perk span {
+  font-size: 13.5px;
+  color: var(--fg-3);
+}
+
+.open .perk {
+  opacity: 1;
+  transform: none;
+  border-color: rgba(34, 197, 94, 0.25);
+}
+
+@media (max-width: 1000px) {
+  .box {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    padding: 36px 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .box {
+    gap: 18px;
+    padding: 18px 16px;
+  }
+
+  .lockColumn {
+    flex-direction: row;
+    gap: 16px;
+  }
+
+  .lock {
+    flex: none;
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+  }
+
+  .lock svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .perksTitle {
+    font-size: 17px;
+  }
+
+  .perks {
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .perk {
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .perk b {
+    font-size: 13px;
+  }
+
+  .perk span {
+    display: block;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+}

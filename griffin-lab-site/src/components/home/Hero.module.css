@@ -1,0 +1,120 @@
+.hero {
+  position: relative;
+  padding-top: 64px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.announce {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 14px 5px 5px;
+  border-radius: 999px;
+  font-size: 15px;
+  color: var(--fg-2);
+  transition: transform 0.2s, color 0.2s;
+}
+
+.announce:hover {
+  transform: translateY(-1px);
+  color: var(--fg);
+}
+
+.new {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f7f8f8;
+  color: #0a0a0b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.title {
+  max-width: 12ch;
+  margin: 22px 0 18px;
+  font-size: clamp(40px, 6vw, 72px);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
+.lead {
+  max-width: 640px;
+  margin: 0 auto;
+  font-size: clamp(16px, 1.4vw, 18px);
+  color: var(--fg-2);
+  text-wrap: balance;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+/* Scène : le tableau du bot posé sur deux bandes de couleur */
+.stage {
+  position: relative;
+  margin-top: 48px;
+  padding-bottom: 56px;
+}
+
+.stage::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 160px;
+  background: linear-gradient(transparent, var(--bg));
+  pointer-events: none;
+}
+
+.band {
+  position: absolute;
+  pointer-events: none;
+  filter: saturate(120%);
+}
+
+.bandLeft {
+  left: -4%;
+  top: 0;
+  width: 40%;
+  height: 420px;
+  background: linear-gradient(115deg, #4338ca 0%, #7c3aed 35%, #c026d3 65%, #e11d48 100%);
+  clip-path: polygon(0 0, 100% 18%, 100% 62%, 0 100%);
+  opacity: 0.85;
+}
+
+.bandRight {
+  right: -4%;
+  top: 150px;
+  width: 40%;
+  height: 420px;
+  background: linear-gradient(110deg, #f59e0b 0%, #d9a520 25%, #22c55e 60%, #0ea5e9 100%);
+  clip-path: polygon(0 38%, 100% 0, 100% 100%, 0 72%);
+  opacity: 0.8;
+}
+
+@media (max-width: 860px) {
+  .band {
+    width: 60%;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding-top: 36px;
+  }
+
+  .stage {
+    margin-top: 36px;
+    padding-bottom: 40px;
+  }
+}

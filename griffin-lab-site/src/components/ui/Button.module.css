@@ -1,0 +1,70 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    background 0.2s,
+    box-shadow 0.2s,
+    opacity 0.2s;
+}
+
+.button:active {
+  transform: scale(0.98);
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.sm {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 13.5px;
+}
+
+.md {
+  min-height: 44px;
+  padding: 0 22px;
+  font-size: 15.5px;
+}
+
+.lg {
+  min-height: 54px;
+  padding: 0 28px;
+  font-size: 17px;
+}
+
+.primary {
+  background: #f7f8f8;
+  color: #0a0a0b;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 10px 30px -12px rgba(255, 255, 255, 0.35);
+}
+
+.primary:hover:not(:disabled) {
+  background: #fff;
+  transform: translateY(-1px);
+}
+
+.glass:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06));
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .lg {
+    min-height: 50px;
+    padding: 0 22px;
+    font-size: 16px;
+  }
+}

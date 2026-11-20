@@ -1,0 +1,22 @@
+.section {
+  position: relative;
+  padding: 64px 0;
+  overflow-x: clip;
+  scroll-margin-top: 72px;
+}
+
+/* le contenu forme son propre plan, au-dessus du fond de la section */
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+.alt {
+  background: var(--bg-2);
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding: 36px 0;
+  }
+}

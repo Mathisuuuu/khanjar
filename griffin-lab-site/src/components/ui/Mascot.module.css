@@ -1,0 +1,17 @@
+.mascot {
+  display: block;
+  flex: none;
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+}
+
+.arm {
+  transform-origin: 11px 9px;
+  animation: wave 0.8s steps(2) infinite;
+}
+
+@keyframes wave {
+  50% {
+    transform: rotate(-35deg);
+  }
+}

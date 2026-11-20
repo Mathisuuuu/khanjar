@@ -1,0 +1,51 @@
+.final {
+  position: relative;
+  isolation: isolate;
+  padding: 72px 0;
+  overflow: hidden;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+
+.glow {
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  z-index: -1;
+  width: 720px;
+  height: 720px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: var(--accent);
+  filter: blur(120px);
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.mascot {
+  margin: 0 auto 28px;
+}
+
+.title {
+  margin-bottom: 18px;
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: 1.04;
+}
+
+.title span {
+  color: var(--accent);
+}
+
+.lead {
+  max-width: 560px;
+  margin: 0 auto 34px;
+  font-size: 18px;
+  color: var(--fg-2);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}

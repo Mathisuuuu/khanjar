@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "griffin-lab", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev", "--prefix", "griffin-lab-site"], "port": 3000 }
+  ]
+}

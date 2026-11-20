@@ -1,0 +1,32 @@
+/* Exemple de contribution, posé sur le bandeau dégradé de chaque carte */
+.snippet {
+  width: 100%;
+  padding: 12px 14px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--fg-2);
+  background: var(--bg);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.5);
+  white-space: pre-wrap;
+}
+
+.line {
+  display: block;
+}
+
+.keyword {
+  color: var(--cyan);
+}
+
+.value {
+  color: var(--accent-2);
+}
+
+.comment {
+  color: #64748b;
+}
+
+

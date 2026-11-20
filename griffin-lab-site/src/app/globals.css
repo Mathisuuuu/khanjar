@@ -1,0 +1,238 @@
+/*
+ * Styles globaux : jetons de design, base typographique et utilitaires partagés.
+ * Les styles propres à un composant vivent dans son fichier *.module.css.
+ * Le site est volontairement sombre (un seul thème).
+ */
+
+/*
+ * Tailwind v4 : uniquement le thème et les utilitaires (pas de preflight,
+ * pour ne pas réinitialiser les styles du site). Utilisé par les composants
+ * repris d'Aceternity UI (ex. PointerHighlight, ImagesBadge).
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Le site n'a qu'un thème sombre : la variante `dark:` s'applique toujours. */
+@custom-variant dark (&);
+
+:root {
+  /* Surfaces */
+  --bg: #08090a;
+  --bg-2: #0c0d0f;
+  --card: #111214;
+  --card-2: #16171a;
+  --board: #141517;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-2: rgba(255, 255, 255, 0.14);
+
+  /* Texte */
+  --fg: #f7f8f8;
+  --fg-2: #c9ccd1;
+  --fg-3: #8a8f98;
+
+  /* Couleurs de données (vert = positif, rouge = négatif) */
+  --accent: #22c55e;
+  --accent-2: #4ade80;
+  --accent-dim: rgba(34, 197, 94, 0.12);
+  --cyan: #38bdf8;
+  --violet: #a855f7;
+  --amber: #f5b524;
+  --red: #ef4444;
+
+  /* Verre (liquid glass) */
+  --glass-hi: rgba(255, 255, 255, 0.38);
+  --glass-a: rgba(255, 255, 255, 0.13);
+  --glass-b: rgba(255, 255, 255, 0.035);
+
+  /* Typographie (polices injectées par next/font dans layout.tsx) */
+  --sans: var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: var(--font-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Mise en page */
+  --max: 1180px;
+  --radius: 14px;
+  --gutter: max(24px, env(safe-area-inset-left, 0px));
+
+  color-scheme: dark;
+}
+
+/* en couche « base » pour que les utilitaires Tailwind puissent la surcharger */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* pas de défilement de la page derrière une fenêtre modale (lecteur PDF) */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* en couche « base » : les utilitaires Tailwind (ex. tracking-tight) peuvent la surcharger */
+@layer base {
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    letter-spacing: -0.045em;
+    font-weight: 600;
+  }
+}
+
+/* ---------- Utilitaires partagés ---------- */
+
+.container {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding-left: max(24px, env(safe-area-inset-left, 0px));
+  padding-right: max(24px, env(safe-area-inset-right, 0px));
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 8px;
+  z-index: 100;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #04120a;
+}
+
+.skip-link:focus {
+  left: 8px;
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-2), transparent);
+}
+
+/* Effet « liquid glass » : fond translucide flouté, reflet qui suit le pointeur
+   (variables --mx / --my posées par le composant Button) et liseré lumineux. */
+.glass {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: var(--fg);
+  background: linear-gradient(180deg, var(--glass-a), var(--glass-b));
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 var(--glass-hi),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.06),
+    inset 0 0 12px rgba(255, 255, 255, 0.04),
+    0 12px 32px -14px rgba(0, 0, 0, 0.7);
+}
+
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    140px 90px at var(--mx, 30%) var(--my, -10%),
+    rgba(255, 255, 255, 0.28),
+    transparent 70%
+  );
+}
+
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.6),
+    rgba(255, 255, 255, 0.08) 35%,
+    rgba(255, 255, 255, 0.04) 65%,
+    rgba(255, 255, 255, 0.3)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
