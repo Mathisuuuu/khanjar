@@ -7,11 +7,12 @@ import { getViewer } from "@/lib/viewer";
 export const metadata: Metadata = { title: "Books", robots: { index: false, follow: false } };
 
 export default async function BooksPage() {
-  // ouvre directement le premier book accessible
+  // ouvre directement un book : le premier dont la personne est membre, sinon le premier de la liste
   const viewer = await getViewer();
   if (viewer) {
-    const books = viewer.isTeam || viewer.isAdmin ? await listBooks() : await listBooksOf(viewer.id);
-    if (books.length > 0) redirect(`/books/${books[0].id}`);
+    const [mine, all] = await Promise.all([listBooksOf(viewer.id), listBooks()]);
+    const first = mine[0] ?? all[0];
+    if (first) redirect(`/books/${first.id}`);
   }
   return <BooksView />;
 }

@@ -140,7 +140,12 @@ export async function resendVerification(_prev: AuthFormState, formData: FormDat
   return { values: { email }, notice: `Si un compte en attente existe pour ${email}, un nouveau code vient d'être envoyé.` };
 }
 
-export type CodeFormState = { error?: string; expired?: boolean };
+export type CodeFormState = {
+  error?: string;
+  expired?: boolean;
+  /** Erreur sur un autre champ que le code : les chiffres saisis restent en place. */
+  keepCode?: boolean;
+};
 
 /** Formulaire du code à 6 chiffres de la page /verification. */
 export async function verifyCode(_prev: CodeFormState, formData: FormData): Promise<CodeFormState> {

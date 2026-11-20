@@ -229,6 +229,12 @@ const MIGRATIONS: string[] = [
   ALTER TABLE email_tokens ADD CONSTRAINT email_tokens_purpose_check CHECK (purpose IN ('verify', 'verify_code'));
   ALTER TABLE email_tokens ADD COLUMN attempts integer NOT NULL DEFAULT 0;
   `,
+
+  /* 8 : mot de passe oublié (code et lien de réinitialisation) */ `
+  ALTER TABLE email_tokens DROP CONSTRAINT IF EXISTS email_tokens_purpose_check;
+  ALTER TABLE email_tokens ADD CONSTRAINT email_tokens_purpose_check
+    CHECK (purpose IN ('verify', 'verify_code', 'reset', 'reset_code'));
+  `,
 ];
 
 export async function migrate(db: Database): Promise<void> {

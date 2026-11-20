@@ -29,7 +29,8 @@ export async function BooksView({ selectedId }: { selectedId?: string }) {
     id: book.id,
     name: book.name,
     color: book.color,
-    locked: !(team || mineIds.has(book.id)),
+    locked: !viewer,
+    member: mineIds.has(book.id),
     monthReturn: liveStatsOf(book)?.monthReturn ?? null,
   }));
 

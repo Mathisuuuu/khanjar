@@ -1,21 +1,40 @@
 "use client";
 
-import { startTransition, useActionState, useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent } from "react";
-import { resendVerification, verifyCode, type AuthFormState, type CodeFormState } from "@/app/connexion/actions";
+import {
+  startTransition,
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+  type ClipboardEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
+import type { AuthFormState, CodeFormState } from "@/app/connexion/actions";
 import styles from "./CodeForm.module.css";
 
 const LENGTH = 6;
 const RESEND_DELAY = 60;
 
-type Props = { email?: string };
+type Props = {
+  email?: string;
+  /** Action qui reçoit `email`, `code` et les champs de `children`. */
+  action: (state: CodeFormState, formData: FormData) => Promise<CodeFormState>;
+  /** Action « renvoyer un code » (reçoit `email`). */
+  resend: (state: AuthFormState, formData: FormData) => Promise<AuthFormState>;
+  submitLabel?: string;
+  /** Champs en plus sous le code (ex. nouveau mot de passe) ; désactive l'envoi automatique. */
+  children?: ReactNode;
+};
 
 /**
  * Six cases pour le code reçu par e-mail : saisie chiffre par chiffre,
- * collage du code entier, retour arrière, envoi automatique au 6e chiffre.
+ * collage du code entier, retour arrière, envoi automatique au 6e chiffre
+ * (sauf s'il reste des champs à remplir).
  */
-export function CodeForm({ email: initialEmail }: Props) {
-  const [state, action, pending] = useActionState<CodeFormState, FormData>(verifyCode, {});
-  const [resendState, resendAction, resending] = useActionState<AuthFormState, FormData>(resendVerification, {});
+export function CodeForm({ email: initialEmail, action: submit, resend: resendFn, submitLabel = "Valider le code", children }: Props) {
+  const [state, action, pending] = useActionState<CodeFormState, FormData>(submit, {});
+  const [resendState, resendAction, resending] = useActionState<AuthFormState, FormData>(resendFn, {});
   const [digits, setDigits] = useState<string[]>(() => Array(LENGTH).fill(""));
   const [email, setEmail] = useState(initialEmail ?? "");
   const [editingEmail, setEditingEmail] = useState(!initialEmail);
@@ -36,7 +55,7 @@ export function CodeForm({ email: initialEmail }: Props) {
 
   // après une erreur : on vide les cases et on revient à la première
   useEffect(() => {
-    if (!state.error) return;
+    if (!state.error || state.keepCode) return;
     setDigits(Array(LENGTH).fill(""));
     inputs.current[0]?.focus();
   }, [state]);
@@ -57,7 +76,13 @@ export function CodeForm({ email: initialEmail }: Props) {
     setDigits(next);
     const last = Math.min(from + chars.length, LENGTH - 1);
     inputs.current[last]?.focus();
-    if (next.every(Boolean) && email) requestAnimationFrame(() => form.current?.requestSubmit());
+    if (!next.every(Boolean)) return;
+    if (children) {
+      // il reste des champs : on passe au premier
+      requestAnimationFrame(() => form.current?.querySelector<HTMLInputElement>("[data-after-code]")?.focus());
+    } else if (email) {
+      requestAnimationFrame(() => form.current?.requestSubmit());
+    }
   }
 
   function onKeyDown(index: number, event: KeyboardEvent<HTMLInputElement>) {
@@ -123,13 +148,13 @@ export function CodeForm({ email: initialEmail }: Props) {
               ref={(element) => {
                 inputs.current[index] = element;
               }}
-              className={`${styles.box} ${digit ? styles.filled : ""} ${state.error ? styles.shake : ""}`}
+              className={`${styles.box} ${digit ? styles.filled : ""} ${state.error && !state.keepCode ? styles.shake : ""}`}
               inputMode="numeric"
               autoComplete={index === 0 ? "one-time-code" : "off"}
               pattern="[0-9]*"
               maxLength={index === 0 ? LENGTH : 1}
               aria-label={`Chiffre ${index + 1}`}
-              aria-invalid={!!state.error}
+              aria-invalid={!!state.error && !state.keepCode}
               value={digit}
               onChange={(event) => {
                 const value = event.target.value;
@@ -149,6 +174,8 @@ export function CodeForm({ email: initialEmail }: Props) {
           ))}
         </fieldset>
 
+        {children}
+
         {state.error && (
           <p className={styles.error} role="alert">
             {state.error}
@@ -156,7 +183,7 @@ export function CodeForm({ email: initialEmail }: Props) {
         )}
 
         <button type="submit" className={styles.submit} disabled={pending || code.length !== LENGTH || !email}>
-          {pending ? "Vérification…" : "Valider le code"}
+          {pending ? "Un instant…" : submitLabel}
         </button>
       </form>
 

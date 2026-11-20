@@ -3,7 +3,16 @@
 /** `monthReturn` et `weekReturn` : chiffres en direct de la simulation horaire (lib/books/simulation.ts). */
 export type BookStats = { strategies: number; sharpe: number; maxDrawdown: number; monthReturn: number; weekReturn?: number };
 
-export type BookListItem = { id: string; name: string; color: string; locked: boolean; monthReturn: number | null };
+export type BookListItem = {
+  id: string;
+  name: string;
+  color: string;
+  /** Visiteur non connecté : le book ne s'ouvre pas. */
+  locked: boolean;
+  /** La personne connectée est membre de ce book. */
+  member: boolean;
+  monthReturn: number | null;
+};
 
 /** Champs modifiables par l'équipe (les chiffres sont des chaînes pour le formulaire). */
 export type EditableBook = {

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: "Connecte-toi à Griffin Lab avec Discord, Google, Apple, GitHub ou ton e-mail.",
 };
 
-type Props = { searchParams: Promise<{ callbackUrl?: string; verifie?: string }> };
+type Props = { searchParams: Promise<{ callbackUrl?: string; verifie?: string; reinitialise?: string }> };
 
 export default async function ConnexionPage({ searchParams }: Props) {
   const params = await searchParams;
@@ -22,7 +22,9 @@ export default async function ConnexionPage({ searchParams }: Props) {
 
   return (
     <div className="container" style={{ paddingTop: 56, paddingBottom: 96 }}>
-      <AuthPanel providers={providers} callbackUrl={callbackUrl} verified={params.verifie === "1"} />
+      <AuthPanel providers={providers} callbackUrl={callbackUrl} verified={params.verifie === "1"}
+        reset={params.reinitialise === "1"}
+      />
     </div>
   );
 }

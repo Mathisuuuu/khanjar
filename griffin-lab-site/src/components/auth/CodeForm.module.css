@@ -216,3 +216,45 @@
     border-radius: 11px;
   }
 }
+
+/* Mot de passe oublié */
+.passwords {
+  display: grid;
+  gap: 14px;
+}
+
+.passwordRow {
+  position: relative;
+  display: grid;
+}
+
+.passwordRow input {
+  padding-right: 84px;
+}
+
+.passwordRow button {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg-2);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.help {
+  font-size: 12.5px;
+  color: var(--fg-3);
+}
+
+.error a {
+  color: var(--fg);
+  font-weight: 600;
+  text-decoration: underline;
+}

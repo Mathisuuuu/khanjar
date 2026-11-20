@@ -110,7 +110,7 @@ export function BookWorkspace({ books, selected, team, signedIn, managed, editab
                   href={`/books/${book.id}`}
                   className={styles.bookItem}
                   aria-current={selected?.id === book.id ? "page" : undefined}
-                  title={`${book.name}${book.monthReturn !== null ? ` · ${formatReturn(book.monthReturn)} ce mois` : ""}${book.locked ? " (pas d'accès)" : ""}`}
+                  title={`${book.name}${book.monthReturn !== null ? ` · ${formatReturn(book.monthReturn)} ce mois` : ""}${book.locked ? " (connexion requise)" : book.member ? " · tu en fais partie" : ""}`}
                 >
                   <span className={styles.dot} style={{ background: book.color }} aria-hidden="true" />
                   {open && <span className={styles.bookName}>{book.name}</span>}
@@ -153,7 +153,7 @@ export function BookWorkspace({ books, selected, team, signedIn, managed, editab
           <div className={styles.message}>
             <b>{books.length ? "Choisis un book dans la colonne de gauche." : "Aucun book pour l'instant."}</b>
             {team && !books.length && <span>Crée le premier avec « Nouveau book ».</span>}
-            {!signedIn && <span>Connecte-toi pour voir les books auxquels tu as accès.</span>}
+            {!signedIn && <span>Connecte-toi pour voir les books.</span>}
           </div>
         )}
 
@@ -163,7 +163,7 @@ export function BookWorkspace({ books, selected, team, signedIn, managed, editab
               <LockIcon />
             </span>
             <b>{selected.name}</b>
-            <span>Vous n&apos;avez pas accès à ce book.</span>
+            <span>Connecte-toi pour voir ce book.</span>
             {!signedIn && (
               <Button href={`/connexion?callbackUrl=/books/${selected.id}`} size="sm" variant="glass">
                 Se connecter

@@ -104,10 +104,13 @@ export async function isBookMember(bookId: string, userKey: string): Promise<boo
 }
 
 /** L'équipe (et les admins) voit tous les books ; les autres, seulement ceux dont ils sont membres. */
-export async function canAccessBook(bookId: string, viewer: Viewer | null): Promise<boolean> {
-  if (!viewer) return false;
-  if (viewer.isTeam || viewer.isAdmin) return true;
-  return isBookMember(bookId, viewer.id);
+/**
+ * Tout compte connecté peut voir un book (cercles, chiffres). Être membre
+ * compte pour l'anonymat : un profil « anonyme hors de mes books » n'est
+ * nommé que pour les membres d'un book qu'il partage.
+ */
+export async function canAccessBook(_bookId: string, viewer: Viewer | null): Promise<boolean> {
+  return !!viewer;
 }
 
 export async function createBook(input: { name: string; description: string; color: string; createdBy: string }): Promise<string> {

@@ -26,9 +26,11 @@ type AuthPanelProps = {
   callbackUrl: string;
   /** Arrivée depuis le lien de confirmation : adresse vérifiée. */
   verified?: boolean;
+  /** Arrivée après « mot de passe oublié » : mot de passe changé. */
+  reset?: boolean;
 };
 
-export function AuthPanel({ providers, callbackUrl, verified = false }: AuthPanelProps) {
+export function AuthPanel({ providers, callbackUrl, verified = false, reset = false }: AuthPanelProps) {
   const [mode, setMode] = useState<Mode>("signin");
   const [discord, ...others] = providers;
   const proposing = callbackUrl === "/proposer";
@@ -48,6 +50,11 @@ export function AuthPanel({ providers, callbackUrl, verified = false }: AuthPane
       {verified && (
         <p className={styles.notice} role="status">
           Adresse confirmée ! Tu peux maintenant te connecter.
+        </p>
+      )}
+      {reset && (
+        <p className={styles.notice} role="status">
+          Mot de passe changé ! Connecte-toi avec le nouveau.
         </p>
       )}
 
@@ -135,6 +142,11 @@ function EmailForm({ mode, callbackUrl }: { mode: Mode; callbackUrl: string }) {
         error={errors.password}
         help={mode === "signup" ? "8 caractères minimum." : undefined}
       />
+      {mode === "signin" && (
+        <Link href="/mot-de-passe-oublie" className={styles.forgot}>
+          Mot de passe oublié ?
+        </Link>
+      )}
 
       {state.error && (
         <p className={styles.formError} role="alert">

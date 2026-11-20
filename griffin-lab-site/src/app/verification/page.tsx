@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { confirmEmail } from "@/app/connexion/actions";
+import { confirmEmail, resendVerification, verifyCode } from "@/app/connexion/actions";
 import { CodeForm } from "@/components/auth/CodeForm";
 import { signInSchema } from "@/lib/users/schema";
 import { VERIFY_COOKIE } from "@/lib/users/verify-cookie";
@@ -75,7 +75,7 @@ export default async function VerificationPage({ searchParams }: Props) {
                 : "On t'a envoyé un code à 6 chiffres. Entre-le ci-dessous pour activer ton compte."}
           </p>
         </div>
-        <CodeForm email={email} />
+        <CodeForm email={email} action={verifyCode} resend={resendVerification} />
         <p className={styles.footer}>
           Déjà vérifié ? <Link href="/connexion">Se connecter</Link>
         </p>
