@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Mascot } from "@/components/ui/Mascot";
-import { footerNav, site } from "@/content/site";
+import { footerNav } from "@/content/site";
 import styles from "./Footer.module.css";
 
 export function Footer() {
@@ -20,9 +20,6 @@ export function Footer() {
             ))}
           </nav>
         </div>
-        <p className={styles.disclaimer}>
-          <b>Avertissement.</b> {site.disclaimer}
-        </p>
       </div>
     </footer>
   );

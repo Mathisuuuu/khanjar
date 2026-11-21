@@ -1,5 +1,6 @@
 import "server-only";
 import { getDb, iso, isUuid } from "@/lib/db";
+import type { SiteRole } from "./roles";
 
 /**
  * Données et actions de l'espace administrateur : comptes, bannissements,
@@ -17,6 +18,8 @@ export type AccountRow = {
   groups: number;
   posts: number;
   banned: boolean;
+  /** Rôle donné depuis /admin (sans tenir compte de la configuration du serveur). */
+  storedRole: SiteRole;
 };
 
 export type BannedRow = { userKey: string; pseudo: string | null; reason: string; bannedAt: string };
@@ -50,12 +53,14 @@ export async function listAccounts(search = ""): Promise<AccountRow[]> {
     groups: number;
     posts: number;
     banned: boolean;
+    stored_role: SiteRole | null;
   }>(
     `SELECT p.user_key, p.pseudo, u.email, u.email_verified_at, p.created_at,
        (SELECT count(*) FROM proposals x WHERE x.author_id = p.user_key)::int AS proposals,
        (SELECT count(*) FROM research_groups g WHERE g.owner_id = p.user_key)::int AS groups,
        (SELECT count(*) FROM research_posts r WHERE r.author_id = p.user_key)::int AS posts,
-       EXISTS (SELECT 1 FROM banned_accounts b WHERE b.user_key = p.user_key) AS banned
+       EXISTS (SELECT 1 FROM banned_accounts b WHERE b.user_key = p.user_key) AS banned,
+       (SELECT r.role FROM user_roles r WHERE r.user_key = p.user_key) AS stored_role
      FROM profiles p
      LEFT JOIN users u ON p.user_key = 'credentials:' || u.id::text
      WHERE $1 = '' OR p.pseudo ILIKE '%' || $1 || '%' OR u.email ILIKE '%' || $1 || '%'
@@ -76,6 +81,7 @@ export async function listAccounts(search = ""): Promise<AccountRow[]> {
       groups: Number(row.groups),
       posts: Number(row.posts),
       banned: row.banned,
+      storedRole: row.stored_role ?? "member",
     };
   });
 }
@@ -130,6 +136,7 @@ export async function deleteAccount(userKey: string): Promise<void> {
     await tx.query("DELETE FROM book_strategies WHERE user_key = $1", [userKey]);
     await tx.query("DELETE FROM book_members WHERE user_key = $1", [userKey]);
     await tx.query("DELETE FROM post_likes WHERE user_key = $1", [userKey]);
+    await tx.query("DELETE FROM user_roles WHERE user_key = $1", [userKey]);
     await tx.query("DELETE FROM profiles WHERE user_key = $1", [userKey]);
     if (provider === "credentials" && isUuid(id)) await tx.query("DELETE FROM users WHERE id = $1", [id]);
   });

@@ -1,5 +1,5 @@
-import { Access } from "@/components/home/Access";
 import { Concept } from "@/components/home/Concept";
+import { Diversification } from "@/components/home/Diversification";
 import { FinalCta } from "@/components/home/FinalCta";
 import { Hero } from "@/components/home/Hero";
 import { Journey } from "@/components/home/Journey";
@@ -19,7 +19,7 @@ export default function HomePage() {
       <Journey />
       <TestScript />
       <Loops />
-      <Access />
+      <Diversification />
       <FinalCta />
     </>
   );

@@ -11,7 +11,7 @@ export function Journey() {
       </SectionHeading>
 
       <div className={styles.frame}>
-        <svg viewBox="0 0 960 300" role="img" aria-labelledby="journey-title">
+        <svg viewBox="0 16 960 254" role="img" aria-labelledby="journey-title">
           <title id="journey-title">
             Proposer, puis script de test, puis décision. Si validée : la stratégie entre dans un book peu corrélé,
             le bot s&apos;améliore, et l&apos;auteur obtient l&apos;accès à 100 % du bot. Si rejetée : la raison est

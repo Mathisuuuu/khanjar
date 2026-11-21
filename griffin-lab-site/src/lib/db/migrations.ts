@@ -277,6 +277,15 @@ const MIGRATIONS: string[] = [
   /* 12 : voir les stratégies des autres membres d'un book, sur autorisation d'un administrateur (non par défaut) */ `
   ALTER TABLE book_members ADD COLUMN IF NOT EXISTS can_view_strategies boolean NOT NULL DEFAULT false;
   `,
+
+  /* 13 : rôle donné depuis l'administration (équipe ou administrateur) ; sans ligne, simple membre */ `
+  CREATE TABLE IF NOT EXISTS user_roles (
+    user_key   text PRIMARY KEY,
+    role       text NOT NULL CHECK (role IN ('team', 'admin')),
+    updated_by text NOT NULL,
+    updated_at timestamptz NOT NULL DEFAULT now()
+  );
+  `,
 ];
 
 export async function migrate(db: Database): Promise<void> {

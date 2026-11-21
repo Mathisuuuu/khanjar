@@ -704,6 +704,12 @@
     box-shadow: 12px 0 40px rgba(0, 0, 0, 0.5);
   }
 
+  /* la colonne ouverte passe par-dessus : le canevas garde sa place */
+  .stage {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
   .caption {
     top: 10px;
     left: 10px;
@@ -1238,5 +1244,12 @@
   .contents {
     width: 100%;
     border-left: 0;
+  }
+
+  /* sur téléphone, le bouton passe en bas, au-dessus du zoom, pour ne pas couvrir la légende */
+  .contentsOpen {
+    top: auto;
+    right: 10px;
+    bottom: 62px;
   }
 }

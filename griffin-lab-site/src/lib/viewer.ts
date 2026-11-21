@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { auth } from "@/auth";
 import { isBanned } from "@/lib/admin/repository";
+import { configRole, getStoredRole, higherRole, type SiteRole } from "@/lib/admin/roles";
 import { getPseudo } from "@/lib/users/profiles";
 
 /** Personne qui consulte la page, déduite de la session. */
@@ -15,17 +16,14 @@ export type Viewer = {
   name: string;
   /** `false` tant qu'un compte Discord, GitHub… n'a pas choisi son pseudo (page /bienvenue). */
   hasPseudo: boolean;
-  /** Membre de l'équipe Griffin Lab (RESEARCH_TEAM_EMAILS) : peut créer des recherches officielles. */
+  /** Membre de l'équipe Griffin Lab : peut créer des recherches officielles. */
   isTeam: boolean;
-  /** Administrateur (ADMIN_EMAILS) : espace /admin, modération, tous les droits sur les recherches. */
+  /** Administrateur : espace /admin, modération, tous les droits sur les recherches. */
   isAdmin: boolean;
+  /** Administrateur fixé par la configuration du serveur (ADMIN_EMAILS) : seul à pouvoir nommer d'autres admins. */
+  isOwner: boolean;
+  role: SiteRole;
 };
-
-const emailList = (value: string | undefined) =>
-  (value ?? "")
-    .split(",")
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
 
 /** Renvoie la personne connectée, ou `null` sans session ou si le compte est banni (une lecture par requête). */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
@@ -33,20 +31,24 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   if (!session?.user.id) return null;
   const { id: rawId, provider, name, email } = session.user;
   const id = `${provider}:${rawId}`;
-  const [pseudo, banned] = await Promise.all([getPseudo(id), isBanned(id)]);
+  const [pseudo, banned, stored] = await Promise.all([getPseudo(id), isBanned(id), getStoredRole(id)]);
   if (banned) return null; // une session encore ouverte ne donne plus accès à rien
 
   const normalizedEmail = email?.trim().toLowerCase() || null;
-  // administrateur : uniquement un compte e-mail, dont l'adresse a été vérifiée par le site
-  // (l'e-mail d'un compte Discord ou GitHub n'est pas contrôlé par nous)
-  const isAdmin = provider === "credentials" && !!normalizedEmail && emailList(process.env.ADMIN_EMAILS).includes(normalizedEmail);
+  // administrateur par la configuration : uniquement un compte e-mail, dont l'adresse a été vérifiée par le site
+  // (l'e-mail d'un compte Discord ou GitHub n'est pas contrôlé par nous) ; idem pour un admin nommé depuis /admin
+  const fixed = configRole(provider, normalizedEmail);
+  const given = stored === "admin" && provider !== "credentials" ? "team" : stored;
+  const role = higherRole(fixed, given);
   return {
     id,
     email: normalizedEmail,
     name: pseudo ?? (name || normalizedEmail?.split("@")[0] || "anonyme"),
     hasPseudo: pseudo !== null,
-    isTeam: isAdmin || (!!normalizedEmail && emailList(process.env.RESEARCH_TEAM_EMAILS).includes(normalizedEmail)),
-    isAdmin,
+    isTeam: role !== "member",
+    isAdmin: role === "admin",
+    isOwner: fixed === "admin",
+    role,
   };
 });
 

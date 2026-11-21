@@ -9,8 +9,8 @@ export function ImprovementStats() {
 
   const stats = [
     { label: "Stratégies dans le bot", from: String(first.strategies), to: String(current.strategies) },
-    { label: "Sharpe · bot entier", from: formatNumber(first.sharpe), to: formatNumber(current.sharpe) },
-    { label: "Drawdown max · bot entier", from: formatPercent(first.maxDrawdown), to: formatPercent(current.maxDrawdown) },
+    { label: "Sharpe · du book", from: formatNumber(first.sharpe), to: formatNumber(current.sharpe) },
+    { label: "Drawdown max · du book", from: formatPercent(first.maxDrawdown), to: formatPercent(current.maxDrawdown) },
   ];
 
   return (

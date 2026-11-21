@@ -18,6 +18,15 @@ type HeaderUser = { name?: string | null; email?: string | null; image?: string 
 export function Header({ user }: { user: HeaderUser }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  // menu des petits écrans (téléphone, tablette) : fermé à chaque changement de page
+  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => setMenuOpen(false), [pathname]);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setMenuOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -74,8 +83,53 @@ export function Header({ user }: { user: HeaderUser }) {
           <Button href={user ? "/proposer" : PROPOSE_SIGN_IN} variant="glass" className={styles.cta}>
             Proposer
           </Button>
+
+          <button
+            type="button"
+            className={`glass ${styles.round} ${styles.menuButton}`}
+            aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={menuOpen}
+            aria-controls="menu-mobile"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              {menuOpen ? (
+                <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              ) : (
+                <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              )}
+            </svg>
+          </button>
         </div>
       </div>
+
+      {menuOpen && (
+        <nav id="menu-mobile" aria-label="Menu" className={styles.mobileMenu}>
+          <ul className="container">
+            {mainNav.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} aria-current={pathname === link.href ? "page" : undefined}>
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+            <li>
+              {user ? (
+                <Link href="/compte" aria-current={pathname === "/compte" ? "page" : undefined}>
+                  Mon compte
+                </Link>
+              ) : (
+                <Link href="/connexion">Se connecter</Link>
+              )}
+            </li>
+            <li>
+              <a href={site.discordUrl} target="_blank" rel="noopener noreferrer">
+                Discord
+              </a>
+            </li>
+          </ul>
+        </nav>
+      )}
     </header>
   );
 }

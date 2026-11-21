@@ -56,7 +56,7 @@ export async function Board() {
         <span className={`${styles.col} ${styles.hideMd}`}>Rendement · semaine</span>
         <span className={`${styles.col} ${styles.hideMd}`}>Sharpe</span>
         <span className={`${styles.col} ${styles.hideMd}`}>DD max</span>
-        <span className={`${styles.col} ${styles.end}`}>Mois</span>
+        <span className={`${styles.col} ${styles.end}`}>30 J</span>
       </div>
 
       {loops.map((loop) => (
@@ -124,7 +124,7 @@ export async function Board() {
           Un book regroupe plusieurs stratégies décorrélées. Quand deux stratégies sont corrélées, la nouvelle
           rejoint un autre book.
         </span>
-        <Link href="/proposer">Voir la vraie file</Link>
+        <Link href="/proposer">Voir votre file</Link>
       </figcaption>
     </figure>
   );

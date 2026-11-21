@@ -32,7 +32,7 @@ export async function Loops() {
 
   return (
     <Section id="books" tone="alt">
-      <SectionHeading kicker="04 · Les books" title="Chaque stratégie ajoutée rend le bot meilleur." align="center">
+      <SectionHeading kicker="04 · Les books" title="Chaque stratégie ajoutée rend le bot meilleur et t'y donne accès." align="center">
         Le bot est fait de books de stratégies peu corrélées. Une stratégie validée rejoint le book où elle apporte
         de la diversification : là où sa corrélation reste sous {limit}.
       </SectionHeading>

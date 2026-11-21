@@ -40,15 +40,4 @@
   color: var(--fg);
 }
 
-.disclaimer {
-  padding: 14px 16px;
-  border: 1px solid rgba(245, 181, 36, 0.25);
-  border-radius: 12px;
-  background: rgba(245, 181, 36, 0.05);
-  color: var(--fg-2);
-  line-height: 1.6;
-}
 
-.disclaimer b {
-  color: var(--amber);
-}

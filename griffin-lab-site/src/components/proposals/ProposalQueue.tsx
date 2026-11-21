@@ -31,7 +31,7 @@ export function ProposalQueue({ proposals, loading, error }: ProposalQueueProps)
         <h2>Mes propositions</h2>
         <div className={styles.chips} role="group" aria-label="Filtrer par statut">
           {filters.map((f) => (
-            <button key={f} type="button" className={styles.chip} aria-pressed={filter === f} onClick={() => setFilter(f)}>
+            <button key={f} type="button" className={styles.chip} data-status={f} aria-pressed={filter === f} onClick={() => setFilter(f)}>
               {f === "all" ? "Toutes" : statusLabels[f]} <b>{count(f)}</b>
             </button>
           ))}
@@ -54,7 +54,7 @@ export function ProposalQueue({ proposals, loading, error }: ProposalQueueProps)
         <ul className={styles.list} aria-live="polite">
           {visible.map((p) => {
             return (
-              <li key={p.id} className={styles.item}>
+              <li key={p.id} className={styles.item} data-status={p.status}>
                 <div className={styles.top}>
                   <h3>{p.title}</h3>
                   <StatusPill status={p.status} />

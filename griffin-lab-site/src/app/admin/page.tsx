@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { RoleSelect } from "@/components/admin/RoleSelect";
 import { ConfirmButton } from "@/components/research/ConfirmButton";
+import { configRole, higherRole, type SiteRole } from "@/lib/admin/roles";
 import { getStats, listAccounts, listAllGroups, listBanned } from "@/lib/admin/repository";
 import { requireAdmin } from "@/lib/viewer";
 import { banAction, deleteAccountAction, deleteGroupAction, unbanAction } from "./actions";
@@ -96,6 +98,7 @@ export default async function AdminPage({ searchParams }: Props) {
                 <thead>
                   <tr>
                     <th>Pseudo</th>
+                    <th>Rôle</th>
                     <th>Connexion</th>
                     <th>Créé le</th>
                     <th>Contenu</th>
@@ -107,6 +110,19 @@ export default async function AdminPage({ searchParams }: Props) {
                 <tbody>
                   {accounts.map((account) => {
                     const self = account.userKey === admin.id;
+                    const fixed = configRole(account.provider, account.email?.toLowerCase() ?? null);
+                    // un admin nommé ne vaut que pour un compte e-mail (même règle que la session)
+                    const given = account.storedRole === "admin" && account.provider !== "credentials" ? "team" : account.storedRole;
+                    const role = higherRole(fixed, given);
+                    const allowed: SiteRole[] = ["member", "team"];
+                    if (admin.isOwner && account.provider === "credentials" && account.verified) allowed.push("admin");
+                    const locked = self
+                      ? "C'est ton compte."
+                      : fixed === "admin"
+                        ? "Administrateur fixé par la configuration du serveur."
+                        : role === "admin" && !admin.isOwner
+                          ? "Seul un administrateur principal peut retirer un admin."
+                          : undefined;
                     return (
                       <tr key={account.userKey} className={account.banned ? styles.bannedRow : undefined}>
                         <td>
@@ -114,6 +130,16 @@ export default async function AdminPage({ searchParams }: Props) {
                           {self && <span className={styles.badge}>toi</span>}
                           {account.banned && <span className={`${styles.badge} ${styles.badgeRed}`}>banni</span>}
                           {account.email && <small>{account.email}</small>}
+                        </td>
+                        <td>
+                          <RoleSelect
+                            userKey={account.userKey}
+                            pseudo={account.pseudo}
+                            role={role}
+                            allowed={allowed}
+                            locked={locked}
+                          />
+                          {fixed === "team" && role === "team" && <small>fixé par la configuration</small>}
                         </td>
                         <td>
                           {providerLabels[account.provider] ?? account.provider}
@@ -158,7 +184,8 @@ export default async function AdminPage({ searchParams }: Props) {
             </div>
           )}
           <p className={styles.note}>
-            Bannir bloque la connexion et coupe les sessions ouvertes, sans rien effacer. Supprimer efface le compte et
+            Rôle : « Équipe » peut créer des recherches officielles et gérer les books ; « Admin » a accès à cet espace.
+            Le rôle admin se donne seulement à un compte e-mail confirmé. Bannir bloque la connexion et coupe les sessions ouvertes, sans rien effacer. Supprimer efface le compte et
             tout ce qu&apos;il a publié : un compte Discord ou GitHub supprimé peut revenir, bannis-le pour l&apos;en
             empêcher.
           </p>

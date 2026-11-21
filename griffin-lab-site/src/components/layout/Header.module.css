@@ -93,6 +93,42 @@
   object-fit: cover;
 }
 
+/* bouton et menu des petits écrans : cachés sur ordinateur */
+.actions .menuButton {
+  display: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.mobileMenu {
+  border-top: 1px solid var(--border);
+  background: rgba(8, 9, 10, 0.96);
+}
+
+.mobileMenu ul {
+  display: grid;
+  padding-block: 8px 14px;
+  list-style: none;
+}
+
+.mobileMenu a {
+  display: block;
+  padding: 13px 4px;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--fg-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.mobileMenu li:last-child a {
+  border-bottom: 0;
+}
+
+.mobileMenu a[aria-current="page"],
+.mobileMenu a:hover {
+  color: var(--fg);
+}
 
 @media (max-width: 900px) {
   .inner {
@@ -100,6 +136,16 @@
   }
 
   .nav {
+    display: none;
+  }
+
+  .actions .menuButton {
+    display: grid;
+  }
+}
+
+@media (min-width: 901px) {
+  .mobileMenu {
     display: none;
   }
 }
@@ -127,5 +173,10 @@
   .actions .round {
     width: 40px;
     height: 40px;
+  }
+
+  /* le Discord passe dans le menu sur téléphone */
+  .actions .discord {
+    display: none;
   }
 }

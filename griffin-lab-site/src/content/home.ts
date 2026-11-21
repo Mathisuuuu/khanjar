@@ -203,13 +203,13 @@ export const terminalScript: TerminalLine[] = [
  * Sert à montrer que chaque ajout améliore le bot, sans numéro de version.
  */
 export const improvementSteps: { strategies: number; sharpe: number; maxDrawdown: number }[] = [
-  { strategies: 8, sharpe: 1.18, maxDrawdown: -12.4 },
-  { strategies: 9, sharpe: 1.27, maxDrawdown: -11.6 },
-  { strategies: 10, sharpe: 1.36, maxDrawdown: -10.9 },
+  { strategies: 5, sharpe: 1.18, maxDrawdown: -12.4 },
+  { strategies: 7, sharpe: 1.27, maxDrawdown: -11.6 },
+  { strategies: 9, sharpe: 1.36, maxDrawdown: -10.9 },
   { strategies: 11, sharpe: 1.48, maxDrawdown: -10.1 },
-  { strategies: 12, sharpe: 1.57, maxDrawdown: -9.4 },
-  { strategies: 13, sharpe: 1.66, maxDrawdown: -8.8 },
-  { strategies: 14, sharpe: 1.84, maxDrawdown: -8.1 },
+  { strategies: 13, sharpe: 1.57, maxDrawdown: -9.4 },
+  { strategies: 14, sharpe: 1.66, maxDrawdown: -8.8 },
+  { strategies: 16, sharpe: 1.84, maxDrawdown: -8.1 },
 ];
 
 /** Ce que débloque une stratégie validée (section « La contrepartie »). */

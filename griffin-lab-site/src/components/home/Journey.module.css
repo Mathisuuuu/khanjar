@@ -1,5 +1,5 @@
 .frame {
-  padding: 36px 28px;
+  padding: 18px 28px;
   overflow-x: auto;
   background: var(--card);
   border: 1px solid var(--border);

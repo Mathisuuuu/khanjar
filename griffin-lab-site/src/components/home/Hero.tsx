@@ -16,7 +16,8 @@ export function Hero() {
         <h1 className={styles.title}>Propose l&apos;idée. Débloque le bot.</h1>
         <p className={styles.lead}>
           Griffin Lab est un bot de trading construit par sa communauté. Ta stratégie passe le même test que toutes
-          les autres ; si elle est validée, elle entre dans le bot et tu y accèdes à 100 %.
+          les autres ; si elle est validée, elle entre dans le book et tu améliores tes gains et baisses tes pertes
+          gratuitement.
         </p>
         <div className={styles.actions}>
           <Button href="/proposer" size="lg">

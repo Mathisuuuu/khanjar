@@ -21,13 +21,15 @@
 }
 
 .pending {
-  color: var(--fg-3);
-  border-color: var(--border-2);
+  color: var(--amber);
+  border-color: rgba(245, 181, 36, 0.4);
+  background: rgba(245, 181, 36, 0.1);
 }
 
 .testing {
   color: var(--cyan);
   border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(56, 189, 248, 0.1);
 }
 
 .validated {
@@ -39,4 +41,5 @@
 .rejected {
   color: var(--red);
   border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.1);
 }
