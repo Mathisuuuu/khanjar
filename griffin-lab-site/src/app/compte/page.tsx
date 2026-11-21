@@ -37,8 +37,6 @@ export default async function ComptePage({ searchParams }: { searchParams: Promi
     credentials: t("E-mail", "Email"),
     discord: "Discord",
     google: "Google",
-    apple: "Apple",
-    github: "GitHub",
   };
 
   const sections = [
@@ -57,7 +55,7 @@ export default async function ComptePage({ searchParams }: { searchParams: Promi
   const { image } = session.user;
   const provider = data.provider;
   const providerName = providerLabels[provider] ?? provider;
-  const isBrand = ["discord", "google", "apple", "github"].includes(provider);
+  const isBrand = ["discord", "google"].includes(provider);
   const unlocked = data.proposalCounts.validated > 0;
   const since = formatDate(data.memberSince);
   const validated = data.proposalCounts.validated;

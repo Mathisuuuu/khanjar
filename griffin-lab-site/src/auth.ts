@@ -1,8 +1,6 @@
 import NextAuth, { CredentialsSignin, type NextAuthConfig } from "next-auth";
-import Apple from "next-auth/providers/apple";
 import Credentials from "next-auth/providers/credentials";
 import Discord from "next-auth/providers/discord";
-import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import { isBanned } from "@/lib/admin/repository";
 import { isProviderConfigured } from "@/lib/auth-providers";
@@ -14,7 +12,7 @@ import { signInSchema } from "@/lib/users/schema";
 /**
  * Authentification (Auth.js v5).
  * - E-mail + mot de passe : comptes de la table `users`, mots de passe hachés (scrypt).
- * - Discord, Google, Apple, GitHub : OAuth, actifs seulement si leurs clés sont définies.
+ * - Discord et Google : OAuth, actifs seulement si leurs clés sont définies.
  * Sessions en JWT signé avec AUTH_SECRET, dans un cookie HttpOnly (Secure en HTTPS).
  */
 
@@ -35,23 +33,10 @@ const FIFTEEN_MINUTES = 15 * 60;
  * groupes privés…) que si le fournisseur la déclare vérifiée : sinon, n'importe
  * qui pourrait ouvrir un compte Discord avec l'adresse d'un autre.
  */
-async function oauthEmailVerified(provider: string, profile: Record<string, unknown> | undefined, accessToken?: string) {
+function oauthEmailVerified(provider: string, profile: Record<string, unknown> | undefined) {
   if (!profile || typeof profile.email !== "string" || !profile.email) return false;
   if (provider === "discord") return profile.verified === true;
-  if (provider === "google" || provider === "apple") return profile.email_verified === true || profile.email_verified === "true";
-  if (provider === "github" && accessToken) {
-    try {
-      const res = await fetch("https://api.github.com/user/emails", {
-        headers: { Authorization: `Bearer ${accessToken}`, "User-Agent": "griffin-lab", Accept: "application/vnd.github+json" },
-      });
-      if (!res.ok) return false;
-      const emails = (await res.json()) as { email: string; verified: boolean }[];
-      const email = String(profile.email).toLowerCase();
-      return emails.some((e) => e.verified && e.email.toLowerCase() === email);
-    } catch {
-      return false;
-    }
-  }
+  if (provider === "google") return profile.email_verified === true;
   return false;
 }
 
@@ -82,16 +67,18 @@ const providers: NextAuthConfig["providers"] = [
 ];
 
 if (isProviderConfigured("discord")) {
-  providers.push(Discord({ clientId: process.env.AUTH_DISCORD_ID, clientSecret: process.env.AUTH_DISCORD_SECRET }));
+  providers.push(
+    Discord({
+      clientId: process.env.AUTH_DISCORD_ID,
+      clientSecret: process.env.AUTH_DISCORD_SECRET,
+      // Discord renvoie « iss=https://discord.com » au retour de l'autorisation (RFC 9207) :
+      // sans cet émetteur, Auth.js attend sa valeur par défaut et refuse la connexion
+      issuer: "https://discord.com",
+    }),
+  );
 }
 if (isProviderConfigured("google")) {
   providers.push(Google({ clientId: process.env.AUTH_GOOGLE_ID, clientSecret: process.env.AUTH_GOOGLE_SECRET }));
-}
-if (isProviderConfigured("apple")) {
-  providers.push(Apple({ clientId: process.env.AUTH_APPLE_ID, clientSecret: process.env.AUTH_APPLE_SECRET }));
-}
-if (isProviderConfigured("github")) {
-  providers.push(GitHub({ clientId: process.env.AUTH_GITHUB_ID, clientSecret: process.env.AUTH_GITHUB_SECRET }));
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -112,7 +99,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.authAt = Math.floor(Date.now() / 1000);
         token.emailVerified =
           account.provider === "credentials" ||
-          (await oauthEmailVerified(account.provider, profile as Record<string, unknown> | undefined, account.access_token));
+          oauthEmailVerified(account.provider, profile as Record<string, unknown> | undefined);
       }
       return token;
     },

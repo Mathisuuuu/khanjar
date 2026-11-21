@@ -11,8 +11,6 @@ import { useT } from "@/components/i18n/LocaleProvider";
 import { mainNav, site } from "@/content/site";
 import styles from "./Header.module.css";
 
-/** Lien « Proposer » quand on n'est pas connecté. */
-const PROPOSE_SIGN_IN = `/connexion?callbackUrl=${encodeURIComponent("/proposer")}`;
 
 /** Utilisateur connecté (lu par le layout côté serveur), ou `null`. */
 type HeaderUser = { name?: string | null; email?: string | null; image?: string | null } | null;
@@ -85,9 +83,9 @@ export function Header({ user }: { user: HeaderUser }) {
             </Link>
           )}
 
-          {/* déconnecté : « Proposer » passe d'abord par la connexion, puis revient sur /proposer */}
-          <Button href={user ? "/proposer" : PROPOSE_SIGN_IN} variant="glass" className={styles.cta}>
-            {t("Proposer", "Submit")}
+          {/* connecté : « Proposer » ; déconnecté : « Se connecter » */}
+          <Button href={user ? "/proposer" : "/connexion"} variant="glass" className={styles.cta}>
+            {user ? t("Proposer", "Submit") : t("Se connecter", "Sign in")}
           </Button>
 
           <button

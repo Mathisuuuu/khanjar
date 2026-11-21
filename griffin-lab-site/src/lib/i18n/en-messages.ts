@@ -55,8 +55,8 @@ addMessages({
   "Mot de passe changé.": "Password changed.",
   "E-mail ou mot de passe incorrect.": "Incorrect email or password.",
   "Ce compte a été suspendu par l'équipe Griffin Lab.": "This account has been suspended by the Griffin Lab team.",
-  "Les inscriptions par e-mail ouvrent bientôt. En attendant, utilise Discord ou GitHub.":
-    "Email sign-ups open soon. Until then, use Discord or GitHub.",
+  "Les inscriptions par e-mail ouvrent bientôt. En attendant, utilise Discord ou Google.":
+    "Email sign-ups open soon. Until then, use Discord or Google.",
   "Compte créé, mais l'e-mail de confirmation n'est pas parti. Réessaie avec « Renvoyer l'e-mail ».":
     "Account created, but the confirmation email wasn't sent. Try again with “Resend the email”.",
   "L'e-mail n'est pas parti. Réessaie plus tard.": "The email wasn't sent. Try again later.",

@@ -4,7 +4,7 @@ import { getDb, iso } from "@/lib/db";
 
 /**
  * Comptes créés avec e-mail + mot de passe (table `users`).
- * Les comptes Discord, Google, Apple et GitHub n'ont rien à stocker ici :
+ * Les comptes Discord et Google n'ont rien à stocker ici :
  * la session (JWT signé) porte leur identité ; seul leur pseudo est en base (profiles).
  */
 

@@ -4,7 +4,7 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-      /** "credentials", "discord", "google", "apple" ou "github". */
+      /** "credentials", "discord" ou "google". */
       provider: string;
       /** Heure de connexion (secondes) : une session plus ancienne que le dernier changement de mot de passe est refusée. */
       authAt: number;

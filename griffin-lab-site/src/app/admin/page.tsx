@@ -187,7 +187,7 @@ export default async function AdminPage({ searchParams }: Props) {
           <p className={styles.note}>
             Rôle : « Équipe » peut créer des recherches officielles et gérer les books ; « Admin » a accès à cet espace.
             Le rôle admin se donne seulement à un compte e-mail confirmé, et seul un super admin peut nommer ou retirer un admin. Bannir bloque la connexion et coupe les sessions ouvertes, sans rien effacer. Supprimer efface le compte et
-            tout ce qu&apos;il a publié : un compte Discord ou GitHub supprimé peut revenir, bannis-le pour l&apos;en
+            tout ce qu&apos;il a publié : un compte Discord ou Google supprimé peut revenir, bannis-le pour l&apos;en
             empêcher.
           </p>
         </section>

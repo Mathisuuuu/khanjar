@@ -19,7 +19,7 @@ type ProviderOption = { id: OAuthProviderId; label: string; enabled: boolean };
 type Mode = "signin" | "signup";
 
 /**
- * Carte de connexion : Discord en premier (mis en avant), puis Google et Apple,
+ * Carte de connexion : Discord en premier (mis en avant), puis Google,
  * puis e-mail + mot de passe avec bascule « se connecter / créer un compte ».
  */
 type AuthPanelProps = {

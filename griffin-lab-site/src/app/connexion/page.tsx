@@ -11,8 +11,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("Connexion", "Sign in"),
     description: t(
-      "Connecte-toi à Griffin Lab avec Discord, Google, Apple, GitHub ou ton e-mail.",
-      "Sign in to Griffin Lab with Discord, Google, Apple, GitHub or your email.",
+      "Connecte-toi à Griffin Lab avec Discord, Google ou ton e-mail.",
+      "Sign in to Griffin Lab with Discord, Google or your email.",
     ),
   };
 }

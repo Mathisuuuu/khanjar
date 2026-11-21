@@ -7,15 +7,15 @@ const isProd = process.env.NODE_ENV === "production";
  * ressources du site lui-même (pas de script, image ou iframe venus d'ailleurs).
  * - 'unsafe-inline' (scripts) : petits scripts de démarrage injectés par Next.js ;
  * - 'wasm-unsafe-eval' : décodeurs d'images de pdf.js ;
- * - form-action : retours vers les fournisseurs de connexion OAuth.
+ * - form-action : retours vers Discord et Google (connexion OAuth).
  * En développement, Next.js a besoin d'eval : la politique n'est appliquée qu'en production.
  */
 const contentSecurityPolicy = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
-  // avatars des comptes Discord, Google et GitHub (page /compte)
-  "img-src 'self' data: blob: https://cdn.discordapp.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com",
+  // avatars des comptes Discord et Google (page /compte)
+  "img-src 'self' data: blob: https://cdn.discordapp.com https://lh3.googleusercontent.com",
   "font-src 'self'",
   "connect-src 'self'",
   "worker-src 'self' blob:",
@@ -23,7 +23,7 @@ const contentSecurityPolicy = [
   "object-src 'none'",
   "base-uri 'self'",
   "frame-ancestors 'none'",
-  "form-action 'self' https://discord.com https://accounts.google.com https://appleid.apple.com https://github.com",
+  "form-action 'self' https://discord.com https://accounts.google.com",
 ].join("; ");
 
 const securityHeaders = [

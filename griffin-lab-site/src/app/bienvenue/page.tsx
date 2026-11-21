@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type Props = { searchParams: Promise<{ callbackUrl?: string; changer?: string }> };
 
-/** Nom du compte Discord, GitHub… transformé en proposition de pseudo valide. */
+/** Nom du compte Discord ou Google transformé en proposition de pseudo valide. */
 function suggestPseudo(name: string): string {
   const cleaned = name
     .normalize("NFKC")
@@ -25,7 +25,7 @@ function suggestPseudo(name: string): string {
 }
 
 /**
- * Après une première connexion Discord, GitHub, Google ou Apple : la personne
+ * Après une première connexion Discord ou Google : la personne
  * choisit son pseudo. Aussi utilisée depuis /compte pour en changer (?changer=1).
  */
 export default async function BienvenuePage({ searchParams }: Props) {

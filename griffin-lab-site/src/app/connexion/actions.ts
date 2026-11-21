@@ -92,7 +92,7 @@ export async function signUpWithEmail(_prev: AuthFormState, formData: FormData):
     return { values, fieldErrors: { password: "Choisis un mot de passe différent de ton e-mail." } };
   }
   if (!canSendMail()) {
-    return { values, error: "Les inscriptions par e-mail ouvrent bientôt. En attendant, utilise Discord ou GitHub." };
+    return { values, error: "Les inscriptions par e-mail ouvrent bientôt. En attendant, utilise Discord ou Google." };
   }
   if (!(await consume(`signup:ip:${await clientIp()}`, 5, 60 * 60))) return { values, error: TOO_MANY };
 

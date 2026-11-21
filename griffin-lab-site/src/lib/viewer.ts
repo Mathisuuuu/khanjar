@@ -15,7 +15,7 @@ export type Viewer = {
   email: string | null;
   /** Pseudo choisi, ou nom provisoire tant qu'il n'est pas choisi. */
   name: string;
-  /** `false` tant qu'un compte Discord, GitHub… n'a pas choisi son pseudo (page /bienvenue). */
+  /** `false` tant qu'un compte Discord ou Google n'a pas choisi son pseudo (page /bienvenue). */
   hasPseudo: boolean;
   /** Membre de l'équipe Griffin Lab : peut créer des recherches officielles. */
   isTeam: boolean;
@@ -49,7 +49,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   const trusted = provider === "credentials" ? user?.email : emailTrusted ? email : null;
   const normalizedEmail = trusted?.trim().toLowerCase() || null;
   // administrateur par la configuration : uniquement un compte e-mail, dont l'adresse a été vérifiée par le site
-  // (l'e-mail d'un compte Discord ou GitHub n'est pas contrôlé par nous) ; idem pour un admin nommé depuis /admin
+  // (l'e-mail d'un compte Discord ou Google n'est pas contrôlé par nous) ; idem pour un admin nommé depuis /admin
   const fixed = configRole(provider, normalizedEmail);
   const given = stored === "admin" && provider !== "credentials" ? "team" : stored;
   const role = higherRole(fixed, given);
