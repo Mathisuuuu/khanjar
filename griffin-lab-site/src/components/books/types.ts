@@ -1,3 +1,6 @@
+import type { PaperReference, ProposalStatus, ProposalType } from "@/lib/proposals/types";
+import type { AttachmentKind } from "@/lib/research/types";
+
 /** Données envoyées au navigateur pour la page Books (jamais d'identifiant interne de compte, sauf pour l'équipe). */
 
 /** `monthReturn` et `weekReturn` : chiffres en direct de la simulation horaire (lib/books/simulation.ts). */
@@ -51,7 +54,48 @@ export type SelectedBook =
       groups: CanvasGroup[];
       /** Liens membre → groupe de recherche où il a publié. */
       links: { member: string; group: string }[];
+      /** Contenu du book : réservé à ses membres et à l'équipe. */
+      contents: BookContents;
     };
 
+export type StrategyFile = { id: string; name: string; size: number; kind: AttachmentKind };
+
+export type ProposalOption = { id: string; title: string; status: ProposalStatus };
+
+/** La stratégie apportée par un membre : fiche déposée et/ou proposition validée. */
+export type BookStrategyEntry = {
+  /** Même identifiant local que le membre du canevas (« m0 »…). */
+  memberId: string;
+  author: string;
+  authorHref: string | null;
+  self: boolean;
+  /** Une fiche ou une proposition existe pour ce membre. */
+  deposited: boolean;
+  title: string;
+  market: string;
+  summary: string;
+  report: string;
+  proposalId: string | null;
+  type?: ProposalType;
+  status?: ProposalStatus;
+  score?: number;
+  /** Avis du script de test (raison de la validation). */
+  reason?: string;
+  code?: string;
+  paper?: PaperReference;
+  files: StrategyFile[];
+  updatedAt?: string;
+  /** La personne connectée peut modifier cette fiche (la sienne, ou l'équipe). */
+  editable: boolean;
+  /** Propositions du membre, pour lier la fiche (seulement si `editable`). */
+  proposals: ProposalOption[];
+};
+
+/**
+ * `restricted` : membre non autorisé par un administrateur. Le serveur
+ * n'envoie alors que sa propre stratégie, jamais celles des autres.
+ */
+export type BookContents = { access: false } | { access: true; restricted: boolean; strategies: BookStrategyEntry[] };
+
 /** Pour l'équipe : gestion des membres d'un book. */
-export type ManagedMember = { userKey: string; name: string; masked: boolean };
+export type ManagedMember = { userKey: string; name: string; masked: boolean; canView: boolean };

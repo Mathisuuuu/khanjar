@@ -11,6 +11,8 @@ export interface ProposalRepository {
   list(): Promise<Proposal[]>;
   /** Les propositions d'un seul auteur. */
   listByAuthor(authorId: string): Promise<Proposal[]>;
+  /** Les propositions de plusieurs auteurs (contenu des books). */
+  listByAuthors(authorIds: string[]): Promise<Proposal[]>;
   create(input: NewProposal, author: Author): Promise<Proposal>;
   moderate(id: string, input: ModerationInput): Promise<Proposal | null>;
 }
@@ -65,6 +67,16 @@ class PostgresProposalRepository implements ProposalRepository {
     const rows = await db.query<ProposalRow>(
       "SELECT * FROM proposals WHERE author_id = $1 ORDER BY created_at DESC",
       [authorId],
+    );
+    return rows.map(toProposal);
+  }
+
+  async listByAuthors(authorIds: string[]) {
+    if (authorIds.length === 0) return [];
+    const db = await getDb();
+    const rows = await db.query<ProposalRow>(
+      "SELECT * FROM proposals WHERE author_id = ANY($1) ORDER BY created_at DESC",
+      [authorIds],
     );
     return rows.map(toProposal);
   }

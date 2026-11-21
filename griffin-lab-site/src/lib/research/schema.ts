@@ -15,6 +15,16 @@ export const memberSchema = z.object({
 
 export const postSchema = z.object({
   title: z.string().trim().min(3, "3 caractères minimum.").max(140, "140 caractères maximum."),
+  category: z
+    .string()
+    .trim()
+    .max(40, "40 caractères maximum.")
+    .transform((v) => v || undefined),
+  summary: z
+    .string()
+    .trim()
+    .max(320, "320 caractères maximum.")
+    .transform((v) => v || undefined),
   body: z.string().trim().min(1, "Écris quelques lignes.").max(20_000, "20 000 caractères maximum."),
   link: z
     .string()

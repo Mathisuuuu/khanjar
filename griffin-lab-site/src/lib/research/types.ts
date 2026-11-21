@@ -47,11 +47,19 @@ export type ResearchPost = {
   authorId: string;
   authorName: string;
   title: string;
+  /** Surtitre en petites capitales (ex. « Backtesting »). */
+  category?: string;
+  /** Chapô sous le titre ; à défaut, le début du texte. */
+  summary?: string;
   body: string;
   link?: string;
   attachments: Attachment[];
   createdAt: string;
+  updatedAt?: string;
 };
+
+/** Contenu modifiable d'une publication. */
+export type PostContent = Pick<ResearchPost, "title" | "category" | "summary" | "body" | "link">;
 
 export const kindLabels: Record<GroupKind, string> = { official: "Griffin Lab", community: "Communauté" };
 export const visibilityLabels: Record<Visibility, string> = { public: "Public", private: "Privé" };

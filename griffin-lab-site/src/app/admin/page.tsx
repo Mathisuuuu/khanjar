@@ -30,8 +30,8 @@ export default async function AdminPage({ searchParams }: Props) {
 
   const tiles = [
     { label: "Comptes", value: stats.accounts },
-    { label: "Propositions", value: stats.proposals },
-    { label: "En attente", value: stats.pending, href: "/moderation" },
+    { label: "Propositions", value: stats.proposals, href: "/admin/propositions?statut=all" },
+    { label: "En attente", value: stats.pending, href: "/admin/propositions?statut=pending" },
     { label: "Groupes", value: stats.groups },
     { label: "Publications", value: stats.posts },
     { label: "Bannis", value: stats.banned },
@@ -66,14 +66,15 @@ export default async function AdminPage({ searchParams }: Props) {
 
         <section className={styles.panel} aria-labelledby="mod-title">
           <div className={styles.head}>
-            <h2 id="mod-title">Modération des propositions</h2>
-            <Link href="/moderation" className={styles.action}>
-              Ouvrir la modération →
+            <h2 id="mod-title">Propositions</h2>
+            <Link href="/admin/propositions" className={styles.action}>
+              Gérer les propositions →
             </Link>
           </div>
           <p className={styles.note}>
-            Change le statut, le score et la raison de chaque proposition, ou supprime-la. Connecté en administrateur,
-            aucun jeton n&apos;est demandé.
+            Toutes les propositions au même endroit : valide, refuse ou mets en test, donne un score et un avis, puis
+            place les stratégies validées dans les books. Raccourcis clavier : J/K pour naviguer, V, T, F, R pour
+            décider.
           </p>
         </section>
 

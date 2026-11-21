@@ -5,8 +5,9 @@ import { redirect } from "next/navigation";
 import { consume } from "@/lib/rate-limit";
 import { toggleLike, type LikeState } from "@/lib/likes";
 import { canManage, canRead, canWrite } from "@/lib/research/access";
-import { cleanFileName, fileTypeOf, formatFileSize, MAX_FILE_SIZE, MAX_FILES_PER_POST } from "@/lib/research/files";
-import { getResearchRepository, type NewAttachment } from "@/lib/research/repository";
+import { MAX_FILES_PER_POST } from "@/lib/research/files";
+import { getResearchRepository } from "@/lib/research/repository";
+import { readUploads } from "@/lib/uploads";
 import { firstErrors, groupSchema, memberSchema, postSchema, type FieldErrors } from "@/lib/research/schema";
 import type { MemberRole } from "@/lib/research/types";
 import { requireViewer } from "@/lib/viewer";
@@ -132,46 +133,63 @@ export async function removeMember(groupId: string, email: string) {
 
 /* ---------- Publications ---------- */
 
+const postValues = (form: FormData) => ({
+  title: text(form, "title"),
+  category: text(form, "category"),
+  summary: text(form, "summary"),
+  body: text(form, "body"),
+  link: text(form, "link"),
+});
+
 export async function createPost(groupId: string, _prev: FormState, form: FormData): Promise<FormState> {
   const viewer = await requireViewer(`/recherches/${groupId}`);
   const group = await loadGroup(groupId);
   if (!canWrite(group, viewer)) return { message: "Tu n'as pas le droit de publier dans ce groupe." };
 
-  const values = { title: text(form, "title"), body: text(form, "body"), link: text(form, "link") };
+  const values = postValues(form);
   const parsed = postSchema.safeParse(values);
   if (!parsed.success) return { fieldErrors: firstErrors(parsed.error), values };
 
-  const uploads = form.getAll("files").filter((f): f is File => f instanceof File && f.size > 0);
-  if (uploads.length > MAX_FILES_PER_POST) {
-    return { fieldErrors: { files: `${MAX_FILES_PER_POST} fichiers maximum par publication.` }, values };
-  }
-
-  const files: NewAttachment[] = [];
-  for (const file of uploads) {
-    const type = fileTypeOf(file.name);
-    if (!type) return { fieldErrors: { files: `Type de fichier non accepté : ${file.name}` }, values };
-    if (file.size > MAX_FILE_SIZE) {
-      return { fieldErrors: { files: `${file.name} dépasse ${formatFileSize(MAX_FILE_SIZE)}.` }, values };
-    }
-    const data = Buffer.from(await file.arrayBuffer());
-    // un « PDF » doit vraiment en être un : il est affiché dans le navigateur
-    if (type.kind === "pdf" && data.subarray(0, 5).toString("latin1") !== "%PDF-") {
-      return { fieldErrors: { files: `${file.name} n'est pas un PDF valide.` }, values };
-    }
-    files.push({ name: cleanFileName(file.name), size: file.size, mime: type.mime, kind: type.kind, data });
-  }
+  const files = await readUploads(form, 0, MAX_FILES_PER_POST);
+  if (typeof files === "string") return { fieldErrors: { files }, values };
 
   if (!(await consume(`post:${viewer.id}`, 30, 60 * 60))) {
     return { message: "Trop de publications d'un coup. Réessaie dans une heure.", values };
   }
 
   await getResearchRepository().createPost(
-    { groupId, authorId: viewer.id, authorName: viewer.name, title: parsed.data.title, body: parsed.data.body, link: parsed.data.link },
+    { groupId, authorId: viewer.id, authorName: viewer.name, ...parsed.data },
     files,
   );
   revalidatePath(`/recherches/${groupId}`);
   revalidatePath("/recherches");
   return { ok: true, message: "Publication en ligne." };
+}
+
+export async function updatePost(groupId: string, postId: string, _prev: FormState, form: FormData): Promise<FormState> {
+  const viewer = await requireViewer(`/recherches/${groupId}/${postId}`);
+  const group = await loadGroup(groupId);
+  if (!canWrite(group, viewer)) return { message: "Tu n'as pas le droit de modifier ce groupe." };
+  const post = await getResearchRepository().getPost(groupId, postId);
+  if (!post) return { message: "Publication introuvable." };
+
+  const values = postValues(form);
+  const parsed = postSchema.safeParse(values);
+  if (!parsed.success) return { fieldErrors: firstErrors(parsed.error), values };
+
+  const remove = form.getAll("remove").map(String);
+  const kept = post.attachments.filter((a) => !remove.includes(a.id)).length;
+  const files = await readUploads(form, kept, MAX_FILES_PER_POST);
+  if (typeof files === "string") return { fieldErrors: { files }, values };
+
+  if (!(await consume(`post-edit:${viewer.id}`, 60, 60 * 60))) {
+    return { message: "Trop de modifications d'un coup. Réessaie dans une heure.", values };
+  }
+
+  await getResearchRepository().updatePost(groupId, postId, parsed.data, remove, files);
+  revalidatePath(`/recherches/${groupId}`);
+  revalidatePath("/recherches");
+  redirect(`/recherches/${groupId}/${postId}`);
 }
 
 /** Aime ou n'aime plus une publication d'un groupe que la personne peut lire. */
@@ -183,14 +201,16 @@ export async function toggleLikeAction(groupId: string, postId: string): Promise
   if (!(await consume(`like:${viewer.id}`, 200, 60 * 60))) return null;
   const state = await toggleLike(postId, viewer.id);
   revalidatePath(`/recherches/${groupId}`);
+  revalidatePath(`/recherches/${groupId}/${postId}`);
   return state;
 }
 
-export async function deletePost(groupId: string, postId: string) {
+export async function deletePost(groupId: string, postId: string, backToGroup = false) {
   const viewer = await requireViewer(`/recherches/${groupId}`);
   const group = await loadGroup(groupId);
   if (!canWrite(group, viewer)) return;
   await getResearchRepository().deletePost(groupId, postId);
   revalidatePath(`/recherches/${groupId}`);
   revalidatePath("/recherches");
+  if (backToGroup) redirect(`/recherches/${groupId}?edition=1`);
 }

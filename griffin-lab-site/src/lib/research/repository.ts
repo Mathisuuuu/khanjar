@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { getDb, iso, isUuid, optional, type Queryable } from "@/lib/db";
-import type { Attachment, AttachmentKind, Member, MemberRole, ResearchGroup, ResearchPost } from "./types";
+import type { Attachment, AttachmentKind, Member, MemberRole, PostContent, ResearchGroup, ResearchPost } from "./types";
 
 /**
  * Stockage des groupes, membres, publications et pièces jointes (tables
@@ -24,6 +24,9 @@ export interface ResearchRepository {
 
   listPosts(groupId: string): Promise<ResearchPost[]>;
   createPost(input: Omit<ResearchPost, "id" | "attachments" | "createdAt">, files: NewAttachment[]): Promise<ResearchPost>;
+  getPost(groupId: string, postId: string): Promise<ResearchPost | null>;
+  /** Modifie le contenu, retire des pièces jointes et en ajoute de nouvelles. */
+  updatePost(groupId: string, postId: string, content: PostContent, removeIds: string[], files: NewAttachment[]): Promise<void>;
   deletePost(groupId: string, postId: string): Promise<void>;
 
   /** Retrouve une pièce jointe, son groupe et son contenu (pour le téléchargement). */
@@ -48,9 +51,12 @@ type PostRow = {
   author_id: string;
   author_name: string;
   title: string;
+  category: string | null;
+  summary: string | null;
   body: string;
   link: string | null;
   created_at: Date;
+  updated_at: Date | null;
 };
 type AttachmentRow = { id: string; post_id: string; name: string; size: number; mime: string; kind: AttachmentKind };
 
@@ -79,6 +85,35 @@ const toAttachment = (row: AttachmentRow): Attachment => ({
   mime: row.mime,
   kind: row.kind,
 });
+
+const toPost = (row: PostRow, attachments: Attachment[]): ResearchPost => ({
+  id: row.id,
+  groupId: row.group_id,
+  authorId: row.author_id,
+  authorName: row.author_name,
+  title: row.title,
+  category: optional(row.category),
+  summary: optional(row.summary),
+  body: row.body,
+  link: optional(row.link),
+  attachments,
+  createdAt: iso(row.created_at),
+  updatedAt: row.updated_at ? iso(row.updated_at) : undefined,
+});
+
+async function insertAttachments(db: Queryable, postId: string, files: NewAttachment[], start: number) {
+  const attachments: Attachment[] = [];
+  for (const [index, { data, ...meta }] of files.entries()) {
+    const attachment: Attachment = { ...meta, id: randomUUID() };
+    await db.query(
+      `INSERT INTO research_attachments (id, post_id, position, name, size, mime, kind, data)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [attachment.id, postId, start + index, attachment.name, attachment.size, attachment.mime, attachment.kind, data],
+    );
+    attachments.push(attachment);
+  }
+  return attachments;
+}
 
 async function membersOf(db: Queryable, groupId: string): Promise<Member[]> {
   const rows = await db.query<MemberRow>("SELECT * FROM research_members WHERE group_id = $1 ORDER BY added_at", [
@@ -188,49 +223,68 @@ class PostgresResearchRepository implements ResearchRepository {
         [groupId],
       ),
     ]);
-    return posts.map((row) => ({
-      id: row.id,
-      groupId: row.group_id,
-      authorId: row.author_id,
-      authorName: row.author_name,
-      title: row.title,
-      body: row.body,
-      link: optional(row.link),
-      attachments: attachments.filter((a) => a.post_id === row.id).map(toAttachment),
-      createdAt: iso(row.created_at),
-    }));
+    return posts.map((row) => toPost(row, attachments.filter((a) => a.post_id === row.id).map(toAttachment)));
   }
 
   async createPost(input: Omit<ResearchPost, "id" | "attachments" | "createdAt">, files: NewAttachment[]) {
     const db = await getDb();
     return db.transaction(async (tx) => {
       const [row] = await tx.query<PostRow>(
-        `INSERT INTO research_posts (id, group_id, author_id, author_name, title, body, link)
-         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-        [randomUUID(), input.groupId, input.authorId, input.authorName, input.title, input.body, input.link ?? null],
+        `INSERT INTO research_posts (id, group_id, author_id, author_name, title, category, summary, body, link)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+        [
+          randomUUID(),
+          input.groupId,
+          input.authorId,
+          input.authorName,
+          input.title,
+          input.category ?? null,
+          input.summary ?? null,
+          input.body,
+          input.link ?? null,
+        ],
       );
-      const attachments: Attachment[] = [];
-      for (const [position, { data, ...meta }] of files.entries()) {
-        const attachment: Attachment = { ...meta, id: randomUUID() };
-        await tx.query(
-          `INSERT INTO research_attachments (id, post_id, position, name, size, mime, kind, data)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-          [attachment.id, row.id, position, attachment.name, attachment.size, attachment.mime, attachment.kind, data],
-        );
-        attachments.push(attachment);
-      }
+      const attachments = await insertAttachments(tx, row.id, files, 0);
       await tx.query("UPDATE research_groups SET updated_at = now() WHERE id = $1", [input.groupId]);
-      return {
-        id: row.id,
-        groupId: row.group_id,
-        authorId: row.author_id,
-        authorName: row.author_name,
-        title: row.title,
-        body: row.body,
-        link: optional(row.link),
-        attachments,
-        createdAt: iso(row.created_at),
-      };
+      return toPost(row, attachments);
+    });
+  }
+
+  async getPost(groupId: string, postId: string) {
+    if (!isUuid(groupId) || !isUuid(postId)) return null;
+    const db = await getDb();
+    const [row] = await db.query<PostRow>("SELECT * FROM research_posts WHERE id = $1 AND group_id = $2", [
+      postId,
+      groupId,
+    ]);
+    if (!row) return null;
+    const attachments = await db.query<AttachmentRow>(
+      `SELECT ${ATTACHMENT_COLUMNS} FROM research_attachments a WHERE a.post_id = $1 ORDER BY a.position`,
+      [postId],
+    );
+    return toPost(row, attachments.map(toAttachment));
+  }
+
+  async updatePost(groupId: string, postId: string, content: PostContent, removeIds: string[], files: NewAttachment[]) {
+    if (!isUuid(groupId) || !isUuid(postId)) return;
+    const db = await getDb();
+    await db.transaction(async (tx) => {
+      const updated = await tx.query<{ id: string }>(
+        `UPDATE research_posts SET title = $3, category = $4, summary = $5, body = $6, link = $7, updated_at = now()
+         WHERE id = $1 AND group_id = $2 RETURNING id`,
+        [postId, groupId, content.title, content.category ?? null, content.summary ?? null, content.body, content.link ?? null],
+      );
+      if (!updated.length) return;
+      const ids = removeIds.filter(isUuid);
+      if (ids.length) {
+        await tx.query("DELETE FROM research_attachments WHERE post_id = $1 AND id = ANY($2::uuid[])", [postId, ids]);
+      }
+      const [{ next }] = await tx.query<{ next: number }>(
+        "SELECT coalesce(max(position) + 1, 0)::int AS next FROM research_attachments WHERE post_id = $1",
+        [postId],
+      );
+      await insertAttachments(tx, postId, files, Number(next));
+      await tx.query("UPDATE research_groups SET updated_at = now() WHERE id = $1", [groupId]);
     });
   }
 

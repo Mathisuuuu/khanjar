@@ -1,12 +1,32 @@
 import "server-only";
-import { canAccessBook, contributionsOf, getBook, listBookMembers, listBooks, listBooksOf } from "@/lib/books/repository";
+import {
+  canAccessBook,
+  contentAccess,
+  contributionsOf,
+  getBook,
+  listBookMembers,
+  listBooks,
+  listBooksOf,
+  strategyViewers,
+} from "@/lib/books/repository";
+import { listStrategies } from "@/lib/books/strategies";
+import { getProposalRepository } from "@/lib/proposals/repository";
 import { liveStats } from "@/lib/books/simulation";
 import { canRead } from "@/lib/research/access";
 import { getResearchRepository } from "@/lib/research/repository";
 import { resolveIdentities } from "@/lib/users/identity";
 import { getViewer } from "@/lib/viewer";
 import { BookWorkspace } from "./BookWorkspace";
-import type { BookListItem, CanvasGroup, CanvasMember, EditableBook, ManagedMember, SelectedBook } from "./types";
+import type {
+  BookContents,
+  BookListItem,
+  BookStrategyEntry,
+  CanvasGroup,
+  CanvasMember,
+  EditableBook,
+  ManagedMember,
+  SelectedBook,
+} from "./types";
 
 /** Charge les books, le book choisi (si la personne y a accès) et rend l'espace de travail. */
 export async function BooksView({ selectedId }: { selectedId?: string }) {
@@ -75,6 +95,51 @@ export async function BooksView({ selectedId }: { selectedId?: string }) {
         href: `/recherches/${id}`,
       }));
 
+      // contenu (stratégies, rapports, code, fichiers), filtré ici côté serveur :
+      // « all » = administrateur ou membre autorisé ; « own » = sa seule stratégie
+      let contents: BookContents = { access: false };
+      const access = await contentAccess(book.id, viewer);
+      if (access !== "none") {
+        const visibleKeys = access === "all" ? keys : keys.filter((key) => key === viewer?.id);
+        const [strategies, proposals] = await Promise.all([
+          listStrategies(book.id),
+          getProposalRepository().listByAuthors(visibleKeys),
+        ]);
+        const entries: BookStrategyEntry[] = visibleKeys.map((key) => {
+          const identity = identities.get(key)!;
+          const row = strategies.find((s) => s.userKey === key && visibleKeys.includes(s.userKey));
+          const own = proposals.filter((p) => p.authorId === key);
+          // fiche liée à une proposition ; sans fiche, sa dernière stratégie validée
+          const linked = row
+            ? own.find((p) => p.id === row.proposalId)
+            : own.find((p) => p.status === "validated");
+          const editable = !!viewer?.isAdmin || viewer?.id === key;
+          return {
+            memberId: localId.get(key)!,
+            author: identity.name,
+            authorHref: identity.href,
+            self: viewer?.id === key,
+            deposited: !!row || !!linked,
+            title: row?.title || linked?.title || "",
+            market: row?.market || linked?.market || "",
+            summary: row?.summary || linked?.description || "",
+            report: row?.report ?? "",
+            proposalId: row ? row.proposalId : (linked?.id ?? null),
+            type: linked?.type,
+            status: linked?.status,
+            score: linked?.score,
+            reason: linked?.reason,
+            code: linked?.code,
+            paper: linked?.paper,
+            files: (row?.files ?? []).map(({ id, name, size, kind }) => ({ id, name, size, kind })),
+            updatedAt: row?.updatedAt,
+            editable,
+            proposals: editable ? own.map((p) => ({ id: p.id, title: p.title, status: p.status })) : [],
+          };
+        });
+        contents = { access: true, restricted: access === "own", strategies: entries };
+      }
+
       selected = {
         id: book.id,
         name: book.name,
@@ -85,10 +150,17 @@ export async function BooksView({ selectedId }: { selectedId?: string }) {
         members,
         groups: usedGroups,
         links,
+        contents,
       };
 
       if (team) {
-        managed = keys.map((key) => ({ userKey: key, name: identities.get(key)!.name, masked: identities.get(key)!.maskedForOthers }));
+        const viewers = viewer?.isAdmin ? await strategyViewers(book.id) : new Set<string>();
+        managed = keys.map((key) => ({
+          userKey: key,
+          name: identities.get(key)!.name,
+          masked: identities.get(key)!.maskedForOthers,
+          canView: viewers.has(key),
+        }));
         const num = (value: number | undefined) => (value === undefined ? "" : String(value).replace(".", ","));
         editable = {
           name: book.name,
@@ -108,6 +180,7 @@ export async function BooksView({ selectedId }: { selectedId?: string }) {
       books={list}
       selected={selected}
       team={team}
+      admin={!!viewer?.isAdmin}
       signedIn={!!viewer}
       managed={managed}
       editable={editable}

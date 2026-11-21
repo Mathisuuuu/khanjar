@@ -16,7 +16,7 @@ import { kindLabels, roleLabels, visibilityLabels } from "@/lib/research/types";
 import { getViewer } from "@/lib/viewer";
 import { createPost, deleteGroup, removeMember, updateGroupSettings } from "../actions";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ edition?: string }> };
 
 async function loadReadable(id: string) {
   const [group, viewer] = await Promise.all([getResearchRepository().getGroup(id), getViewer()]);
@@ -30,8 +30,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: found ? found.group.name : "Recherches" };
 }
 
-export default async function GroupPage({ params }: Props) {
-  const { id } = await params;
+export default async function GroupPage({ params, searchParams }: Props) {
+  const [{ id }, { edition }] = await Promise.all([params, searchParams]);
   const found = await loadReadable(id);
   if (!found) notFound();
   const { group, viewer } = found;
@@ -52,6 +52,8 @@ export default async function GroupPage({ params }: Props) {
   const role = roleOf(group, viewer);
   const writer = canWrite(group, viewer);
   const owner = canManage(group, viewer);
+  // on n'écrit ni ne modifie rien hors du mode édition
+  const editing = writer && edition === "1";
 
   return (
     <>
@@ -61,14 +63,31 @@ export default async function GroupPage({ params }: Props) {
 
       <div className={`container ${styles.groupLayout}`}>
         <div className={styles.feed}>
-          {writer && <PostComposer action={createPost.bind(null, group.id)} />}
+          <div className={styles.feedBar}>
+            <h2>
+              {posts.length} publication{posts.length > 1 ? "s" : ""}
+            </h2>
+            {writer &&
+              (editing ? (
+                <Button href={`/recherches/${group.id}`} size="sm">
+                  Terminer l&apos;édition
+                </Button>
+              ) : (
+                <Button href={`/recherches/${group.id}?edition=1`} size="sm" variant="glass">
+                  Éditer
+                </Button>
+              ))}
+          </div>
+
+          {editing && <PostComposer action={createPost.bind(null, group.id)} />}
 
           {posts.length > 0 ? (
             posts.map((post) => (
               <PostCard
                 key={post.id}
                 post={post}
-                canDelete={writer}
+                groupName={group.name}
+                editing={editing}
                 author={identities.get(post.authorId) ?? { name: post.authorName, href: null }}
                 likes={likes.get(post.id) ?? { count: 0, liked: false }}
                 canLike={!!viewer?.hasPseudo}
@@ -77,7 +96,11 @@ export default async function GroupPage({ params }: Props) {
           ) : (
             <div className={styles.emptyCard}>
               <b>Aucune publication</b>
-              {writer ? "Publie la première : un texte, un PDF, un script…" : "Ce groupe n'a encore rien publié."}
+              {writer
+                ? editing
+                  ? "Publie la première : un texte, un PDF, un script…"
+                  : "Clique sur « Éditer » pour publier la première."
+                : "Ce groupe n'a encore rien publié."}
             </div>
           )}
         </div>
@@ -130,7 +153,7 @@ export default async function GroupPage({ params }: Props) {
             </div>
           </section>
 
-          {owner && (
+          {owner && editing && (
             <>
               <MembersPanel groupId={group.id} members={group.members} />
 

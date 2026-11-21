@@ -7,11 +7,13 @@ import {
   createBookAction,
   deleteBookAction,
   removeBookMemberAction,
+  setStrategyAccessAction,
   updateBookAction,
   type BookFormState,
 } from "@/app/books/actions";
 import { Button } from "@/components/ui/Button";
 import { BookCanvas } from "./BookCanvas";
+import { BookContents } from "./BookContents";
 import styles from "./Books.module.css";
 import type { BookListItem, EditableBook, ManagedMember, SelectedBook } from "./types";
 
@@ -19,6 +21,8 @@ type Props = {
   books: BookListItem[];
   selected: SelectedBook | null;
   team: boolean;
+  /** administrateur : peut autoriser un membre à voir les stratégies */
+  admin: boolean;
   signedIn: boolean;
   managed: ManagedMember[];
   editable: EditableBook | null;
@@ -65,9 +69,12 @@ function LockIcon() {
 }
 
 /** Espace Books : colonne rétractable à gauche (liste, options, gestion) et canevas du book choisi. */
-export function BookWorkspace({ books, selected, team, signedIn, managed, editable }: Props) {
+export function BookWorkspace({ books, selected, team, admin, signedIn, managed, editable }: Props) {
   const [open, setOpen] = useState(true);
   const [showResearch, setShowResearch] = useState(false);
+  // le contenu s'ouvre à chaque book choisi
+  const [contentsOpen, setContentsOpen] = useState(true);
+  useEffect(() => setContentsOpen(true), [selected?.id]);
 
   // préférences mémorisées dans ce navigateur ; sur mobile, la colonne démarre fermée
   useEffect(() => {
@@ -142,7 +149,7 @@ export function BookWorkspace({ books, selected, team, signedIn, managed, editab
 
             {team && <NewBookForm />}
             {team && selected?.access && editable && (
-              <ManageBook key={selected.id} bookId={selected.id} editable={editable} members={managed} />
+              <ManageBook key={selected.id} bookId={selected.id} editable={editable} members={managed} admin={admin} />
             )}
           </div>
         )}
@@ -205,6 +212,23 @@ export function BookWorkspace({ books, selected, team, signedIn, managed, editab
                 </ul>
               </details>
             </div>
+            {contentsOpen ? (
+              <BookContents
+                key={selected.id}
+                bookId={selected.id}
+                name={selected.name}
+                color={selected.color}
+                description={selected.description}
+                stats={selected.stats}
+                memberCount={selected.members.length}
+                contents={selected.contents}
+                onClose={() => setContentsOpen(false)}
+              />
+            ) : (
+              <button type="button" className={styles.contentsOpen} onClick={() => setContentsOpen(true)}>
+                {selected.contents.access ? "Voir le contenu du book" : "Contenu du book"}
+              </button>
+            )}
           </>
         )}
       </section>
@@ -299,7 +323,79 @@ function NewBookForm() {
   );
 }
 
-function ManageBook({ bookId, editable, members }: { bookId: string; editable: EditableBook; members: ManagedMember[] }) {
+/**
+ * Un membre dans « Gérer ce book » : nom, puis (admin) l'interrupteur
+ * « Voir les stratégies » et le bouton Retirer. L'interrupteur change tout de
+ * suite à l'écran ; il revient en arrière si le serveur refuse.
+ */
+function ManagedRow({ bookId, member, admin }: { bookId: string; member: ManagedMember; admin: boolean }) {
+  const [canView, setCanView] = useState(member.canView);
+  const [error, setError] = useState("");
+  const [pending, startTransition] = useTransition();
+  useEffect(() => setCanView(member.canView), [member.canView]);
+
+  const toggle = () => {
+    const next = !canView;
+    setCanView(next);
+    setError("");
+    startTransition(async () => {
+      const result = await setStrategyAccessAction(bookId, member.userKey, next);
+      if (!result.ok) {
+        setCanView(!next);
+        setError(result.message ?? "Échec, réessaie.");
+      }
+    });
+  };
+
+  return (
+    <li className={styles.managedRow}>
+      <span className={styles.managedName}>
+        {member.name}
+        {member.masked && <small> · masqué</small>}
+      </span>
+      <div className={styles.managedActions}>
+        {admin && (
+          <button
+            type="button"
+            role="switch"
+            aria-checked={canView}
+            className={styles.viewSwitch}
+            data-on={canView || undefined}
+            disabled={pending}
+            onClick={toggle}
+          >
+            <span className={styles.switchTrack} aria-hidden="true">
+              <span className={styles.switchThumb} />
+            </span>
+            {canView ? "Voit les stratégies" : "Ne voit pas"}
+          </button>
+        )}
+        <button
+          type="button"
+          className={styles.danger}
+          disabled={pending}
+          aria-label={`Retirer ${member.name}`}
+          onClick={() => startTransition(() => removeBookMemberAction(bookId, member.userKey))}
+        >
+          Retirer
+        </button>
+      </div>
+      {error && <small className={styles.error}>{error}</small>}
+    </li>
+  );
+}
+
+function ManageBook({
+  bookId,
+  editable,
+  members,
+  admin,
+}: {
+  bookId: string;
+  editable: EditableBook;
+  members: ManagedMember[];
+  admin: boolean;
+}) {
   const [editState, editAction, editing] = useActionState(updateBookAction.bind(null, bookId), {});
   const [addState, addAction, adding] = useActionState(addBookMemberAction.bind(null, bookId), {});
   const [busy, startTransition] = useTransition();
@@ -322,21 +418,7 @@ function ManageBook({ bookId, editable, members }: { bookId: string; editable: E
 
       <ul className={styles.managed} aria-busy={busy}>
         {members.map((member) => (
-          <li key={member.userKey}>
-            <span>
-              {member.name}
-              {member.masked && <small> · masqué</small>}
-            </span>
-            <button
-              type="button"
-              className={styles.danger}
-              disabled={busy}
-              aria-label={`Retirer ${member.name}`}
-              onClick={() => startTransition(() => removeBookMemberAction(bookId, member.userKey))}
-            >
-              Retirer
-            </button>
-          </li>
+          <ManagedRow key={member.userKey} bookId={bookId} member={member} admin={admin} />
         ))}
         {members.length === 0 && <li className={styles.sideNote}>Aucun membre.</li>}
       </ul>

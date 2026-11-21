@@ -48,6 +48,7 @@
   /* Typographie (polices injectées par next/font dans layout.tsx) */
   --sans: var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: var(--font-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --serif: var(--font-serif), Georgia, "Times New Roman", serif;
 
   /* Mise en page */
   --max: 1180px;

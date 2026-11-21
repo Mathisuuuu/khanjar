@@ -179,6 +179,7 @@
 
 .field {
   display: grid;
+  align-content: start;
   gap: 6px;
   min-width: 0;
 }
@@ -215,6 +216,7 @@
 .fieldRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  align-items: start;
   gap: 12px;
 }
 

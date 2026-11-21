@@ -8,16 +8,22 @@ import {
   createBook,
   deleteBook,
   getBook,
+  listBookMembers,
   removeBookMember,
+  setStrategyAccess,
   updateBook,
 } from "@/lib/books/repository";
+import { saveStrategy, strategyFileIds } from "@/lib/books/strategies";
 import { getDb } from "@/lib/db";
+import { getProposalRepository } from "@/lib/proposals/repository";
+import { readUploads } from "@/lib/uploads";
 import { consume } from "@/lib/rate-limit";
 import { requireViewer } from "@/lib/viewer";
 
 /**
- * Actions de gestion des books : réservées à l'équipe Griffin Lab (et aux
- * admins). L'interface masque ces formulaires aux autres, mais seule la
+ * Actions des books. La gestion (création, membres, chiffres) est réservée à
+ * l'équipe Griffin Lab et aux admins ; chaque membre peut décrire sa propre
+ * stratégie. L'interface masque ces formulaires aux autres, mais seule la
  * vérification ici fait foi.
  */
 
@@ -153,4 +159,83 @@ export async function removeBookMemberAction(bookId: string, userKey: string) {
   await requireTeam(`/books/${bookId}`);
   await removeBookMember(bookId, userKey);
   revalidateBooks(bookId);
+}
+
+/**
+ * Autorise (ou non) un membre à voir les stratégies des autres membres du book.
+ * Réservé aux administrateurs : l'équipe non admin ne peut pas cocher la case.
+ */
+export async function setStrategyAccessAction(
+  bookId: string,
+  userKey: string,
+  allowed: boolean,
+): Promise<{ ok: boolean; message?: string }> {
+  const viewer = await requireViewer(`/books/${bookId}`);
+  if (!viewer.isAdmin) return { ok: false, message: "Réservé aux administrateurs." };
+  if (typeof allowed !== "boolean" || typeof userKey !== "string") return { ok: false, message: "Requête invalide." };
+  if (!(await setStrategyAccess(bookId, userKey, allowed))) return { ok: false, message: "Membre introuvable : recharge la page." };
+  revalidateBooks(bookId);
+  return { ok: true };
+}
+
+/* ---------- Contenu : la stratégie de chaque membre ---------- */
+
+const MAX_STRATEGY_FILES = 10;
+
+const strategySchema = z.object({
+  title: z.string().trim().min(3, "3 caractères minimum.").max(140, "140 caractères maximum."),
+  market: z.string().trim().max(60, "60 caractères maximum."),
+  summary: z.string().trim().max(4000, "4 000 caractères maximum."),
+  report: z.string().trim().max(20_000, "20 000 caractères maximum."),
+  proposalId: z.string().trim(),
+});
+
+/**
+ * Enregistre la stratégie d'un membre du book (`memberId` : « m0 », « m1 »…,
+ * l'ordre des membres affiché). Le membre modifie la sienne ; un administrateur, toutes.
+ */
+export async function saveStrategyAction(
+  bookId: string,
+  memberId: string,
+  _prev: BookFormState,
+  form: FormData,
+): Promise<BookFormState> {
+  const viewer = await requireViewer(`/books/${bookId}`);
+  const keys = await listBookMembers(bookId);
+  const userKey = keys[Number(memberId.replace(/^m/, ""))];
+  if (!userKey || !/^m\d+$/.test(memberId)) return { message: "Membre introuvable : recharge la page." };
+  if (userKey !== viewer.id && !viewer.isAdmin) return { message: "Tu ne peux modifier que ta propre stratégie." };
+
+  const values = {
+    title: text(form, "title"),
+    market: text(form, "market"),
+    summary: text(form, "summary"),
+    report: text(form, "report"),
+    proposalId: text(form, "proposalId"),
+  };
+  const parsed = strategySchema.safeParse(values);
+  if (!parsed.success) return { fieldErrors: errorsOf(parsed.error), values };
+
+  // la proposition liée doit appartenir au membre
+  let proposalId: string | null = null;
+  if (parsed.data.proposalId) {
+    const own = await getProposalRepository().listByAuthor(userKey);
+    if (!own.some((p) => p.id === parsed.data.proposalId)) {
+      return { fieldErrors: { proposalId: "Proposition introuvable." }, values };
+    }
+    proposalId = parsed.data.proposalId;
+  }
+
+  const existing = await strategyFileIds(bookId, userKey);
+  const remove = form.getAll("remove").map(String).filter((id) => existing.some((f) => f.id === id));
+  const files = await readUploads(form, existing.length - remove.length, MAX_STRATEGY_FILES);
+  if (typeof files === "string") return { fieldErrors: { files }, values };
+
+  if (!(await consume(`book-strategy:${viewer.id}`, 60, 60 * 60))) {
+    return { message: "Trop de modifications d'un coup. Réessaie dans une heure.", values };
+  }
+
+  await saveStrategy(bookId, userKey, { ...parsed.data, proposalId }, remove, files);
+  revalidateBooks(bookId);
+  return { ok: true, message: "Stratégie enregistrée." };
 }

@@ -113,6 +113,49 @@ export async function canAccessBook(_bookId: string, viewer: Viewer | null): Pro
   return !!viewer;
 }
 
+/**
+ * Accès au contenu d'un book (stratégies, rapports, code, fichiers) :
+ * - `all` : un administrateur, ou un membre qu'un administrateur a autorisé ;
+ * - `own` : un membre non autorisé, qui ne voit que sa propre stratégie ;
+ * - `none` : tous les autres (visiteurs, comptes hors du book, équipe non admin).
+ * Par défaut un membre n'est pas autorisé : la case est décochée.
+ */
+export type ContentAccess = "all" | "own" | "none";
+
+export async function contentAccess(bookId: string, viewer: Viewer | null): Promise<ContentAccess> {
+  if (!viewer || !isUuid(bookId)) return "none";
+  if (viewer.isAdmin) return "all";
+  const db = await getDb();
+  const [row] = await db.query<{ can_view_strategies: boolean }>(
+    "SELECT can_view_strategies FROM book_members WHERE book_id = $1 AND user_key = $2",
+    [bookId, viewer.id],
+  );
+  if (!row) return "none";
+  return row.can_view_strategies === true ? "all" : "own";
+}
+
+/** Membres autorisés à voir les stratégies d'un book (gestion par un administrateur). */
+export async function strategyViewers(bookId: string): Promise<Set<string>> {
+  if (!isUuid(bookId)) return new Set();
+  const db = await getDb();
+  const rows = await db.query<{ user_key: string }>(
+    "SELECT user_key FROM book_members WHERE book_id = $1 AND can_view_strategies = true",
+    [bookId],
+  );
+  return new Set(rows.map((r) => r.user_key));
+}
+
+export async function setStrategyAccess(bookId: string, userKey: string, allowed: boolean): Promise<boolean> {
+  if (!isUuid(bookId)) return false;
+  const db = await getDb();
+  const rows = await db.query("UPDATE book_members SET can_view_strategies = $3 WHERE book_id = $1 AND user_key = $2 RETURNING 1", [
+    bookId,
+    userKey,
+    allowed,
+  ]);
+  return rows.length > 0;
+}
+
 export async function createBook(input: { name: string; description: string; color: string; createdBy: string }): Promise<string> {
   const db = await getDb();
   const id = randomUUID();
@@ -170,7 +213,11 @@ export async function addBookMember(bookId: string, userKey: string): Promise<vo
 export async function removeBookMember(bookId: string, userKey: string): Promise<void> {
   if (!isUuid(bookId)) return;
   const db = await getDb();
-  await db.query("DELETE FROM book_members WHERE book_id = $1 AND user_key = $2", [bookId, userKey]);
+  // quitter un book retire aussi la stratégie et les fichiers qu'on y avait déposés
+  await db.transaction(async (tx) => {
+    await tx.query("DELETE FROM book_strategies WHERE book_id = $1 AND user_key = $2", [bookId, userKey]);
+    await tx.query("DELETE FROM book_members WHERE book_id = $1 AND user_key = $2", [bookId, userKey]);
+  });
 }
 
 /** Pour chaque compte, les groupes de recherche où il a publié. */

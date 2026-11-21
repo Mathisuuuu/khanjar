@@ -127,6 +127,7 @@ export async function deleteAccount(userKey: string): Promise<void> {
     await tx.query("DELETE FROM research_groups WHERE owner_id = $1", [userKey]);
     await tx.query("DELETE FROM research_posts WHERE author_id = $1", [userKey]);
     if (email) await tx.query("DELETE FROM research_members WHERE email = $1", [email]);
+    await tx.query("DELETE FROM book_strategies WHERE user_key = $1", [userKey]);
     await tx.query("DELETE FROM book_members WHERE user_key = $1", [userKey]);
     await tx.query("DELETE FROM post_likes WHERE user_key = $1", [userKey]);
     await tx.query("DELETE FROM profiles WHERE user_key = $1", [userKey]);

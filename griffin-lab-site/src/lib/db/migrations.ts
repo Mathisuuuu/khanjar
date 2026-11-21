@@ -190,7 +190,7 @@ const MIGRATIONS: string[] = [
     ('demo:zoe', 'Zoe.Carry', 'public'),
     ('demo:nadia', 'Nadia_MeanRev', 'public'),
     ('demo:victor', 'Victor_Gamma', 'anonymous'),
-    ('demo:elio', 'Elio_Ticks', 'public')
+    ('demo:elio', 'Elio_Ticks', 'anonymous')
   ON CONFLICT DO NOTHING;
 
   INSERT INTO book_members (book_id, user_key) VALUES
@@ -239,6 +239,43 @@ const MIGRATIONS: string[] = [
   /* 9 : « boucle » devient « book » dans les textes */ `
   UPDATE books SET description = 'Le book principal du bot.'
     WHERE letter = 'A' AND description = 'La boucle principale du bot.';
+  `,
+
+  /* 10 : publications façon article (surtitre, chapô) et modification */ `
+  ALTER TABLE research_posts ADD COLUMN IF NOT EXISTS category text;
+  ALTER TABLE research_posts ADD COLUMN IF NOT EXISTS summary text;
+  ALTER TABLE research_posts ADD COLUMN IF NOT EXISTS updated_at timestamptz;
+  `,
+
+  /* 11 : contenu des books (la stratégie apportée par chaque membre, ses fichiers) */ `
+  CREATE TABLE book_strategies (
+    id          uuid PRIMARY KEY,
+    book_id     uuid NOT NULL REFERENCES books (id) ON DELETE CASCADE,
+    user_key    text NOT NULL,
+    proposal_id uuid REFERENCES proposals (id) ON DELETE SET NULL,
+    title       text NOT NULL,
+    market      text NOT NULL DEFAULT '',
+    summary     text NOT NULL DEFAULT '',
+    report      text NOT NULL DEFAULT '',
+    updated_at  timestamptz NOT NULL DEFAULT now(),
+    UNIQUE (book_id, user_key)
+  );
+
+  CREATE TABLE book_strategy_files (
+    id          uuid PRIMARY KEY,
+    strategy_id uuid NOT NULL REFERENCES book_strategies (id) ON DELETE CASCADE,
+    position    integer NOT NULL,
+    name        text NOT NULL,
+    size        integer NOT NULL,
+    mime        text NOT NULL,
+    kind        text NOT NULL CHECK (kind IN ('pdf', 'script', 'notebook', 'data')),
+    data        bytea NOT NULL
+  );
+  CREATE INDEX book_strategy_files_idx ON book_strategy_files (strategy_id, position);
+  `,
+
+  /* 12 : voir les stratégies des autres membres d'un book, sur autorisation d'un administrateur (non par défaut) */ `
+  ALTER TABLE book_members ADD COLUMN IF NOT EXISTS can_view_strategies boolean NOT NULL DEFAULT false;
   `,
 ];
 
