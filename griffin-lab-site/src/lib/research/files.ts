@@ -42,8 +42,10 @@ export function cleanFileName(filename: string): string {
   return base.replace(/[^\p{L}\p{N}._ -]/gu, "_").slice(0, 120) || "fichier";
 }
 
-export function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} o`;
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} Ko`;
-  return `${(bytes / (1024 * 1024)).toFixed(1).replace(".", ",")} Mo`;
+export function formatFileSize(bytes: number, locale: "fr" | "en" = "fr"): string {
+  const [b, kb, mb] = locale === "en" ? ["B", "KB", "MB"] : ["o", "Ko", "Mo"];
+  if (bytes < 1024) return `${bytes} ${b}`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} ${kb}`;
+  const value = (bytes / (1024 * 1024)).toFixed(1);
+  return `${locale === "en" ? value : value.replace(".", ",")} ${mb}`;
 }

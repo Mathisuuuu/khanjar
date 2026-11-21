@@ -11,7 +11,9 @@ import {
   updateBookAction,
   type BookFormState,
 } from "@/app/books/actions";
+import { useLocale, useMessage, useT } from "@/components/i18n/LocaleProvider";
 import { Button } from "@/components/ui/Button";
+import { intlLocale, type Locale, type T } from "@/lib/i18n/core";
 import { BookCanvas } from "./BookCanvas";
 import { BookContents } from "./BookContents";
 import styles from "./Books.module.css";
@@ -30,15 +32,16 @@ type Props = {
 
 const RESEARCH_KEY = "griffin-lab:books-recherches";
 
-const STAT_FIELDS = [
-  { name: "monthReturn", label: "Rendement visé sur 30 j (%)", hint: "22,2" },
-  { name: "sharpe", label: "Sharpe", hint: "1,84" },
-  { name: "maxDrawdown", label: "Drawdown max (%)", hint: "-8,1" },
-  { name: "strategies", label: "Stratégies", hint: "6" },
-] as const;
+const STAT_FIELDS = (t: T) =>
+  [
+    { name: "monthReturn", label: t("Rendement visé sur 30 j (%)", "Target 30-day return (%)"), hint: t("22,2", "22.2") },
+    { name: "sharpe", label: "Sharpe", hint: t("1,84", "1.84") },
+    { name: "maxDrawdown", label: t("Drawdown max (%)", "Max drawdown (%)"), hint: t("-8,1", "-8.1") },
+    { name: "strategies", label: t("Stratégies", "Strategies"), hint: "6" },
+  ] as const;
 
-const formatReturn = (value: number) =>
-  `${value > 0 ? "+" : ""}${value.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`;
+const formatReturn = (value: number, locale: Locale) =>
+  `${value > 0 ? "+" : ""}${value.toLocaleString(intlLocale(locale), { minimumFractionDigits: 1, maximumFractionDigits: 1 })}${locale === "en" ? "" : " "}%`;
 
 const PALETTE = ["#22c55e", "#38bdf8", "#a855f7", "#f5b524", "#ef4444", "#ec4899", "#14b8a6", "#f97316"];
 
@@ -70,6 +73,8 @@ function LockIcon() {
 /** Espace Books : colonne rétractable à gauche (liste, options, gestion) et canevas du book choisi. */
 export function BookWorkspace({ books, selected, team, admin, signedIn, managed, editable }: Props) {
   // les deux panneaux (colonne de gauche, contenu du book) démarrent fermés
+  const t = useT();
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const [showResearch, setShowResearch] = useState(false);
   const [contentsOpen, setContentsOpen] = useState(false);
@@ -91,7 +96,7 @@ export function BookWorkspace({ books, selected, team, admin, signedIn, managed,
             className={styles.collapse}
             onClick={toggleSidebar}
             aria-expanded={open}
-            aria-label={open ? "Replier la colonne" : "Déplier la colonne"}
+            aria-label={open ? t("Replier la colonne", "Collapse the column") : t("Déplier la colonne", "Expand the column")}
           >
             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
               <path d={open ? "M15 6l-6 6 6 6" : "M9 6l6 6-6 6"} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -99,8 +104,8 @@ export function BookWorkspace({ books, selected, team, admin, signedIn, managed,
           </button>
         </div>
 
-        <nav aria-label="Liste des books" className={styles.bookNav}>
-          {books.length === 0 && open && <p className={styles.sideNote}>Aucun book pour l&apos;instant.</p>}
+        <nav aria-label={t("Liste des books", "Book list")} className={styles.bookNav}>
+          {books.length === 0 && open && <p className={styles.sideNote}>{t("Aucun book pour l'instant.", "No books yet.")}</p>}
           <ul className={styles.bookList}>
             {books.map((book) => (
               <li key={book.id}>
@@ -108,7 +113,7 @@ export function BookWorkspace({ books, selected, team, admin, signedIn, managed,
                   href={`/books/${book.id}`}
                   className={styles.bookItem}
                   aria-current={selected?.id === book.id ? "page" : undefined}
-                  title={`${book.name}${book.monthReturn !== null ? ` · ${formatReturn(book.monthReturn)} ce mois` : ""}${book.locked ? " (connexion requise)" : book.member ? " · tu en fais partie" : ""}`}
+                  title={`${book.name}${book.monthReturn !== null ? ` · ${formatReturn(book.monthReturn, locale)} ${t("ce mois", "this month")}` : ""}${book.locked ? t(" (connexion requise)", " (sign-in required)") : book.member ? t(" · tu en fais partie", " · you're a member") : ""}`}
                 >
                   <span className={styles.dot} style={{ background: book.color }} aria-hidden="true" />
                   {open && <span className={styles.bookName}>{book.name}</span>}
@@ -133,8 +138,8 @@ export function BookWorkspace({ books, selected, team, admin, signedIn, managed,
               />
               <span className={styles.switchTrack} aria-hidden="true" />
               <span>
-                Afficher les recherches
-                <small>Relie chaque membre aux recherches où il a publié.</small>
+                {t("Afficher les recherches", "Show research")}
+                <small>{t("Relie chaque membre aux recherches où il a publié.", "Links each member to the research they've published in.")}</small>
               </span>
             </label>
 
@@ -149,9 +154,9 @@ export function BookWorkspace({ books, selected, team, admin, signedIn, managed,
       <section className={styles.stage} aria-live="polite">
         {!selected && (
           <div className={styles.message}>
-            <b>{books.length ? "Choisis un book dans la colonne de gauche." : "Aucun book pour l'instant."}</b>
-            {team && !books.length && <span>Crée le premier avec « Nouveau book ».</span>}
-            {!signedIn && <span>Connecte-toi pour voir les books.</span>}
+            <b>{books.length ? t("Choisis un book dans la colonne de gauche.", "Pick a book in the left column.") : t("Aucun book pour l'instant.", "No books yet.")}</b>
+            {team && !books.length && <span>{t("Crée le premier avec « Nouveau book ».", "Create the first one with “New book”.")}</span>}
+            {!signedIn && <span>{t("Connecte-toi pour voir les books.", "Sign in to see the books.")}</span>}
           </div>
         )}
 
@@ -161,10 +166,10 @@ export function BookWorkspace({ books, selected, team, admin, signedIn, managed,
               <LockIcon />
             </span>
             <b>{selected.name}</b>
-            <span>Connecte-toi pour voir ce book.</span>
+            <span>{t("Connecte-toi pour voir ce book.", "Sign in to see this book.")}</span>
             {!signedIn && (
               <Button href={`/connexion?callbackUrl=/books/${selected.id}`} size="sm" variant="glass">
-                Se connecter
+                {t("Se connecter", "Sign in")}
               </Button>
             )}
           </div>
@@ -188,16 +193,18 @@ export function BookWorkspace({ books, selected, team, admin, signedIn, managed,
               </h2>
               {selected.description && <p>{selected.description}</p>}
               <p className={styles.captionMeta}>
-                {selected.members.length} membre{selected.members.length > 1 ? "s" : ""}
-                {showResearch && ` · ${selected.groups.length} recherche${selected.groups.length > 1 ? "s" : ""}`}
+                {selected.members.length} {t("membre", "member")}
+                {selected.members.length > 1 ? "s" : ""}
+                {showResearch &&
+                  ` · ${selected.groups.length} ${t("recherche", "research group")}${selected.groups.length > 1 ? "s" : ""}`}
               </p>
               <details className={styles.memberList}>
-                <summary>Liste des membres</summary>
+                <summary>{t("Liste des membres", "Member list")}</summary>
                 <ul>
                   {selected.members.map((m) => (
                     <li key={m.id}>
                       {m.href ? <Link href={m.href}>{m.name}</Link> : <span>{m.name}</span>}
-                      {m.self && " (toi)"}
+                      {m.self && t(" (toi)", " (you)")}
                     </li>
                   ))}
                 </ul>
@@ -217,7 +224,7 @@ export function BookWorkspace({ books, selected, team, admin, signedIn, managed,
               />
             ) : (
               <button type="button" className={styles.contentsOpen} onClick={() => setContentsOpen(true)}>
-                {selected.contents.access ? "Voir le contenu du book" : "Contenu du book"}
+                {selected.contents.access ? t("Voir le contenu du book", "View the book contents") : t("Contenu du book", "Book contents")}
               </button>
             )}
           </>
@@ -229,9 +236,11 @@ export function BookWorkspace({ books, selected, team, admin, signedIn, managed,
 
 function ColorField({ initial, error }: { initial: string; error?: string }) {
   const [color, setColor] = useState(initial);
+  const t = useT();
+  const message = useMessage();
   return (
     <fieldset className={styles.field}>
-      <legend>Couleur</legend>
+      <legend>{t("Couleur", "Colour")}</legend>
       <div className={styles.swatches}>
         {PALETTE.map((swatch) => (
           <button
@@ -239,14 +248,14 @@ function ColorField({ initial, error }: { initial: string; error?: string }) {
             type="button"
             className={styles.swatch}
             style={{ background: swatch }}
-            aria-label={`Couleur ${swatch}`}
+            aria-label={`${t("Couleur", "Colour")} ${swatch}`}
             aria-pressed={color === swatch}
             onClick={() => setColor(swatch)}
           />
         ))}
-        <input type="color" name="color" value={color} onChange={(e) => setColor(e.target.value)} aria-label="Autre couleur" />
+        <input type="color" name="color" value={color} onChange={(e) => setColor(e.target.value)} aria-label={t("Autre couleur", "Other colour")} />
       </div>
-      {error && <small className={styles.error}>{error}</small>}
+      {error && <small className={styles.error}>{message(error)}</small>}
     </fieldset>
   );
 }
@@ -261,24 +270,26 @@ function BookFields({
   withStats?: boolean;
 }) {
   const errors = state.fieldErrors ?? {};
+  const t = useT();
+  const message = useMessage();
   return (
     <>
       <label className={styles.field}>
-        <span>Nom</span>
+        <span>{t("Nom", "Name")}</span>
         <input name="name" required maxLength={60} defaultValue={state.values?.name ?? initial.name} aria-invalid={!!errors.name} />
-        {errors.name && <small className={styles.error}>{errors.name}</small>}
+        {errors.name && <small className={styles.error}>{message(errors.name)}</small>}
       </label>
       <label className={styles.field}>
         <span>Description</span>
         <textarea name="description" maxLength={300} rows={2} defaultValue={state.values?.description ?? initial.description} />
-        {errors.description && <small className={styles.error}>{errors.description}</small>}
+        {errors.description && <small className={styles.error}>{message(errors.description)}</small>}
       </label>
       <ColorField initial={state.values?.color ?? initial.color} error={errors.color} />
       {withStats && (
         <fieldset className={styles.field}>
-          <legend>Chiffres (accueil et survol)</legend>
+          <legend>{t("Chiffres (accueil et survol)", "Figures (home and hover)")}</legend>
           <div className={styles.statsGrid}>
-            {STAT_FIELDS.map(({ name, label, hint }) => (
+            {STAT_FIELDS(t).map(({ name, label, hint }) => (
               <label key={name} className={styles.field}>
                 <span>{label}</span>
                 <input
@@ -288,26 +299,27 @@ function BookFields({
                   defaultValue={state.values?.[name] ?? initial[name] ?? ""}
                   aria-invalid={!!errors[name]}
                 />
-                {errors[name] && <small className={styles.error}>{errors[name]}</small>}
+                {errors[name] && <small className={styles.error}>{message(errors[name])}</small>}
               </label>
             ))}
           </div>
         </fieldset>
       )}
-      {state.message && <p className={state.ok ? styles.ok : styles.error}>{state.message}</p>}
+      {state.message && <p className={state.ok ? styles.ok : styles.error}>{message(state.message)}</p>}
     </>
   );
 }
 
 function NewBookForm() {
   const [state, action, pending] = useActionState(createBookAction, {});
+  const t = useT();
   return (
     <details className={styles.sideBlock}>
-      <summary>Nouveau book</summary>
+      <summary>{t("Nouveau book", "New book")}</summary>
       <form action={action} className={styles.form}>
         <BookFields state={state} initial={{ name: "", description: "", color: PALETTE[0] }} />
         <Button type="submit" size="sm" disabled={pending}>
-          {pending ? "…" : "Créer le book"}
+          {pending ? "…" : t("Créer le book", "Create the book")}
         </Button>
       </form>
     </details>
@@ -323,6 +335,8 @@ function ManagedRow({ bookId, member, admin }: { bookId: string; member: Managed
   const [canView, setCanView] = useState(member.canView);
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
+  const t = useT();
+  const message = useMessage();
   useEffect(() => setCanView(member.canView), [member.canView]);
 
   const toggle = () => {
@@ -333,7 +347,7 @@ function ManagedRow({ bookId, member, admin }: { bookId: string; member: Managed
       const result = await setStrategyAccessAction(bookId, member.userKey, next);
       if (!result.ok) {
         setCanView(!next);
-        setError(result.message ?? "Échec, réessaie.");
+        setError(result.message ? message(result.message) : t("Échec, réessaie.", "Failed, try again."));
       }
     });
   };
@@ -342,7 +356,7 @@ function ManagedRow({ bookId, member, admin }: { bookId: string; member: Managed
     <li className={styles.managedRow}>
       <span className={styles.managedName}>
         {member.name}
-        {member.masked && <small> · masqué</small>}
+        {member.masked && <small> · {t("masqué", "hidden")}</small>}
       </span>
       <div className={styles.managedActions}>
         {admin && (
@@ -358,17 +372,17 @@ function ManagedRow({ bookId, member, admin }: { bookId: string; member: Managed
             <span className={styles.viewTrack} aria-hidden="true">
               <span className={styles.viewThumb} />
             </span>
-            {canView ? "Accès donné" : "Pas d'accès"}
+            {canView ? t("Accès donné", "Access granted") : t("Pas d'accès", "No access")}
           </button>
         )}
         <button
           type="button"
           className={styles.danger}
           disabled={pending}
-          aria-label={`Retirer ${member.name}`}
+          aria-label={t(`Retirer ${member.name}`, `Remove ${member.name}`)}
           onClick={() => startTransition(() => removeBookMemberAction(bookId, member.userKey))}
         >
-          Retirer
+          {t("Retirer", "Remove")}
         </button>
       </div>
       {error && <small className={styles.error}>{error}</small>}
@@ -390,39 +404,44 @@ function ManageBook({
   const [editState, editAction, editing] = useActionState(updateBookAction.bind(null, bookId), {});
   const [addState, addAction, adding] = useActionState(addBookMemberAction.bind(null, bookId), {});
   const [busy, startTransition] = useTransition();
+  const t = useT();
+  const message = useMessage();
 
   return (
     <details className={styles.sideBlock} open>
-      <summary>Gérer ce book</summary>
+      <summary>{t("Gérer ce book", "Manage this book")}</summary>
 
       <form action={addAction} className={styles.form}>
         <label className={styles.field}>
-          <span>Ajouter un membre (pseudo)</span>
-          <input name="pseudo" required maxLength={40} placeholder="pseudo" defaultValue={addState.values?.pseudo} aria-invalid={!!addState.fieldErrors?.pseudo} />
-          {addState.fieldErrors?.pseudo && <small className={styles.error}>{addState.fieldErrors.pseudo}</small>}
+          <span>{t("Ajouter un membre (pseudo)", "Add a member (username)")}</span>
+          <input name="pseudo" required maxLength={40} placeholder={t("pseudo", "username")} defaultValue={addState.values?.pseudo} aria-invalid={!!addState.fieldErrors?.pseudo} />
+          {addState.fieldErrors?.pseudo && <small className={styles.error}>{message(addState.fieldErrors.pseudo)}</small>}
         </label>
-        {addState.message && <p className={addState.ok ? styles.ok : styles.error}>{addState.message}</p>}
+        {addState.message && <p className={addState.ok ? styles.ok : styles.error}>{message(addState.message)}</p>}
         <Button type="submit" size="sm" variant="glass" disabled={adding}>
-          {adding ? "…" : "Donner l'accès"}
+          {adding ? "…" : t("Donner l'accès", "Grant access")}
         </Button>
       </form>
 
       {admin && members.length > 0 && (
         <p className={styles.sideNote}>
-          Interrupteur : accès aux stratégies des autres membres de ce book. Fermé par défaut.
+          {t(
+            "Interrupteur : accès aux stratégies des autres membres de ce book. Fermé par défaut.",
+            "Switch: access to the strategies of this book's other members. Off by default.",
+          )}
         </p>
       )}
       <ul className={styles.managed} aria-busy={busy}>
         {members.map((member) => (
           <ManagedRow key={member.userKey} bookId={bookId} member={member} admin={admin} />
         ))}
-        {members.length === 0 && <li className={styles.sideNote}>Aucun membre.</li>}
+        {members.length === 0 && <li className={styles.sideNote}>{t("Aucun membre.", "No members.")}</li>}
       </ul>
 
       <form action={editAction} className={styles.form}>
         <BookFields state={editState} initial={editable} withStats />
         <Button type="submit" size="sm" variant="glass" disabled={editing}>
-          {editing ? "…" : "Enregistrer"}
+          {editing ? "…" : t("Enregistrer", "Save")}
         </Button>
       </form>
 
@@ -431,12 +450,12 @@ function ManageBook({
         className={styles.danger}
         disabled={busy}
         onClick={() => {
-          if (window.confirm("Supprimer ce book ? Ses membres perdront l'accès. C'est définitif.")) {
+          if (window.confirm(t("Supprimer ce book ? Ses membres perdront l'accès. C'est définitif.", "Delete this book? Its members will lose access. This cannot be undone."))) {
             startTransition(() => deleteBookAction(bookId));
           }
         }}
       >
-        Supprimer le book
+        {t("Supprimer le book", "Delete the book")}
       </button>
     </details>
   );

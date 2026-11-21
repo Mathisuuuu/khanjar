@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { Section } from "@/components/ui/Section";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { checks, terminalScript } from "@/content/home";
+import { checks as checkList, terminalScript as terminalLines } from "@/content/home";
+import { useT } from "@/components/i18n/LocaleProvider";
 import { useInView } from "@/hooks/useInView";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import styles from "./TestScript.module.css";
@@ -18,6 +19,9 @@ const RESTART_MS = 4200; // pause avant de relancer le test
  * à droite se valident au même rythme que les lignes « ✓ ».
  */
 export function TestScript() {
+  const t = useT();
+  const terminalScript = useMemo(() => terminalLines(t), [t]);
+  const checks = useMemo(() => checkList(t), [t]);
   const reducedMotion = usePrefersReducedMotion();
   const { ref, inView } = useInView<HTMLDivElement>(0.4);
   const [line, setLine] = useState(0); // ligne en cours d'écriture
@@ -52,7 +56,7 @@ export function TestScript() {
       typing ? TYPE_MS : LINE_MS,
     );
     return () => window.clearTimeout(id);
-  }, [inView, reducedMotion, line, chars, finished]);
+  }, [inView, reducedMotion, line, chars, finished, terminalScript]);
 
   // Garde la dernière ligne visible
   useEffect(() => {
@@ -71,9 +75,14 @@ export function TestScript() {
 
   return (
     <Section id="test">
-      <SectionHeading kicker="03 · Le script de test" title="Sept contrôles quantitatifs. Aucun passe-droit.">
-        Chaque stratégie est évaluée par le même pipeline : robustesse, hors échantillon, anti-surapprentissage, pouvoir prédictif (IC), risque, stress statistique
-        et apport réel au portefeuille.
+      <SectionHeading
+        kicker={t("03 · Le script de test", "03 · The test script")}
+        title={t("Sept contrôles quantitatifs. Aucun passe-droit.", "Seven quantitative checks. No exceptions.")}
+      >
+        {t(
+          "Chaque stratégie est évaluée par le même pipeline : robustesse, hors échantillon, anti-surapprentissage, pouvoir prédictif (IC), risque, stress statistique et apport réel au portefeuille.",
+          "Every strategy is assessed by the same pipeline: robustness, out of sample, anti-overfitting, predictive power (IC), risk, statistical stress and real contribution to the portfolio.",
+        )}
       </SectionHeading>
 
       <div className={styles.grid} ref={ref}>
@@ -100,11 +109,11 @@ export function TestScript() {
             {(finished || reducedMotion) && <TerminalRow kind="command" text="" cursor />}
           </div>
           <p className="visually-hidden">
-            Exemple de test : {terminalScript.map((l) => l.text).join(". ")}
+            {t("Exemple de test :", "Test example:")} {terminalScript.map((l) => l.text).join(". ")}
           </p>
         </div>
 
-        <ul className={styles.checks} aria-label="Contrôles du script de test">
+        <ul className={styles.checks} aria-label={t("Contrôles du script de test", "Test script checks")}>
           {checks.map((check, i) => {
             const done = validated.has(i);
             const active = running && i === nextCheck;

@@ -5,11 +5,12 @@ import type { Attachment, ResearchPost } from "@/lib/research/types";
 import { ConfirmButton } from "./ConfirmButton";
 import { LikeButton } from "./LikeButton";
 import { PdfShelf } from "./PdfShelf";
+import { intlLocale, makeT } from "@/lib/i18n/core";
+import { getLocale } from "@/lib/i18n/server";
 import styles from "./Research.module.css";
 
-const dateFormat = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", year: "numeric" });
-
-const fileKinds = { pdf: "PDF", script: "Script", notebook: "Notebook", data: "Données" } as const;
+const fileKindsFr = { pdf: "PDF", script: "Script", notebook: "Notebook", data: "Données" } as const;
+const fileKindsEn = { pdf: "PDF", script: "Script", notebook: "Notebook", data: "Data" } as const;
 
 type Author = { name: string; href: string | null };
 
@@ -31,7 +32,7 @@ function leadOf(post: Pick<ResearchPost, "body" | "summary">, max = 220) {
  * En-tête d'une publication façon article : surtitre, titre, chapô, puis
  * « auteur · date · temps de lecture ».
  */
-export function PostHeader({
+export async function PostHeader({
   post,
   author,
   kicker,
@@ -49,6 +50,9 @@ export function PostHeader({
   full?: boolean;
 }) {
   const lead = full ? post.summary : leadOf(post);
+  const locale = await getLocale();
+  const t = makeT(locale);
+  const dateFormat = new Intl.DateTimeFormat(intlLocale(locale), { day: "numeric", month: "short", year: "numeric" });
   return (
     <header className={styles.articleHead}>
       <span className={styles.kicker}>{kicker}</span>
@@ -67,15 +71,18 @@ export function PostHeader({
         <span aria-hidden="true">·</span>
         <time dateTime={post.createdAt}>{dateFormat.format(new Date(post.createdAt))}</time>
         <span aria-hidden="true">·</span>
-        <span>{readingTime(post)} min de lecture</span>
+        <span>{t(`${readingTime(post)} min de lecture`, `${readingTime(post)} min read`)}</span>
       </p>
     </header>
   );
 }
 
 /** Documents d'une publication, toujours présentés de la même façon : lecteur PDF puis liste des fichiers. */
-export function PostDocuments({ attachments }: { attachments: Attachment[] }) {
+export async function PostDocuments({ attachments }: { attachments: Attachment[] }) {
   if (!attachments.length) return null;
+  const locale = await getLocale();
+  const t = makeT(locale);
+  const fileKinds: Record<Attachment["kind"], string> = t<Record<Attachment["kind"], string>>(fileKindsFr, fileKindsEn);
   const pdfs = attachments.filter((file) => file.kind === "pdf");
   return (
     <div className={styles.documents}>
@@ -83,7 +90,7 @@ export function PostDocuments({ attachments }: { attachments: Attachment[] }) {
         {attachments.length} document{attachments.length > 1 ? "s" : ""}
       </span>
       {pdfs.length > 0 && <PdfShelf files={pdfs.map(({ id, name }) => ({ id, name }))} />}
-      <ul className={styles.files} aria-label="Documents">
+      <ul className={styles.files} aria-label={t("Documents", "Documents")}>
         {attachments.map((file) => (
           <li key={file.id}>
             <a
@@ -93,7 +100,7 @@ export function PostDocuments({ attachments }: { attachments: Attachment[] }) {
             >
               <span className={styles.fileKind}>{fileKinds[file.kind]}</span>
               <span>{file.name}</span>
-              <small>{formatFileSize(file.size)}</small>
+              <small>{formatFileSize(file.size, locale)}</small>
             </a>
           </li>
         ))}
@@ -113,7 +120,8 @@ type PostCardProps = {
 };
 
 /** Aperçu d'une publication dans la page du groupe ; le titre ouvre la publication. */
-export function PostCard({ post, groupName, author, likes, canLike, editing }: PostCardProps) {
+export async function PostCard({ post, groupName, author, likes, canLike, editing }: PostCardProps) {
+  const t = makeT(await getLocale());
   const href = `/recherches/${post.groupId}/${post.id}`;
   return (
     <article className={styles.post}>
@@ -122,18 +130,21 @@ export function PostCard({ post, groupName, author, likes, canLike, editing }: P
       <div className={styles.postFoot}>
         <LikeButton groupId={post.groupId} postId={post.id} count={likes.count} liked={likes.liked} canLike={canLike} />
         <Link href={href} className={styles.readMore}>
-          Lire
+          {t("Lire", "Read")}
         </Link>
         {editing && (
           <span className={styles.editActions}>
             <Link href={`${href}?edition=1`} className={styles.editLink}>
-              Modifier
+              {t("Modifier", "Edit")}
             </Link>
             <ConfirmButton
               action={deletePost.bind(null, post.groupId, post.id, false)}
-              confirm={`Supprimer « ${post.title} » et ses pièces jointes ? Cette action est définitive.`}
+              confirm={t(
+                `Supprimer « ${post.title} » et ses pièces jointes ? Cette action est définitive.`,
+                `Delete “${post.title}” and its attachments? This cannot be undone.`,
+              )}
             >
-              Supprimer
+              {t("Supprimer", "Delete")}
             </ConfirmButton>
           </span>
         )}

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useLocale } from "@/components/i18n/LocaleProvider";
+import { intlLocale, type Locale } from "@/lib/i18n/core";
 import styles from "./Diversification.module.css";
 
 export type ChartSeries = { count: number; color: string; values: number[] };
@@ -15,11 +17,11 @@ type Props = {
 
 const PAD = { top: 10, right: 12, bottom: 26, left: 44 };
 
-const pct = (value: number, digits = 0) =>
-  `${value > 0 ? "+" : value < 0 ? "−" : ""}${Math.abs(value).toLocaleString("fr-FR", {
+const formatPct = (locale: Locale, value: number, digits = 0) =>
+  `${value > 0 ? "+" : value < 0 ? "−" : ""}${Math.abs(value).toLocaleString(intlLocale(locale), {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
-  })} %`;
+  })}${locale === "en" ? "%" : " %"}`;
 
 /**
  * Courbes d'une métrique (rendement cumulé ou drawdown) pour 2, 5 et 10
@@ -27,6 +29,9 @@ const pct = (value: number, digits = 0) =>
  * valeur des trois courbes à la même date.
  */
 export function DiversificationChart({ title, series, years, tick }: Props) {
+  const locale = useLocale();
+  const en = locale === "en";
+  const pct = (value: number, digits = 0) => formatPct(locale, value, digits);
   const boxRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [hover, setHover] = useState<number | null>(null);
@@ -106,7 +111,13 @@ export function DiversificationChart({ title, series, years, tick }: Props) {
                 className={styles.axis}
                 textAnchor={year === 0 ? "start" : year === yearTicks.length - 1 ? "end" : "middle"}
               >
-                {year === 0 ? "Départ" : `${year} an${year > 1 ? "s" : ""}`}
+                {year === 0
+                  ? en
+                    ? "Start"
+                    : "Départ"
+                  : en
+                    ? `${year} year${year > 1 ? "s" : ""}`
+                    : `${year} an${year > 1 ? "s" : ""}`}
               </text>
             ))}
             {series.map((s) => (
@@ -147,12 +158,12 @@ export function DiversificationChart({ title, series, years, tick }: Props) {
             }}
           >
             <span className={styles.tipDate}>
-              {hover === 0 ? "Départ" : `Semaine ${hover}`}
+              {hover === 0 ? (en ? "Start" : "Départ") : en ? `Week ${hover}` : `Semaine ${hover}`}
             </span>
             {sorted.map((s) => (
               <span key={s.count} className={styles.tipRow}>
                 <i style={{ background: s.color }} />
-                {s.count} stratégies <b>{pct(s.values[hover], 1)}</b>
+                {s.count} {en ? "strategies" : "stratégies"} <b>{pct(s.values[hover], 1)}</b>
               </span>
             ))}
           </div>

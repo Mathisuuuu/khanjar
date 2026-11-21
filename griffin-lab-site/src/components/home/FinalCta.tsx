@@ -1,29 +1,34 @@
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Mascot } from "@/components/ui/Mascot";
+import { getT } from "@/lib/i18n/server";
 import styles from "./FinalCta.module.css";
 
-export function FinalCta() {
+export async function FinalCta() {
+  const t = await getT();
   return (
     <section className={styles.final}>
       <div className={styles.glow} aria-hidden="true" />
       <div className="container">
         <Mascot width={84} className={styles.mascot} />
         <h2 className={styles.title}>
-          Propose. Valide.
+          {t("Propose. Valide.", "Submit. Validate.")}
           <br />
-          <span>Débloque le bot.</span>
+          <span>{t("Débloque le bot.", "Unlock the bot.")}</span>
         </h2>
         <p className={styles.lead}>
-          Une idée, un script, un papier : tout le monde peut contribuer. Le test est le même pour tous.
+          {t(
+            "Une idée, un script, un papier : tout le monde peut contribuer. Le test est le même pour tous.",
+            "An idea, a script, a paper: anyone can contribute. The test is the same for everyone.",
+          )}
         </p>
         <div className={styles.actions}>
           <Button href="/proposer">
-            Proposer ma stratégie
+            {t("Proposer ma stratégie", "Submit my strategy")}
             <Icon name="arrowRight" />
           </Button>
           <Button href="/a-propos#regles" variant="glass">
-            Lire les règles
+            {t("Lire les règles", "Read the rules")}
           </Button>
         </div>
       </div>

@@ -286,6 +286,10 @@ const MIGRATIONS: string[] = [
     updated_at timestamptz NOT NULL DEFAULT now()
   );
   `,
+
+  /* 14 : date du dernier changement de mot de passe ; les sessions ouvertes avant sont refusées */ `
+  ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at timestamptz;
+  `,
 ];
 
 export async function migrate(db: Database): Promise<void> {

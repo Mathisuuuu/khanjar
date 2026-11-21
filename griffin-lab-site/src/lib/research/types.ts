@@ -64,3 +64,7 @@ export type PostContent = Pick<ResearchPost, "title" | "category" | "summary" | 
 export const kindLabels: Record<GroupKind, string> = { official: "Griffin Lab", community: "Communauté" };
 export const visibilityLabels: Record<Visibility, string> = { public: "Public", private: "Privé" };
 export const roleLabels: Record<MemberRole, string> = { editor: "Peut publier", viewer: "Lecture seule" };
+
+export const kindLabelsEn: Record<GroupKind, string> = { official: "Griffin Lab", community: "Community" };
+export const visibilityLabelsEn: Record<Visibility, string> = { public: "Public", private: "Private" };
+export const roleLabelsEn: Record<MemberRole, string> = { editor: "Can post", viewer: "Read only" };

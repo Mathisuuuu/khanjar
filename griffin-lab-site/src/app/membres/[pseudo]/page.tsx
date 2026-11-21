@@ -7,12 +7,13 @@ import { postsByAuthor } from "@/lib/likes";
 import { canRead } from "@/lib/research/access";
 import { getResearchRepository } from "@/lib/research/repository";
 import { findProfileByPseudo, getVisibility, resolveIdentities, visibilityChoices } from "@/lib/users/identity";
+import { visibilityChoicesEn } from "@/lib/users/visibility-choices";
+import { intlLocale, makeT } from "@/lib/i18n/core";
+import { getLocale, getT } from "@/lib/i18n/server";
 import { getViewer } from "@/lib/viewer";
 import styles from "./membre.module.css";
 
 type Props = { params: Promise<{ pseudo: string }> };
-
-const dateFormat = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 
 /** Le profil n'existe pour la personne qui consulte que si le réglage d'anonymat le permet. */
 async function loadVisible(rawPseudo: string) {
@@ -31,7 +32,8 @@ async function loadVisible(rawPseudo: string) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const found = await loadVisible((await params).pseudo);
-  return { title: found ? found.profile.pseudo : "Membre", robots: { index: false, follow: false } };
+  const t = await getT();
+  return { title: found ? found.profile.pseudo : t("Membre", "Member"), robots: { index: false, follow: false } };
 }
 
 export default async function MemberPage({ params }: Props) {
@@ -39,6 +41,10 @@ export default async function MemberPage({ params }: Props) {
   if (!found) notFound();
   const { profile, viewer, identity } = found;
   const self = viewer?.id === profile.userKey;
+  const locale = await getLocale();
+  const t = makeT(locale);
+  const dateFormat = new Intl.DateTimeFormat(intlLocale(locale), { day: "numeric", month: "long", year: "numeric" });
+  const choices = locale === "en" ? visibilityChoicesEn : visibilityChoices;
 
   const [books, posts, groups, visibility] = await Promise.all([
     listBooksOf(profile.userKey),
@@ -59,32 +65,40 @@ export default async function MemberPage({ params }: Props) {
 
   return (
     <>
-      <PageHeader crumb="Membres" title={profile.pseudo}>
-        Membre depuis le {dateFormat.format(new Date(profile.createdAt))}.
+      <PageHeader crumb={t("Membres", "Members")} title={profile.pseudo}>
+        {t(
+          `Membre depuis le ${dateFormat.format(new Date(profile.createdAt))}.`,
+          `Member since ${dateFormat.format(new Date(profile.createdAt))}.`,
+        )}
       </PageHeader>
 
       <div className={`container ${styles.page}`}>
         {self && visibility && (
           <p className={styles.selfNote}>
-            C&apos;est ton profil. Visibilité : <b>{visibilityChoices[visibility].label}</b>.{" "}
-            <Link href="/compte#visibilite">Modifier</Link>
+            {t("C'est ton profil. Visibilité :", "This is your profile. Visibility:")} <b>{choices[visibility].label}</b>.{" "}
+            <Link href="/compte#visibilite">{t("Modifier", "Change")}</Link>
           </p>
         )}
         {!self && identity.maskedForOthers && (
-          <p className={styles.selfNote}>Ce profil est masqué pour la plupart des visiteurs ; tu le vois grâce à ton rôle.</p>
+          <p className={styles.selfNote}>
+            {t(
+              "Ce profil est masqué pour la plupart des visiteurs ; tu le vois grâce à ton rôle.",
+              "This profile is hidden from most visitors; you can see it because of your role.",
+            )}
+          </p>
         )}
 
         <dl className={styles.stats}>
           <div>
-            <dt>Likes reçus</dt>
+            <dt>{t("Likes reçus", "Likes received")}</dt>
             <dd>{likesReceived}</dd>
           </div>
           <div>
-            <dt>Publications</dt>
+            <dt>{t("Publications", "Posts")}</dt>
             <dd>{visiblePosts.length}</dd>
           </div>
           <div>
-            <dt>Recherches</dt>
+            <dt>{t("Recherches", "Research")}</dt>
             <dd>{contributed.length}</dd>
           </div>
           <div>
@@ -95,9 +109,11 @@ export default async function MemberPage({ params }: Props) {
 
         <div className={styles.columns}>
           <section className={styles.panel} aria-labelledby="contrib-title">
-            <h2 id="contrib-title">Recherches auxquelles {profile.pseudo} a contribué</h2>
+            <h2 id="contrib-title">
+              {t(`Recherches auxquelles ${profile.pseudo} a contribué`, `Research ${profile.pseudo} has contributed to`)}
+            </h2>
             {contributed.length === 0 ? (
-              <p className={styles.empty}>Aucune publication visible pour l&apos;instant.</p>
+              <p className={styles.empty}>{t("Aucune publication visible pour l'instant.", "No visible posts yet.")}</p>
             ) : (
               <ul className={styles.groups}>
                 {contributed.map(({ group, posts: groupPosts }) => (
@@ -123,9 +139,9 @@ export default async function MemberPage({ params }: Props) {
 
           <div className={styles.side}>
             <section className={styles.panel} aria-labelledby="likes-title">
-              <h2 id="likes-title">Les plus aimées</h2>
+              <h2 id="likes-title">{t("Les plus aimées", "Most liked")}</h2>
               {mostLiked.length === 0 ? (
-                <p className={styles.empty}>Pas encore de like.</p>
+                <p className={styles.empty}>{t("Pas encore de like.", "No likes yet.")}</p>
               ) : (
                 <ol className={styles.posts}>
                   {mostLiked.map((post) => (
@@ -141,7 +157,7 @@ export default async function MemberPage({ params }: Props) {
             <section className={styles.panel} aria-labelledby="books-title">
               <h2 id="books-title">Books</h2>
               {books.length === 0 ? (
-                <p className={styles.empty}>Connecté à aucun book.</p>
+                <p className={styles.empty}>{t("Connecté à aucun book.", "Not connected to any book.")}</p>
               ) : (
                 <ul className={styles.books}>
                   {books.map((book) => (

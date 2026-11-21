@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { isBanned } from "@/lib/admin/repository";
 import { configRole, getStoredRole, higherRole, type SiteRole } from "@/lib/admin/roles";
 import { getPseudo } from "@/lib/users/profiles";
+import { getUserRepository } from "@/lib/users/repository";
 
 /** Personne qui consulte la page, déduite de la session. */
 export type Viewer = {
@@ -29,12 +30,24 @@ export type Viewer = {
 export const getViewer = cache(async (): Promise<Viewer | null> => {
   const session = await auth();
   if (!session?.user.id) return null;
-  const { id: rawId, provider, name, email } = session.user;
+  const { id: rawId, provider, name, email, authAt, emailTrusted } = session.user;
   const id = `${provider}:${rawId}`;
-  const [pseudo, banned, stored] = await Promise.all([getPseudo(id), isBanned(id), getStoredRole(id)]);
+  const [pseudo, banned, stored, user] = await Promise.all([
+    getPseudo(id),
+    isBanned(id),
+    getStoredRole(id),
+    provider === "credentials" ? getUserRepository().findById(rawId) : Promise.resolve(null),
+  ]);
   if (banned) return null; // une session encore ouverte ne donne plus accès à rien
+  if (provider === "credentials") {
+    // compte supprimé, ou mot de passe changé depuis l'ouverture de cette session (session volée, appareil perdu…)
+    if (!user) return null;
+    if (user.passwordChangedAt && (authAt ?? 0) * 1000 < Date.parse(user.passwordChangedAt) - 1000) return null;
+  }
 
-  const normalizedEmail = email?.trim().toLowerCase() || null;
+  // compte e-mail : adresse confirmée par le site ; OAuth : seulement si le fournisseur la déclare vérifiée
+  const trusted = provider === "credentials" ? user?.email : emailTrusted ? email : null;
+  const normalizedEmail = trusted?.trim().toLowerCase() || null;
   // administrateur par la configuration : uniquement un compte e-mail, dont l'adresse a été vérifiée par le site
   // (l'e-mail d'un compte Discord ou GitHub n'est pas contrôlé par nous) ; idem pour un admin nommé depuis /admin
   const fixed = configRole(provider, normalizedEmail);

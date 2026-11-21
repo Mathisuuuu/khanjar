@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getT } from "@/lib/i18n/server";
 import { ConfirmButton } from "@/components/research/ConfirmButton";
 import { LikeButton } from "@/components/research/LikeButton";
 import { PostComposer } from "@/components/research/PostComposer";
@@ -32,7 +33,8 @@ async function load(id: string, postId: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id, postId } = await params;
   const found = await load(id, postId);
-  return { title: found ? found.post.title : "Recherches" };
+  const t = await getT();
+  return { title: found ? found.post.title : t("Recherches", "Research") };
 }
 
 /** Une publication en entier ; « Éditer » ouvre le formulaire de modification. */
@@ -41,6 +43,7 @@ export default async function PostPage({ params, searchParams }: Props) {
   const found = await load(id, postId);
   if (!found) notFound();
   const { group, post, viewer } = found;
+  const t = await getT();
 
   const writer = canWrite(group, viewer);
   const editing = writer && edition === "1";
@@ -55,8 +58,8 @@ export default async function PostPage({ params, searchParams }: Props) {
 
   return (
     <div className={`container ${styles.articlePage}`}>
-      <nav className={styles.articleCrumb} aria-label="Fil d'Ariane">
-        <Link href="/recherches">Recherches</Link>
+      <nav className={styles.articleCrumb} aria-label={t("Fil d'Ariane", "Breadcrumb")}>
+        <Link href="/recherches">{t("Recherches", "Research")}</Link>
         <span aria-hidden="true">/</span>
         <Link href={`/recherches/${group.id}`}>{group.name}</Link>
       </nav>
@@ -67,9 +70,12 @@ export default async function PostPage({ params, searchParams }: Props) {
           <div className={styles.articleDanger}>
             <ConfirmButton
               action={deletePost.bind(null, group.id, post.id, true)}
-              confirm={`Supprimer « ${post.title} » et ses pièces jointes ? Cette action est définitive.`}
+              confirm={t(
+                `Supprimer « ${post.title} » et ses pièces jointes ? Cette action est définitive.`,
+                `Delete “${post.title}” and its attachments? This cannot be undone.`,
+              )}
             >
-              Supprimer la publication
+              {t("Supprimer la publication", "Delete the post")}
             </ConfirmButton>
           </div>
         </>
@@ -79,7 +85,7 @@ export default async function PostPage({ params, searchParams }: Props) {
             <PostHeader post={post} author={author} kicker={post.category ?? group.name} as="h1" full />
             {writer && (
               <Button href={`${base}?edition=1`} size="sm" variant="glass">
-                Éditer
+                {t("Éditer", "Edit")}
               </Button>
             )}
           </div>
@@ -102,7 +108,7 @@ export default async function PostPage({ params, searchParams }: Props) {
               liked={like.liked}
               canLike={!!viewer?.hasPseudo}
             />
-            {post.updatedAt && <span className={styles.updated}>Modifiée</span>}
+            {post.updatedAt && <span className={styles.updated}>{t("Modifiée", "Edited")}</span>}
           </div>
         </article>
       )}

@@ -2,29 +2,32 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Board } from "./Board";
+import { getT } from "@/lib/i18n/server";
 import styles from "./Hero.module.css";
 
-export function Hero() {
+export async function Hero() {
+  const t = await getT();
   return (
     <section className={styles.hero}>
       <div className={`container ${styles.copy}`}>
         <Link href="/a-propos#regles" className={`glass ${styles.announce}`}>
-          <span className={styles.new}>Nouveau</span>
-          Les règles de contribution sont en ligne
+          <span className={styles.new}>{t("Nouveau", "New")}</span>
+          {t("Les règles de contribution sont en ligne", "The contribution rules are live")}
           <Icon name="arrowRight" size={16} />
         </Link>
-        <h1 className={styles.title}>Propose l&apos;idée. Débloque le bot.</h1>
+        <h1 className={styles.title}>{t("Propose l'idée. Débloque le bot.", "Submit the idea. Unlock the bot.")}</h1>
         <p className={styles.lead}>
-          Griffin Lab est un bot de trading construit par sa communauté. Ta stratégie passe le même test que toutes
-          les autres ; si elle est validée, elle entre dans le book et tu améliores tes gains et baisses tes pertes
-          gratuitement.
+          {t(
+            "Griffin Lab est un bot de trading construit par sa communauté. Ta stratégie passe le même test que toutes les autres ; si elle est validée, elle entre dans le book et tu améliores tes gains et baisses tes pertes gratuitement.",
+            "Griffin Lab is a trading bot built by its community. Your strategy goes through the same test as every other one; if it is validated, it joins the book and you increase your gains and reduce your losses for free.",
+          )}
         </p>
         <div className={styles.actions}>
           <Button href="/proposer" size="lg">
-            Proposer une stratégie
+            {t("Proposer une stratégie", "Submit a strategy")}
           </Button>
           <Button href="/books" variant="glass" size="lg">
-            Voir les books
+            {t("Voir les books", "See the books")}
           </Button>
         </div>
       </div>

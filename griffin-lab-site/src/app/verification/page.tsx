@@ -5,9 +5,13 @@ import { confirmEmail, resendVerification, verifyCode } from "@/app/connexion/ac
 import { CodeForm } from "@/components/auth/CodeForm";
 import { signInSchema } from "@/lib/users/schema";
 import { VERIFY_COOKIE } from "@/lib/users/verify-cookie";
+import { getT } from "@/lib/i18n/server";
 import styles from "./verification.module.css";
 
-export const metadata: Metadata = { title: "Vérifier mon adresse", robots: { index: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t("Vérifier mon adresse", "Verify my email"), robots: { index: false } };
+}
 
 type Props = { searchParams: Promise<{ token?: string; invalide?: string; attente?: string }> };
 
@@ -35,6 +39,7 @@ function CheckIcon() {
  */
 export default async function VerificationPage({ searchParams }: Props) {
   const { token, invalide, attente } = await searchParams;
+  const t = await getT();
   const pending = signInSchema.shape.email.safeParse((await cookies()).get(VERIFY_COOKIE)?.value);
   const email = pending.success ? pending.data : undefined;
 
@@ -46,12 +51,12 @@ export default async function VerificationPage({ searchParams }: Props) {
             <CheckIcon />
           </div>
           <div className={styles.head}>
-            <h1>Dernière étape</h1>
-            <p>Confirme ton adresse et ton compte Griffin Lab est activé.</p>
+            <h1>{t("Dernière étape", "Last step")}</h1>
+            <p>{t("Confirme ton adresse et ton compte Griffin Lab est activé.", "Confirm your email and your Griffin Lab account is activated.")}</p>
           </div>
           <form action={confirmEmail.bind(null, token)} className={styles.single}>
             <button type="submit" className={styles.primary}>
-              Confirmer mon adresse
+              {t("Confirmer mon adresse", "Confirm my email")}
             </button>
           </form>
         </div>
@@ -66,18 +71,27 @@ export default async function VerificationPage({ searchParams }: Props) {
           <MailIcon />
         </div>
         <div className={styles.head}>
-          <h1>{invalide ? "Lien expiré" : "Vérifie ta boîte mail"}</h1>
+          <h1>{invalide ? t("Lien expiré", "Link expired") : t("Vérifie ta boîte mail", "Check your inbox")}</h1>
           <p>
             {invalide
-              ? "Ce lien a expiré ou a déjà servi. Entre le code reçu par e-mail, ou demande-en un nouveau."
+              ? t(
+                  "Ce lien a expiré ou a déjà servi. Entre le code reçu par e-mail, ou demande-en un nouveau.",
+                  "This link has expired or has already been used. Enter the code you received by email, or request a new one.",
+                )
               : attente
-                ? "Ton compte n'est pas encore activé. Entre le code à 6 chiffres reçu par e-mail."
-                : "On t'a envoyé un code à 6 chiffres. Entre-le ci-dessous pour activer ton compte."}
+                ? t(
+                    "Ton compte n'est pas encore activé. Entre le code à 6 chiffres reçu par e-mail.",
+                    "Your account isn't activated yet. Enter the 6-digit code you received by email.",
+                  )
+                : t(
+                    "On t'a envoyé un code à 6 chiffres. Entre-le ci-dessous pour activer ton compte.",
+                    "We sent you a 6-digit code. Enter it below to activate your account.",
+                  )}
           </p>
         </div>
         <CodeForm email={email} action={verifyCode} resend={resendVerification} />
         <p className={styles.footer}>
-          Déjà vérifié ? <Link href="/connexion">Se connecter</Link>
+          {t("Déjà vérifié ?", "Already verified?")} <Link href="/connexion">{t("Se connecter", "Sign in")}</Link>
         </p>
       </div>
     </div>

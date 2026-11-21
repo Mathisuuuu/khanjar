@@ -1,5 +1,6 @@
 import "server-only";
 import { getDb } from "@/lib/db";
+import { getLocale } from "@/lib/i18n/server";
 import type { Viewer } from "@/lib/viewer";
 
 /**
@@ -56,6 +57,7 @@ export async function resolveIdentities(
   if (unique.length === 0) return result;
 
   const db = await getDb();
+  const anonymousName = (await getLocale()) === "en" ? "Anonymous" : ANONYMOUS_NAME;
   const profiles = await db.query<ProfileRow>(
     `SELECT p.user_key, p.pseudo, p.visibility FROM profiles p
      WHERE p.user_key = ANY($1) AND NOT EXISTS (SELECT 1 FROM banned_accounts b WHERE b.user_key = p.user_key)`,
@@ -69,7 +71,7 @@ export async function resolveIdentities(
   for (const key of unique) {
     const profile = byKey.get(key);
     if (!profile) {
-      result.set(key, { name: fallbackNames[key] ?? ANONYMOUS_NAME, href: null, anonymous: !fallbackNames[key], maskedForOthers: false });
+      result.set(key, { name: fallbackNames[key] ?? anonymousName, href: null, anonymous: !fallbackNames[key], maskedForOthers: false });
       continue;
     }
     const self = viewer?.id === key;
@@ -83,7 +85,7 @@ export async function resolveIdentities(
       key,
       visible
         ? { name: profile.pseudo, href: profileHref(profile.pseudo), anonymous: false, maskedForOthers: masked }
-        : { name: ANONYMOUS_NAME, href: null, anonymous: true, maskedForOthers: false },
+        : { name: anonymousName, href: null, anonymous: true, maskedForOthers: false },
     );
   }
   return result;

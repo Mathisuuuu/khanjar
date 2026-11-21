@@ -12,7 +12,8 @@ import { canManage, canRead, canWrite, roleOf } from "@/lib/research/access";
 import { likesFor } from "@/lib/likes";
 import { getResearchRepository } from "@/lib/research/repository";
 import { resolveIdentities } from "@/lib/users/identity";
-import { kindLabels, roleLabels, visibilityLabels } from "@/lib/research/types";
+import { kindLabels, kindLabelsEn, roleLabels, roleLabelsEn, visibilityLabels, visibilityLabelsEn } from "@/lib/research/types";
+import { getT } from "@/lib/i18n/server";
 import { getViewer } from "@/lib/viewer";
 import { createPost, deleteGroup, removeMember, updateGroupSettings } from "../actions";
 
@@ -27,7 +28,8 @@ async function loadReadable(id: string) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const found = await loadReadable((await params).id);
-  return { title: found ? found.group.name : "Recherches" };
+  const t = await getT();
+  return { title: found ? found.group.name : t("Recherches", "Research") };
 }
 
 export default async function GroupPage({ params, searchParams }: Props) {
@@ -35,6 +37,10 @@ export default async function GroupPage({ params, searchParams }: Props) {
   const found = await loadReadable(id);
   if (!found) notFound();
   const { group, viewer } = found;
+  const t = await getT();
+  const kinds = t(kindLabels, kindLabelsEn);
+  const visibilities = t(visibilityLabels, visibilityLabelsEn);
+  const roles = t(roleLabels, roleLabelsEn);
 
   const posts = await getResearchRepository().listPosts(group.id);
   const [likes, identities] = await Promise.all([
@@ -57,24 +63,29 @@ export default async function GroupPage({ params, searchParams }: Props) {
 
   return (
     <>
-      <PageHeader crumb="Recherches" title={group.name}>
-        {group.description || `Groupe ${visibilityLabels[group.visibility].toLowerCase()} créé par ${ownerName}.`}
+      <PageHeader crumb={t("Recherches", "Research")} title={group.name}>
+        {group.description ||
+          t(
+            `Groupe ${visibilityLabels[group.visibility].toLowerCase()} créé par ${ownerName}.`,
+            `${visibilityLabelsEn[group.visibility]} group created by ${ownerName}.`,
+          )}
       </PageHeader>
 
       <div className={`container ${styles.groupLayout}`}>
         <div className={styles.feed}>
           <div className={styles.feedBar}>
             <h2>
-              {posts.length} publication{posts.length > 1 ? "s" : ""}
+              {posts.length} {t("publication", "post")}
+              {posts.length > 1 ? "s" : ""}
             </h2>
             {writer &&
               (editing ? (
                 <Button href={`/recherches/${group.id}`} size="sm">
-                  Terminer l&apos;édition
+                  {t("Terminer l'édition", "Done editing")}
                 </Button>
               ) : (
                 <Button href={`/recherches/${group.id}?edition=1`} size="sm" variant="glass">
-                  Éditer
+                  {t("Éditer", "Edit")}
                 </Button>
               ))}
           </div>
@@ -95,12 +106,12 @@ export default async function GroupPage({ params, searchParams }: Props) {
             ))
           ) : (
             <div className={styles.emptyCard}>
-              <b>Aucune publication</b>
+              <b>{t("Aucune publication", "No posts")}</b>
               {writer
                 ? editing
-                  ? "Publie la première : un texte, un PDF, un script…"
-                  : "Clique sur « Éditer » pour publier la première."
-                : "Ce groupe n'a encore rien publié."}
+                  ? t("Publie la première : un texte, un PDF, un script…", "Publish the first one: a text, a PDF, a script…")
+                  : t("Clique sur « Éditer » pour publier la première.", "Click “Edit” to publish the first one.")
+                : t("Ce groupe n'a encore rien publié.", "This group hasn't published anything yet.")}
             </div>
           )}
         </div>
@@ -108,46 +119,47 @@ export default async function GroupPage({ params, searchParams }: Props) {
         <aside className={styles.side}>
           <section className={styles.panel} aria-labelledby="about-title">
             <div className={styles.panelHead}>
-              <h2 id="about-title">Le groupe</h2>
+              <h2 id="about-title">{t("Le groupe", "The group")}</h2>
             </div>
             <div className={styles.panelBody}>
               <div className={styles.badges}>
                 <span className={`${styles.badge} ${group.kind === "official" ? styles.official : ""}`}>
-                  {kindLabels[group.kind]}
+                  {kinds[group.kind]}
                 </span>
                 <span className={`${styles.badge} ${group.visibility === "private" ? styles.private : ""}`}>
-                  {visibilityLabels[group.visibility]}
+                  {visibilities[group.visibility]}
                 </span>
               </div>
               <p className={styles.note}>
-                Propriétaire : {ownerName}
+                {t("Propriétaire :", "Owner:")} {ownerName}
                 <br />
-                {group.members.length} membre{group.members.length > 1 ? "s" : ""} · {posts.length} publication
+                {group.members.length} {t("membre", "member")}
+                {group.members.length > 1 ? "s" : ""} · {posts.length} {t("publication", "post")}
                 {posts.length > 1 ? "s" : ""}
                 {role && role !== "owner" && (
                   <>
                     <br />
-                    Ton rôle : {roleLabels[role]}
+                    {t("Ton rôle :", "Your role:")} {roles[role]}
                   </>
                 )}
                 {viewer?.isAdmin && role !== "owner" && (
                   <>
                     <br />
-                    Accès administrateur : tu peux tout modifier et supprimer.
+                    {t("Accès administrateur : tu peux tout modifier et supprimer.", "Admin access: you can edit and delete everything.")}
                   </>
                 )}
               </p>
               {!viewer && (
                 <Button href={`/connexion?callbackUrl=/recherches/${group.id}`} size="sm" variant="glass">
-                  Se connecter
+                  {t("Se connecter", "Sign in")}
                 </Button>
               )}
               {role && role !== "owner" && viewer?.email && (
                 <ConfirmButton
                   action={removeMember.bind(null, group.id, viewer.email)}
-                  confirm="Quitter ce groupe ? Tu n'y auras plus accès s'il est privé."
+                  confirm={t("Quitter ce groupe ? Tu n'y auras plus accès s'il est privé.", "Leave this group? You'll lose access if it's private.")}
                 >
-                  Quitter le groupe
+                  {t("Quitter le groupe", "Leave the group")}
                 </ConfirmButton>
               )}
             </div>
@@ -159,19 +171,22 @@ export default async function GroupPage({ params, searchParams }: Props) {
 
               <section className={styles.panel} aria-labelledby="settings-title">
                 <div className={styles.panelHead}>
-                  <h2 id="settings-title">Réglages</h2>
+                  <h2 id="settings-title">{t("Réglages", "Settings")}</h2>
                 </div>
                 <div className={styles.panelBody}>
                   <GroupForm
                     action={updateGroupSettings.bind(null, group.id)}
                     initial={{ name: group.name, description: group.description, visibility: group.visibility }}
-                    submitLabel="Enregistrer"
+                    submitLabel={t("Enregistrer", "Save")}
                   />
                   <ConfirmButton
                     action={deleteGroup.bind(null, group.id)}
-                    confirm={`Supprimer « ${group.name} », ses publications et ses fichiers ? Cette action est définitive.`}
+                    confirm={t(
+                      `Supprimer « ${group.name} », ses publications et ses fichiers ? Cette action est définitive.`,
+                      `Delete “${group.name}”, its posts and its files? This cannot be undone.`,
+                    )}
                   >
-                    Supprimer le groupe
+                    {t("Supprimer le groupe", "Delete the group")}
                   </ConfirmButton>
                 </div>
               </section>

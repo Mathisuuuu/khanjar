@@ -2,6 +2,7 @@ import { Section } from "@/components/ui/Section";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { PointerHighlight } from "@/components/ui/PointerHighlight";
 import { contributions, type Contribution } from "@/content/home";
+import { getT } from "@/lib/i18n/server";
 import { cn } from "@/lib/utils";
 import styles from "./Concept.module.css";
 
@@ -34,16 +35,22 @@ const cardStyles: Record<
   },
 };
 
-export function Concept() {
+export async function Concept() {
+  const t = await getT();
   return (
     <Section id="concept">
-      <SectionHeading kicker="01 · Le concept" title="Un bot qui ne dépend pas d'un seul trader.">
-        Griffin Lab s&apos;enrichit des meilleures idées de sa communauté, toutes passées au même filtre automatique.
-        Tu peux contribuer de trois façons, seules ou combinées.
+      <SectionHeading
+        kicker={t("01 · Le concept", "01 · The concept")}
+        title={t("Un bot qui ne dépend pas d'un seul trader.", "A bot that doesn't depend on a single trader.")}
+      >
+        {t(
+          "Griffin Lab s'enrichit des meilleures idées de sa communauté, toutes passées au même filtre automatique. Tu peux contribuer de trois façons, seules ou combinées.",
+          "Griffin Lab grows with the best ideas from its community, all run through the same automatic filter. You can contribute in three ways, alone or combined.",
+        )}
       </SectionHeading>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {contributions.map((item) => {
+        {contributions(t).map((item) => {
           const style = cardStyles[item.key];
           return (
             <article key={item.key} className="rounded-md py-3 sm:p-6">

@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { BrandIcon } from "@/components/ui/BrandIcon";
 import { Button } from "@/components/ui/Button";
 import { Mascot } from "@/components/ui/Mascot";
+import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
+import { useT } from "@/components/i18n/LocaleProvider";
 import { mainNav, site } from "@/content/site";
 import styles from "./Header.module.css";
 
@@ -17,6 +19,8 @@ type HeaderUser = { name?: string | null; email?: string | null; image?: string 
 
 export function Header({ user }: { user: HeaderUser }) {
   const pathname = usePathname();
+  const t = useT();
+  const nav = mainNav(t);
   const [scrolled, setScrolled] = useState(false);
   // menu des petits écrans (téléphone, tablette) : fermé à chaque changement de page
   const [menuOpen, setMenuOpen] = useState(false);
@@ -38,14 +42,14 @@ export function Header({ user }: { user: HeaderUser }) {
   return (
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ""}`}>
       <div className={`container ${styles.inner}`}>
-        <Link href="/" className={styles.logo} aria-label="Griffin Lab, accueil">
+        <Link href="/" className={styles.logo} aria-label={t("Griffin Lab, accueil", "Griffin Lab, home")}>
           <Mascot width={18} />
           GRIFFIN<span className={styles.dot}>·</span>LAB
         </Link>
 
-        <nav aria-label="Navigation principale" className={styles.nav}>
+        <nav aria-label={t("Navigation principale", "Main navigation")} className={styles.nav}>
           <ul className={styles.links}>
-            {mainNav.map((link) => (
+            {nav.map((link) => (
               <li key={link.href}>
                 <Link href={link.href} aria-current={pathname === link.href ? "page" : undefined}>
                   {link.label}
@@ -56,20 +60,22 @@ export function Header({ user }: { user: HeaderUser }) {
         </nav>
 
         <div className={styles.actions}>
+          <LanguageSwitch className={`glass ${styles.round} ${styles.lang}`} />
+
           {/* rond « liquid glass » pour mettre le Discord en avant */}
           <a
             href={site.discordUrl}
             target="_blank"
             rel="noopener noreferrer"
             className={`glass ${styles.round} ${styles.discord}`}
-            aria-label="Rejoindre le Discord Griffin Lab"
-            title="Rejoindre le Discord"
+            aria-label={t("Rejoindre le Discord Griffin Lab", "Join the Griffin Lab Discord")}
+            title={t("Rejoindre le Discord", "Join the Discord")}
           >
             <BrandIcon name="discord" size={20} />
           </a>
 
           {user && (
-            <Link href="/compte" className={`glass ${styles.round} ${styles.avatar}`} aria-label="Mon compte" title="Mon compte">
+            <Link href="/compte" className={`glass ${styles.round} ${styles.avatar}`} aria-label={t("Mon compte", "My account")} title={t("Mon compte", "My account")}>
               {user.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={user.image} alt="" />
@@ -81,13 +87,13 @@ export function Header({ user }: { user: HeaderUser }) {
 
           {/* déconnecté : « Proposer » passe d'abord par la connexion, puis revient sur /proposer */}
           <Button href={user ? "/proposer" : PROPOSE_SIGN_IN} variant="glass" className={styles.cta}>
-            Proposer
+            {t("Proposer", "Submit")}
           </Button>
 
           <button
             type="button"
             className={`glass ${styles.round} ${styles.menuButton}`}
-            aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-label={menuOpen ? t("Fermer le menu", "Close menu") : t("Ouvrir le menu", "Open menu")}
             aria-expanded={menuOpen}
             aria-controls="menu-mobile"
             onClick={() => setMenuOpen((open) => !open)}
@@ -106,7 +112,7 @@ export function Header({ user }: { user: HeaderUser }) {
       {menuOpen && (
         <nav id="menu-mobile" aria-label="Menu" className={styles.mobileMenu}>
           <ul className="container">
-            {mainNav.map((link) => (
+            {nav.map((link) => (
               <li key={link.href}>
                 <Link href={link.href} aria-current={pathname === link.href ? "page" : undefined}>
                   {link.label}
@@ -116,16 +122,19 @@ export function Header({ user }: { user: HeaderUser }) {
             <li>
               {user ? (
                 <Link href="/compte" aria-current={pathname === "/compte" ? "page" : undefined}>
-                  Mon compte
+                  {t("Mon compte", "My account")}
                 </Link>
               ) : (
-                <Link href="/connexion">Se connecter</Link>
+                <Link href="/connexion">{t("Se connecter", "Sign in")}</Link>
               )}
             </li>
             <li>
               <a href={site.discordUrl} target="_blank" rel="noopener noreferrer">
                 Discord
               </a>
+            </li>
+            <li>
+              <LanguageSwitch className={styles.menuLang} label />
             </li>
           </ul>
         </nav>

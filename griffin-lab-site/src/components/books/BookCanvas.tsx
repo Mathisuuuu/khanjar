@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
+import { useLocale, useT } from "@/components/i18n/LocaleProvider";
+import { formatNumber, formatPercent } from "@/lib/format";
 import styles from "./Books.module.css";
 import type { BookStats, CanvasGroup, CanvasMember } from "./types";
 
@@ -41,8 +43,6 @@ const BOOK_ID = "__book";
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const short = (text: string, max = 18) => (text.length > max ? `${text.slice(0, max - 1)}…` : text);
-const percent = (value: number) =>
-  `${value > 0 ? "+" : ""}${value.toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`;
 
 /** Positions de départ : membres en cercle autour du book, recherches sur un cercle extérieur, face à leurs auteurs. */
 function initialPositions(members: CanvasMember[], groups: CanvasGroup[], links: Props["links"]) {
@@ -71,6 +71,9 @@ function initialPositions(members: CanvasMember[], groups: CanvasGroup[], links:
  * se déplacer.
  */
 export function BookCanvas({ name, color, members, groups, links, showResearch, stats }: Props) {
+  const t = useT();
+  const locale = useLocale();
+  const percent = (value: number) => formatPercent(value, 1, true, locale);
   const router = useRouter();
   const svgRef = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -407,7 +410,7 @@ export function BookCanvas({ name, color, members, groups, links, showResearch, 
   const at = (id: string) => nodes.current.get(id);
   const book = at(BOOK_ID);
   const bookScreen = book ? { x: book.x * view.k + view.x, y: (book.y - BOOK_RADIUS) * view.k + view.y } : null;
-  const statsLabel = stats ? `, rendement du mois ${percent(stats.monthReturn)}` : "";
+  const statsLabel = stats ? t(`, rendement du mois ${percent(stats.monthReturn)}`, `, monthly return ${percent(stats.monthReturn)}`) : "";
 
   return (
     <div className={styles.canvasWrap} ref={wrapRef}>
@@ -415,7 +418,10 @@ export function BookCanvas({ name, color, members, groups, links, showResearch, 
         ref={svgRef}
         className={styles.canvas}
         role="group"
-        aria-label={`Canevas du book ${name} : ${members.length} membre${members.length > 1 ? "s" : ""}. Glisse un rond pour le déplacer, double-clic pour le libérer. Touches + et − pour zoomer, 0 pour recentrer.`}
+        aria-label={t(
+          `Canevas du book ${name} : ${members.length} membre${members.length > 1 ? "s" : ""}. Glisse un rond pour le déplacer, double-clic pour le libérer. Touches + et − pour zoomer, 0 pour recentrer.`,
+          `Canvas of book ${name}: ${members.length} member${members.length > 1 ? "s" : ""}. Drag a circle to move it, double-click to release it. Keys + and − to zoom, 0 to recenter.`,
+        )}
         tabIndex={0}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -466,7 +472,7 @@ export function BookCanvas({ name, color, members, groups, links, showResearch, 
                   className={styles.groupNode}
                   role="link"
                   tabIndex={0}
-                  aria-label={`Recherche ${group.name}`}
+                  aria-label={t(`Recherche ${group.name}`, `Research ${group.name}`)}
                   onPointerDown={onNodeDown(group.id)}
                   onDoubleClick={() => unpin(group.id)}
                   onKeyDown={onKey(group.href)}
@@ -483,7 +489,7 @@ export function BookCanvas({ name, color, members, groups, links, showResearch, 
           {members.map((member) => {
             const p = at(member.id);
             if (!p) return null;
-            const label = member.self ? `${member.name} (toi)` : member.name;
+            const label = member.self ? `${member.name} ${t("(toi)", "(you)")}` : member.name;
             return (
               <g
                 key={member.id}
@@ -492,7 +498,7 @@ export function BookCanvas({ name, color, members, groups, links, showResearch, 
                 onPointerDown={onNodeDown(member.id)}
                 onDoubleClick={() => unpin(member.id)}
                 {...(member.href
-                  ? { role: "link", tabIndex: 0, "aria-label": `Profil de ${member.name}`, onKeyDown: onKey(member.href) }
+                  ? { role: "link", tabIndex: 0, "aria-label": t(`Profil de ${member.name}`, `${member.name}'s profile`), onKeyDown: onKey(member.href) }
                   : { "aria-label": label })}
               >
                 <circle r={MEMBER_RADIUS} stroke={member.anonymous ? undefined : color} />
@@ -547,38 +553,39 @@ export function BookCanvas({ name, color, members, groups, links, showResearch, 
           {stats ? (
             <>
               <span className={styles.tooltipMain}>
-                Rendement du mois{" "}
+                {t("Rendement du mois", "Monthly return")}{" "}
                 <em className={stats.monthReturn >= 0 ? styles.up : styles.down}>{percent(stats.monthReturn)}</em>
               </span>
               {stats.weekReturn !== undefined && (
                 <span>
-                  Sur 7 jours{" "}
+                  {t("Sur 7 jours", "Over 7 days")}{" "}
                   <em className={stats.weekReturn >= 0 ? styles.up : styles.down}>{percent(stats.weekReturn)}</em>
                 </span>
               )}
               <span>
-                Sharpe {stats.sharpe.toLocaleString("fr-FR")} · DD max {percent(stats.maxDrawdown)} · {stats.strategies} stratégies
+                Sharpe {formatNumber(stats.sharpe, 2, locale)} · {t("DD max", "Max DD")} {percent(stats.maxDrawdown)} · {stats.strategies}{" "}
+                {t("stratégies", "strategies")}
               </span>
             </>
           ) : (
-            <span>Pas encore de chiffres pour ce book.</span>
+            <span>{t("Pas encore de chiffres pour ce book.", "No figures for this book yet.")}</span>
           )}
         </div>
       )}
 
       <div className={styles.zoom} role="toolbar" aria-label="Zoom">
-        <button type="button" onClick={() => zoomAt(1.25, { x: size.w / 2, y: size.h / 2 })} aria-label="Zoomer">
+        <button type="button" onClick={() => zoomAt(1.25, { x: size.w / 2, y: size.h / 2 })} aria-label={t("Zoomer", "Zoom in")}>
           +
         </button>
-        <button type="button" onClick={() => zoomAt(1 / 1.25, { x: size.w / 2, y: size.h / 2 })} aria-label="Dézoomer">
+        <button type="button" onClick={() => zoomAt(1 / 1.25, { x: size.w / 2, y: size.h / 2 })} aria-label={t("Dézoomer", "Zoom out")}>
           −
         </button>
-        <button type="button" onClick={fit} aria-label="Recentrer" className={styles.fit}>
+        <button type="button" onClick={fit} aria-label={t("Recentrer", "Recenter")} className={styles.fit}>
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
             <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </button>
-        <span className={styles.zoomLevel}>{Math.round(view.k * 100)} %</span>
+        <span className={styles.zoomLevel}>{Math.round(view.k * 100)}{locale === "en" ? "" : " "}%</span>
       </div>
     </div>
   );

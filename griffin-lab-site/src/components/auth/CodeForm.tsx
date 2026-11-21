@@ -10,6 +10,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
+import { useMessage, useT } from "@/components/i18n/LocaleProvider";
 import type { AuthFormState, CodeFormState } from "@/app/connexion/actions";
 import styles from "./CodeForm.module.css";
 
@@ -32,7 +33,9 @@ type Props = {
  * collage du code entier, retour arrière, envoi automatique au 6e chiffre
  * (sauf s'il reste des champs à remplir).
  */
-export function CodeForm({ email: initialEmail, action: submit, resend: resendFn, submitLabel = "Valider le code", children }: Props) {
+export function CodeForm({ email: initialEmail, action: submit, resend: resendFn, submitLabel, children }: Props) {
+  const t = useT();
+  const message = useMessage();
   const [state, action, pending] = useActionState<CodeFormState, FormData>(submit, {});
   const [resendState, resendAction, resending] = useActionState<AuthFormState, FormData>(resendFn, {});
   const [digits, setDigits] = useState<string[]>(() => Array(LENGTH).fill(""));
@@ -115,7 +118,7 @@ export function CodeForm({ email: initialEmail, action: submit, resend: resendFn
       <form ref={form} action={action} className={styles.form}>
         {editingEmail ? (
           <div className={styles.emailField}>
-            <label htmlFor="verify-email">Adresse e-mail du compte</label>
+            <label htmlFor="verify-email">{t("Adresse e-mail du compte", "Account email address")}</label>
             <input
               id="verify-email"
               name="email"
@@ -124,16 +127,16 @@ export function CodeForm({ email: initialEmail, action: submit, resend: resendFn
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="toi@exemple.com"
+              placeholder={t("toi@exemple.com", "you@example.com")}
             />
           </div>
         ) : (
           <>
             <input type="hidden" name="email" value={email} />
             <p className={styles.sentTo}>
-              Code envoyé à <strong>{email}</strong>
+              {t("Code envoyé à", "Code sent to")} <strong>{email}</strong>
               <button type="button" onClick={() => setEditingEmail(true)}>
-                Modifier
+                {t("Modifier", "Change")}
               </button>
             </p>
           </>
@@ -141,7 +144,7 @@ export function CodeForm({ email: initialEmail, action: submit, resend: resendFn
 
         <input type="hidden" name="code" value={code} />
         <fieldset className={styles.boxes} disabled={pending}>
-          <legend className={styles.srOnly}>Code de vérification à 6 chiffres</legend>
+          <legend className={styles.srOnly}>{t("Code de vérification à 6 chiffres", "6-digit verification code")}</legend>
           {digits.map((digit, index) => (
             <input
               key={index}
@@ -153,7 +156,7 @@ export function CodeForm({ email: initialEmail, action: submit, resend: resendFn
               autoComplete={index === 0 ? "one-time-code" : "off"}
               pattern="[0-9]*"
               maxLength={index === 0 ? LENGTH : 1}
-              aria-label={`Chiffre ${index + 1}`}
+              aria-label={t(`Chiffre ${index + 1}`, `Digit ${index + 1}`)}
               aria-invalid={!!state.error && !state.keepCode}
               value={digit}
               onChange={(event) => {
@@ -178,30 +181,34 @@ export function CodeForm({ email: initialEmail, action: submit, resend: resendFn
 
         {state.error && (
           <p className={styles.error} role="alert">
-            {state.error}
+            {message(state.error)}
           </p>
         )}
 
         <button type="submit" className={styles.submit} disabled={pending || code.length !== LENGTH || !email}>
-          {pending ? "Un instant…" : submitLabel}
+          {pending ? t("Un instant…", "One moment…") : (submitLabel ?? t("Valider le code", "Confirm code"))}
         </button>
       </form>
 
       <div className={styles.resend}>
         {resendState.notice && !resendState.error && (
           <p className={styles.notice} role="status">
-            Nouveau code envoyé. Pense à regarder dans les spams.
+            {t("Nouveau code envoyé. Pense à regarder dans les spams.", "New code sent. Remember to check your spam folder.")}
           </p>
         )}
         {resendState.error && (
           <p className={styles.error} role="alert">
-            {resendState.error}
+            {message(resendState.error)}
           </p>
         )}
         <p>
-          Rien reçu ?{" "}
+          {t("Rien reçu ?", "Nothing received?")}{" "}
           <button type="button" onClick={resend} disabled={resending || cooldown > 0 || !email}>
-            {resending ? "Envoi…" : cooldown > 0 ? `Renvoyer dans ${cooldown} s` : "Renvoyer un code"}
+            {resending
+              ? t("Envoi…", "Sending…")
+              : cooldown > 0
+                ? t(`Renvoyer dans ${cooldown} s`, `Resend in ${cooldown}s`)
+                : t("Renvoyer un code", "Resend a code")}
           </button>
         </p>
       </div>

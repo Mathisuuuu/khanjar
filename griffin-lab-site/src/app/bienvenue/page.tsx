@@ -4,9 +4,13 @@ import styles from "@/components/auth/AuthPanel.module.css";
 import { PseudoForm } from "@/components/auth/PseudoForm";
 import { Mascot } from "@/components/ui/Mascot";
 import { safeCallbackUrl } from "@/lib/safe-redirect";
+import { getT } from "@/lib/i18n/server";
 import { getViewer } from "@/lib/viewer";
 
-export const metadata: Metadata = { title: "Choisis ton pseudo", robots: { index: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t("Choisis ton pseudo", "Choose your username"), robots: { index: false } };
+}
 
 type Props = { searchParams: Promise<{ callbackUrl?: string; changer?: string }> };
 
@@ -31,6 +35,7 @@ export default async function BienvenuePage({ searchParams }: Props) {
   if (!viewer) redirect(`/connexion?callbackUrl=${encodeURIComponent(callbackUrl)}`);
 
   const changing = params.changer === "1";
+  const t = await getT();
   if (viewer.hasPseudo && !changing) redirect(callbackUrl);
 
   return (
@@ -38,17 +43,20 @@ export default async function BienvenuePage({ searchParams }: Props) {
       <div className={styles.card}>
         <div className={styles.top}>
           <Mascot width={34} />
-          <h1>{changing ? "Change de pseudo" : "Bienvenue sur Griffin Lab"}</h1>
+          <h1>{changing ? t("Change de pseudo", "Change your username") : t("Bienvenue sur Griffin Lab", "Welcome to Griffin Lab")}</h1>
           <p>
             {changing
-              ? "Ton nouveau pseudo s'affichera sur tes prochaines propositions et publications."
-              : "Choisis le pseudo que les autres membres verront."}
+              ? t(
+                  "Ton nouveau pseudo s'affichera sur tes prochaines propositions et publications.",
+                  "Your new username will appear on your next submissions and posts.",
+                )
+              : t("Choisis le pseudo que les autres membres verront.", "Choose the username other members will see.")}
           </p>
         </div>
         <PseudoForm
           callbackUrl={callbackUrl}
           suggestion={viewer.hasPseudo ? viewer.name : suggestPseudo(viewer.name)}
-          submitLabel={changing ? "Enregistrer" : "Continuer"}
+          submitLabel={changing ? t("Enregistrer", "Save") : t("Continuer", "Continue")}
         />
       </div>
     </div>

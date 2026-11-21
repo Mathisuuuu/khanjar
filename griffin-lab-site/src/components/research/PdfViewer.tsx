@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { openPdf, pdfUrl, type PdfFile } from "@/lib/research/pdf-client";
+import { useT } from "@/components/i18n/LocaleProvider";
 import styles from "./Research.module.css";
 
 type PdfDoc = Awaited<ReturnType<typeof openPdf>>["doc"];
@@ -18,6 +19,7 @@ type PdfViewerProps = {
  * n'affichent pas les PDF dans une iframe.
  */
 export function PdfViewer({ files, startIndex = 0, onClose }: PdfViewerProps) {
+  const t = useT();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(startIndex);
@@ -73,7 +75,7 @@ export function PdfViewer({ files, startIndex = 0, onClose }: PdfViewerProps) {
     <dialog
       ref={dialogRef}
       className={styles.viewer}
-      aria-label={`Lecteur PDF : ${file.name}`}
+      aria-label={t(`Lecteur PDF : ${file.name}`, `PDF reader: ${file.name}`)}
       onClose={onClose}
       onClick={(event) => {
         // clic sur le fond : ferme
@@ -82,7 +84,7 @@ export function PdfViewer({ files, startIndex = 0, onClose }: PdfViewerProps) {
     >
       <div className={styles.viewerHead}>
         {files.length > 1 ? (
-          <div className={styles.viewerTabs} role="tablist" aria-label="Fichiers PDF">
+          <div className={styles.viewerTabs} role="tablist" aria-label={t("Fichiers PDF", "PDF files")}>
             {files.map((f, i) => (
               <button
                 key={f.id}
@@ -101,21 +103,21 @@ export function PdfViewer({ files, startIndex = 0, onClose }: PdfViewerProps) {
         )}
         <div className={styles.viewerActions}>
           <a href={pdfUrl(file.id)} download={file.name} className={styles.danger}>
-            Télécharger
+            {t("Télécharger", "Download")}
           </a>
           <button type="button" className={styles.danger} onClick={() => dialogRef.current?.close()}>
-            Fermer
+            {t("Fermer", "Close")}
           </button>
         </div>
       </div>
 
       <div ref={bodyRef} className={styles.viewerBody}>
-        {state === "loading" && <p className={styles.note}>Chargement du PDF…</p>}
+        {state === "loading" && <p className={styles.note}>{t("Chargement du PDF…", "Loading PDF…")}</p>}
         {state === "error" && (
           <p className={styles.note}>
-            Ce PDF ne peut pas être affiché ici.{" "}
+            {t("Ce PDF ne peut pas être affiché ici.", "This PDF can't be displayed here.")}{" "}
             <a href={pdfUrl(file.id)} target="_blank" rel="noopener" className={styles.link}>
-              L&apos;ouvrir dans un nouvel onglet
+              {t("L'ouvrir dans un nouvel onglet", "Open it in a new tab")}
             </a>
           </p>
         )}

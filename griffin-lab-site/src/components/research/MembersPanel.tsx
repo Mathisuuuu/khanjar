@@ -3,7 +3,8 @@
 import { useActionState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { addMember, removeMember, updateMemberRole } from "@/app/recherches/actions";
-import { roleLabels, type Member, type MemberRole } from "@/lib/research/types";
+import { useMessage, useT } from "@/components/i18n/LocaleProvider";
+import { roleLabels as roleLabelsFr, roleLabelsEn, type Member, type MemberRole } from "@/lib/research/types";
 import styles from "./Research.module.css";
 
 type MembersPanelProps = {
@@ -16,11 +17,14 @@ export function MembersPanel({ groupId, members }: MembersPanelProps) {
   const [state, formAction, pending] = useActionState(addMember.bind(null, groupId), {});
   const [busy, startTransition] = useTransition();
   const errors = state.fieldErrors ?? {};
+  const t = useT();
+  const message = useMessage();
+  const roleLabels = t(roleLabelsFr, roleLabelsEn);
 
   return (
     <section className={styles.panel} aria-labelledby="members-title">
       <div className={styles.panelHead}>
-        <h2 id="members-title">Membres</h2>
+        <h2 id="members-title">{t("Membres", "Members")}</h2>
         <span className={styles.meta}>{members.length}</span>
       </div>
       <div className={styles.panelBody}>
@@ -31,7 +35,7 @@ export function MembersPanel({ groupId, members }: MembersPanelProps) {
                 <span title={member.email}>{member.email}</span>
                 <div className={styles.memberActions}>
                   <select
-                    aria-label={`Rôle de ${member.email}`}
+                    aria-label={t(`Rôle de ${member.email}`, `Role of ${member.email}`)}
                     value={member.role}
                     disabled={busy}
                     onChange={(event) =>
@@ -45,10 +49,10 @@ export function MembersPanel({ groupId, members }: MembersPanelProps) {
                     type="button"
                     className={styles.danger}
                     disabled={busy}
-                    aria-label={`Retirer ${member.email}`}
+                    aria-label={t(`Retirer ${member.email}`, `Remove ${member.email}`)}
                     onClick={() => startTransition(() => removeMember(groupId, member.email))}
                   >
-                    Retirer
+                    {t("Retirer", "Remove")}
                   </button>
                 </div>
               </li>
@@ -56,14 +60,17 @@ export function MembersPanel({ groupId, members }: MembersPanelProps) {
           </ul>
         ) : (
           <p className={styles.note}>
-            Aucun membre pour l&apos;instant. Invite des personnes avec l&apos;e-mail de leur compte.
+            {t(
+              "Aucun membre pour l'instant. Invite des personnes avec l'e-mail de leur compte.",
+              "No members yet. Invite people with their account email.",
+            )}
           </p>
         )}
 
         <form action={formAction} className={styles.form} noValidate>
           <div className={styles.field}>
             <label className={styles.label} htmlFor="member-email">
-              Inviter par e-mail
+              {t("Inviter par e-mail", "Invite by email")}
             </label>
             <input
               id="member-email"
@@ -73,32 +80,35 @@ export function MembersPanel({ groupId, members }: MembersPanelProps) {
               key={state.ok ? state.message : "member-email"}
               defaultValue={state.ok ? "" : state.values?.email}
               aria-invalid={!!errors.email}
-              placeholder="adresse du compte Griffin Lab"
+              placeholder={t("adresse du compte Griffin Lab", "Griffin Lab account email")}
             />
-            {errors.email && <span className={styles.error}>{errors.email}</span>}
+            {errors.email && <span className={styles.error}>{message(errors.email)}</span>}
           </div>
           <div className={styles.field}>
             <label className={styles.label} htmlFor="member-role">
-              Droits
+              {t("Droits", "Permissions")}
             </label>
             <select id="member-role" name="role" defaultValue="editor">
-              <option value="editor">{roleLabels.editor} (ajouter et supprimer)</option>
+              <option value="editor">{roleLabels.editor} {t("(ajouter et supprimer)", "(add and delete)")}</option>
               <option value="viewer">{roleLabels.viewer}</option>
             </select>
           </div>
           <div className={styles.formActions}>
             <Button type="submit" size="sm" disabled={pending}>
-              {pending ? "Ajout…" : "Ajouter"}
+              {pending ? t("Ajout…", "Adding…") : t("Ajouter", "Add")}
             </Button>
             {state.message && (
               <span className={state.ok ? styles.success : styles.error} role="status">
-                {state.message}
+                {message(state.message)}
               </span>
             )}
           </div>
         </form>
         <p className={styles.note}>
-          La personne retrouve le groupe dans Recherches dès qu&apos;elle se connecte avec cette adresse.
+          {t(
+            "La personne retrouve le groupe dans Recherches dès qu'elle se connecte avec cette adresse.",
+            "The person finds the group in Research as soon as they sign in with this address.",
+          )}
         </p>
       </div>
     </section>

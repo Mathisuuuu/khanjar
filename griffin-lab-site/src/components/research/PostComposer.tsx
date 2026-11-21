@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
+import { useLocale, useMessage, useT } from "@/components/i18n/LocaleProvider";
 import { Button } from "@/components/ui/Button";
 import type { FormState } from "@/app/recherches/actions";
 import { ACCEPTED_EXTENSIONS, formatFileSize, MAX_FILES_PER_POST } from "@/lib/research/files";
@@ -30,6 +31,8 @@ type PostComposerProps = {
  */
 export function PostComposer({ action, post, cancelHref }: PostComposerProps) {
   const [state, formAction, pending] = useActionState(action, {});
+  const t = useT();
+  const message = useMessage();
   const formRef = useRef<HTMLFormElement>(null);
   const errors = state.fieldErrors ?? {};
   const editing = !!post;
@@ -54,67 +57,67 @@ export function PostComposer({ action, post, cancelHref }: PostComposerProps) {
   return (
     <section className={styles.panel} aria-labelledby={`${prefix}-heading`}>
       <div className={styles.panelHead}>
-        <h2 id={`${prefix}-heading`}>{editing ? "Modifier la publication" : "Nouvelle publication"}</h2>
+        <h2 id={`${prefix}-heading`}>{editing ? t("Modifier la publication", "Edit post") : t("Nouvelle publication", "New post")}</h2>
       </div>
       {/* remonté à chaque réponse : les champs reprennent les valeurs renvoyées en cas d'erreur */}
       <form key={formKey(state)} ref={formRef} action={formAction} className={`${styles.panelBody} ${styles.form}`} noValidate>
         <div className={styles.fieldRow2}>
           <div className={styles.field}>
             <label className={styles.label} htmlFor={`${prefix}-category`}>
-              Surtitre (facultatif)
+              {t("Surtitre (facultatif)", "Kicker (optional)")}
             </label>
             <input {...field("category")} maxLength={40} placeholder="Backtesting" />
-            {errors.category && <span className={styles.error}>{errors.category}</span>}
+            {errors.category && <span className={styles.error}>{message(errors.category)}</span>}
           </div>
           <div className={styles.field}>
             <label className={styles.label} htmlFor={`${prefix}-title`}>
-              Titre
+              {t("Titre", "Title")}
             </label>
             <input {...field("title")} required maxLength={140} />
-            {errors.title && <span className={styles.error}>{errors.title}</span>}
+            {errors.title && <span className={styles.error}>{message(errors.title)}</span>}
           </div>
         </div>
 
         <div className={styles.field}>
           <label className={styles.label} htmlFor={`${prefix}-summary`}>
-            Chapô (facultatif)
+            {t("Chapô (facultatif)", "Summary (optional)")}
           </label>
           <textarea
             {...field("summary")}
             maxLength={320}
-            placeholder="Deux phrases qui résument la publication. Sinon, le début du texte est utilisé."
+            placeholder={t("Deux phrases qui résument la publication. Sinon, le début du texte est utilisé.", "Two sentences summarising the post. Otherwise, the start of the text is used.")}
             style={{ minHeight: 70 }}
           />
-          {errors.summary && <span className={styles.error}>{errors.summary}</span>}
+          {errors.summary && <span className={styles.error}>{message(errors.summary)}</span>}
         </div>
 
         <div className={styles.field}>
           <label className={styles.label} htmlFor={`${prefix}-body`}>
-            Texte
+            {t("Texte", "Text")}
           </label>
           <textarea
             {...field("body")}
             required
             maxLength={20000}
-            placeholder="Hypothèse, méthode, résultats, limites…"
+            placeholder={t("Hypothèse, méthode, résultats, limites…", "Hypothesis, method, results, limitations…")}
             style={{ minHeight: 200 }}
           />
-          {errors.body && <span className={styles.error}>{errors.body}</span>}
+          {errors.body && <span className={styles.error}>{message(errors.body)}</span>}
         </div>
 
         <div className={styles.field}>
           <label className={styles.label} htmlFor={`${prefix}-link`}>
-            Lien (facultatif)
+            {t("Lien (facultatif)", "Link (optional)")}
           </label>
           <input {...field("link")} type="url" inputMode="url" placeholder="https://ssrn.com/…" />
-          {errors.link && <span className={styles.error}>{errors.link}</span>}
+          {errors.link && <span className={styles.error}>{message(errors.link)}</span>}
         </div>
 
         {editing && post.attachments.length > 0 && <CurrentDocuments files={post.attachments} />}
 
         <div className={styles.field}>
           <label className={styles.label} htmlFor={`${prefix}-files`}>
-            {editing ? "Ajouter des documents" : "Documents"}
+            {editing ? t("Ajouter des documents", "Add documents") : t("Documents", "Documents")}
           </label>
           <input
             id={`${prefix}-files`}
@@ -126,23 +129,26 @@ export function PostComposer({ action, post, cancelHref }: PostComposerProps) {
             aria-describedby={`${prefix}-files-help`}
           />
           <span id={`${prefix}-files-help`} className={styles.help}>
-            PDF, scripts (.py, .pine, .r…), notebooks, CSV, JSON, Excel. {MAX_FILES_PER_POST} fichiers de 10 Mo maximum.
+            {t(
+              `PDF, scripts (.py, .pine, .r…), notebooks, CSV, JSON, Excel. ${MAX_FILES_PER_POST} fichiers de 10 Mo maximum.`,
+              `PDF, scripts (.py, .pine, .r…), notebooks, CSV, JSON, Excel. Up to ${MAX_FILES_PER_POST} files of 10 MB.`,
+            )}
           </span>
-          {errors.files && <span className={styles.error}>{errors.files}</span>}
+          {errors.files && <span className={styles.error}>{message(errors.files)}</span>}
         </div>
 
         <div className={styles.formActions}>
           <Button type="submit" disabled={pending}>
-            {pending ? "Enregistrement…" : editing ? "Enregistrer" : "Publier"}
+            {pending ? t("Enregistrement…", "Saving…") : editing ? t("Enregistrer", "Save") : t("Publier", "Publish")}
           </Button>
           {cancelHref && (
             <Link href={cancelHref} className={styles.editLink}>
-              Annuler
+              {t("Annuler", "Cancel")}
             </Link>
           )}
           {state.message && (
             <span className={state.ok ? styles.success : styles.error} role="status">
-              {state.message}
+              {message(state.message)}
             </span>
           )}
         </div>
@@ -151,17 +157,21 @@ export function PostComposer({ action, post, cancelHref }: PostComposerProps) {
   );
 }
 
-const fileKinds = { pdf: "PDF", script: "Script", notebook: "Notebook", data: "Données" } as const;
+const fileKindsFr: Record<Attachment["kind"], string> = { pdf: "PDF", script: "Script", notebook: "Notebook", data: "Données" };
+const fileKindsEn: Record<Attachment["kind"], string> = { pdf: "PDF", script: "Script", notebook: "Notebook", data: "Data" };
 
 /** Documents déjà joints : « Retirer » les marque pour suppression à l'enregistrement. */
 function CurrentDocuments({ files }: { files: Attachment[] }) {
+  const t = useT();
+  const locale = useLocale();
+  const fileKinds = t(fileKindsFr, fileKindsEn);
   const [removed, setRemoved] = useState<string[]>([]);
   const toggle = (id: string) =>
     setRemoved((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
 
   return (
     <div className={styles.field}>
-      <span className={styles.label}>Documents actuels</span>
+      <span className={styles.label}>{t("Documents actuels", "Current documents")}</span>
       <ul className={styles.currentFiles}>
         {files.map((file) => {
           const gone = removed.includes(file.id);
@@ -170,9 +180,9 @@ function CurrentDocuments({ files }: { files: Attachment[] }) {
               {gone && <input type="hidden" name="remove" value={file.id} />}
               <span className={styles.fileKind}>{fileKinds[file.kind]}</span>
               <span className={styles.currentName}>{file.name}</span>
-              <small>{gone ? "sera retiré" : formatFileSize(file.size)}</small>
+              <small>{gone ? t("sera retiré", "will be removed") : formatFileSize(file.size, locale)}</small>
               <button type="button" className={styles.fileToggle} onClick={() => toggle(file.id)}>
-                {gone ? "Garder" : "Retirer"}
+                {gone ? t("Garder", "Keep") : t("Retirer", "Remove")}
               </button>
             </li>
           );

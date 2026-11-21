@@ -62,3 +62,26 @@ export const statusLabels: Record<ProposalStatus, string> = {
   validated: "Validé",
   rejected: "Rejeté",
 };
+
+/* Libellés anglais (les valeurs stockées restent en français : ce sont des identifiants). */
+const typeLabelsEn: Record<ProposalType, string> = { idea: "Idea", script: "Script", paper: "SSRN paper" };
+const statusLabelsEn: Record<ProposalStatus, string> = {
+  pending: "Queued",
+  testing: "Testing",
+  validated: "Validated",
+  rejected: "Rejected",
+};
+const marketLabelsEn: Record<string, string> = {
+  "CL (pétrole)": "CL (crude oil)",
+  "GC (or)": "GC (gold)",
+  "Actions US": "US stocks",
+  "Multi-actifs": "Multi-asset",
+  Autre: "Other",
+};
+
+export const typeLabel = (type: ProposalType, locale: "fr" | "en") =>
+  locale === "en" ? typeLabelsEn[type] : typeLabels[type];
+export const statusLabel = (status: ProposalStatus, locale: "fr" | "en") =>
+  locale === "en" ? statusLabelsEn[status] : statusLabels[status];
+export const marketLabel = (market: string, locale: "fr" | "en") =>
+  locale === "en" ? (marketLabelsEn[market] ?? market) : market;

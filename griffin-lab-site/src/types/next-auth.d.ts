@@ -6,6 +6,10 @@ declare module "next-auth" {
       id: string;
       /** "credentials", "discord", "google", "apple" ou "github". */
       provider: string;
+      /** Heure de connexion (secondes) : une session plus ancienne que le dernier changement de mot de passe est refusée. */
+      authAt: number;
+      /** Adresse e-mail confirmée (par le site, ou déclarée vérifiée par le fournisseur OAuth). */
+      emailTrusted: boolean;
     } & DefaultSession["user"];
   }
 }

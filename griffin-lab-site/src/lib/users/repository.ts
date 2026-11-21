@@ -15,6 +15,8 @@ export type User = {
   passwordHash: string;
   /** `null` tant que la personne n'a pas cliqué sur le lien reçu par e-mail. */
   emailVerifiedAt: string | null;
+  /** Dernier changement de mot de passe : les sessions ouvertes avant sont refusées. */
+  passwordChangedAt: string | null;
   createdAt: string;
 };
 
@@ -34,6 +36,7 @@ type UserRow = {
   name: string;
   password_hash: string;
   email_verified_at: Date | null;
+  password_changed_at: Date | null;
   created_at: Date;
 };
 
@@ -43,6 +46,7 @@ const toUser = (row: UserRow): User => ({
   name: row.name,
   passwordHash: row.password_hash,
   emailVerifiedAt: row.email_verified_at ? iso(row.email_verified_at) : null,
+  passwordChangedAt: row.password_changed_at ? iso(row.password_changed_at) : null,
   createdAt: iso(row.created_at),
 });
 
@@ -62,7 +66,7 @@ class PostgresUserRepository implements UserRepository {
 
   async updatePassword(id: string, passwordHash: string) {
     const db = await getDb();
-    await db.query("UPDATE users SET password_hash = $1 WHERE id = $2", [passwordHash, id]);
+    await db.query("UPDATE users SET password_hash = $1, password_changed_at = now() WHERE id = $2", [passwordHash, id]);
   }
 
   async create(input: Pick<User, "email" | "name" | "passwordHash">): Promise<CreateUserResult> {

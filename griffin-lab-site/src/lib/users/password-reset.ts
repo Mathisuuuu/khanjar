@@ -24,7 +24,7 @@ export async function sendPasswordResetEmail(user: { id: string; email: string; 
 
 const setPassword = (passwordHash: string) => async (tx: Queryable, userId: string) => {
   await tx.query(
-    "UPDATE users SET password_hash = $1, email_verified_at = coalesce(email_verified_at, now()) WHERE id = $2",
+    "UPDATE users SET password_hash = $1, password_changed_at = now(), email_verified_at = coalesce(email_verified_at, now()) WHERE id = $2",
     [passwordHash, userId],
   );
 };

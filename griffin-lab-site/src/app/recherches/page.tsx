@@ -6,15 +6,23 @@ import { Button } from "@/components/ui/Button";
 import { canRead, roleOf } from "@/lib/research/access";
 import { getResearchRepository } from "@/lib/research/repository";
 import { resolveIdentities } from "@/lib/users/identity";
+import { getT } from "@/lib/i18n/server";
 import { getViewer } from "@/lib/viewer";
 
-export const metadata: Metadata = {
-  title: "Recherches",
-  description: "Les recherches de l'équipe Griffin Lab et celles partagées par la communauté.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("Recherches", "Research"),
+    description: t(
+      "Les recherches de l'équipe Griffin Lab et celles partagées par la communauté.",
+      "Research from the Griffin Lab team and research shared by the community.",
+    ),
+  };
+}
 
 export default async function ResearchPage() {
   const viewer = await getViewer();
+  const t = await getT();
   const readable = (await getResearchRepository().listGroups()).filter((group) => canRead(group, viewer));
   // nom du propriétaire selon son réglage d'anonymat
   const owners = await resolveIdentities(
@@ -28,27 +36,29 @@ export default async function ResearchPage() {
 
   const createButton = viewer ? (
     <Button href="/recherches/nouveau" size="sm">
-      Créer un groupe
+      {t("Créer un groupe", "Create a group")}
     </Button>
   ) : (
     <Button href="/connexion?callbackUrl=/recherches/nouveau" size="sm" variant="glass">
-      Se connecter pour partager
+      {t("Se connecter pour partager", "Sign in to share")}
     </Button>
   );
 
   return (
     <>
-      <PageHeader crumb="Recherches" title="Recherches">
-        Nos travaux et ceux de la communauté : articles, PDF, scripts et données, rangés par groupe. Chaque groupe peut
-        être public ou privé, avec ses propres membres.
+      <PageHeader crumb={t("Recherches", "Research")} title={t("Recherches", "Research")}>
+        {t(
+          "Nos travaux et ceux de la communauté : articles, PDF, scripts et données, rangés par groupe. Chaque groupe peut être public ou privé, avec ses propres membres.",
+          "Our work and the community's: articles, PDFs, scripts and data, organised by group. Each group can be public or private, with its own members.",
+        )}
       </PageHeader>
 
       <div className={`container ${styles.page}`}>
         <section className={styles.block} aria-labelledby="official-title">
           <div className={styles.blockHead}>
             <div>
-              <h2 id="official-title">Recherches Griffin Lab</h2>
-              <p>Publiées par l&apos;équipe.</p>
+              <h2 id="official-title">{t("Recherches Griffin Lab", "Griffin Lab research")}</h2>
+              <p>{t("Publiées par l'équipe.", "Published by the team.")}</p>
             </div>
           </div>
           {official.length > 0 ? (
@@ -64,8 +74,8 @@ export default async function ResearchPage() {
             </div>
           ) : (
             <div className={styles.emptyCard}>
-              <b>Bientôt en ligne</b>
-              Nos premières recherches arrivent ici.
+              <b>{t("Bientôt en ligne", "Coming soon")}</b>
+              {t("Nos premières recherches arrivent ici.", "Our first research is on its way.")}
             </div>
           )}
         </section>
@@ -73,8 +83,8 @@ export default async function ResearchPage() {
         <section className={styles.block} aria-labelledby="community-title">
           <div className={styles.blockHead}>
             <div>
-              <h2 id="community-title">Communauté</h2>
-              <p>Les groupes publics et ceux dont tu es membre.</p>
+              <h2 id="community-title">{t("Communauté", "Community")}</h2>
+              <p>{t("Les groupes publics et ceux dont tu es membre.", "Public groups and those you're a member of.")}</p>
             </div>
             {createButton}
           </div>
@@ -91,8 +101,11 @@ export default async function ResearchPage() {
             </div>
           ) : (
             <div className={styles.emptyCard}>
-              <b>Aucun groupe pour l&apos;instant</b>
-              Crée le premier et partage tes recherches, publiquement ou avec quelques personnes.
+              <b>{t("Aucun groupe pour l'instant", "No groups yet")}</b>
+              {t(
+                "Crée le premier et partage tes recherches, publiquement ou avec quelques personnes.",
+                "Create the first one and share your research, publicly or with a few people.",
+              )}
             </div>
           )}
         </section>

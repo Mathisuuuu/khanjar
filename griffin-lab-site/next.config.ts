@@ -14,7 +14,8 @@ const contentSecurityPolicy = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  // avatars des comptes Discord, Google et GitHub (page /compte)
+  "img-src 'self' data: blob: https://cdn.discordapp.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com",
   "font-src 'self'",
   "connect-src 'self'",
   "worker-src 'self' blob:",

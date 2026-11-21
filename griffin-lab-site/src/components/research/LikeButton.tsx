@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toggleLikeAction } from "@/app/recherches/actions";
+import { useT } from "@/components/i18n/LocaleProvider";
 import styles from "./Research.module.css";
 
 type Props = {
@@ -30,13 +31,14 @@ function Heart({ filled }: { filled: boolean }) {
 
 /** Like d'une publication ; mise à jour immédiate, puis état confirmé par le serveur. */
 export function LikeButton({ groupId, postId, count, liked, canLike }: Props) {
+  const t = useT();
   const [state, setState] = useState({ count, liked });
   const [pending, startTransition] = useTransition();
   const label = `${state.count} like${state.count > 1 ? "s" : ""}`;
 
   if (!canLike) {
     return (
-      <Link href={`/connexion?callbackUrl=/recherches/${groupId}`} className={styles.like} aria-label={`${label}. Connecte-toi pour aimer`}>
+      <Link href={`/connexion?callbackUrl=/recherches/${groupId}`} className={styles.like} aria-label={t(`${label}. Connecte-toi pour aimer`, `${label}. Sign in to like`)}>
         <Heart filled={false} />
         {state.count}
       </Link>
@@ -48,7 +50,7 @@ export function LikeButton({ groupId, postId, count, liked, canLike }: Props) {
       type="button"
       className={`${styles.like} ${state.liked ? styles.liked : ""}`}
       aria-pressed={state.liked}
-      aria-label={`${state.liked ? "Je n'aime plus" : "J'aime"} · ${label}`}
+      aria-label={`${state.liked ? t("Je n'aime plus", "Unlike") : t("J'aime", "Like")} · ${label}`}
       disabled={pending}
       onClick={() => {
         const previous = state;

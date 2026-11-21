@@ -5,7 +5,9 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { GlassPointer } from "@/components/ui/GlassPointer";
 import { MascotSprite } from "@/components/ui/Mascot";
-import { site } from "@/content/site";
+import { site, siteText } from "@/content/site";
+import { LocaleProvider } from "@/components/i18n/LocaleProvider";
+import { getLocale, getT } from "@/lib/i18n/server";
 import { getViewer } from "@/lib/viewer";
 import "./globals.css";
 
@@ -14,10 +16,13 @@ const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", displ
 // titres des publications de recherche (façon article)
 const serif = Newsreader({ subsets: ["latin"], variable: "--font-serif", display: "swap", style: ["normal", "italic"] });
 
-export const metadata: Metadata = {
-  title: { default: site.name, template: `%s · ${site.name}` },
-  description: site.description,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: { default: site.name, template: `%s · ${site.name}` },
+    description: siteText(t).description,
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#08090a",
@@ -26,20 +31,22 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // lue côté serveur : l'en-tête est à jour dès la redirection qui suit une connexion / déconnexion
-  const [session, viewer] = await Promise.all([auth(), getViewer()]);
-  const user = session?.user ? { ...session.user, name: viewer?.name ?? session.user.name } : null;
+  const [session, viewer, locale] = await Promise.all([auth(), getViewer(), getLocale()]);
+  const user = session?.user && viewer ? { ...session.user, name: viewer.name } : null;
 
   return (
-    <html lang="fr" className={`${inter.variable} ${mono.variable} ${serif.variable}`}>
+    <html lang={locale} className={`${inter.variable} ${mono.variable} ${serif.variable}`}>
       <body>
-        <a href="#main" className="skip-link">
-          Aller au contenu
-        </a>
-        <MascotSprite />
-        <GlassPointer />
-        <Header user={user} />
-        <main id="main">{children}</main>
-        <Footer />
+        <LocaleProvider locale={locale}>
+          <a href="#main" className="skip-link">
+            {locale === "en" ? "Skip to content" : "Aller au contenu"}
+          </a>
+          <MascotSprite />
+          <GlassPointer />
+          <Header user={user} />
+          <main id="main">{children}</main>
+          <Footer />
+        </LocaleProvider>
       </body>
     </html>
   );

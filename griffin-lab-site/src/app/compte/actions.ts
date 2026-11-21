@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { signOut } from "@/auth";
+import { signIn, signOut } from "@/auth";
 import { deleteAccount } from "@/lib/admin/repository";
 import { consume } from "@/lib/rate-limit";
 import { hashPassword, verifyPassword } from "@/lib/users/password";
@@ -57,6 +57,8 @@ export async function changePasswordAction(_prev: AccountFormState, form: FormDa
   if (next === current) return { message: "Choisis un mot de passe différent de l'actuel." };
 
   await repository.updatePassword(user.id, await hashPassword(next));
+  // les autres sessions sont fermées ; celle-ci est rouverte avec le nouveau mot de passe
+  await signIn("credentials", { email: user.email, password: next, redirectTo: "/compte?motdepasse=1" });
   return { ok: true, message: "Mot de passe changé." };
 }
 

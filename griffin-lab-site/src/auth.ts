@@ -30,6 +30,31 @@ export class EmailNotVerified extends CredentialsSignin {
 
 const FIFTEEN_MINUTES = 15 * 60;
 
+/**
+ * L'adresse donnée par un fournisseur OAuth n'est utilisée (invitations aux
+ * groupes privés…) que si le fournisseur la déclare vérifiée : sinon, n'importe
+ * qui pourrait ouvrir un compte Discord avec l'adresse d'un autre.
+ */
+async function oauthEmailVerified(provider: string, profile: Record<string, unknown> | undefined, accessToken?: string) {
+  if (!profile || typeof profile.email !== "string" || !profile.email) return false;
+  if (provider === "discord") return profile.verified === true;
+  if (provider === "google" || provider === "apple") return profile.email_verified === true || profile.email_verified === "true";
+  if (provider === "github" && accessToken) {
+    try {
+      const res = await fetch("https://api.github.com/user/emails", {
+        headers: { Authorization: `Bearer ${accessToken}`, "User-Agent": "griffin-lab", Accept: "application/vnd.github+json" },
+      });
+      if (!res.ok) return false;
+      const emails = (await res.json()) as { email: string; verified: boolean }[];
+      const email = String(profile.email).toLowerCase();
+      return emails.some((e) => e.verified && e.email.toLowerCase() === email);
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
 const providers: NextAuthConfig["providers"] = [
   Credentials({
     id: "credentials",
@@ -80,14 +105,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!account || !user.id) return true;
       return !(await isBanned(`${account.provider}:${user.id}`));
     },
-    jwt({ token, account }) {
-      // à la connexion, on retient le fournisseur utilisé (affiché sur /compte)
-      if (account) token.provider = account.provider;
+    async jwt({ token, account, profile }) {
+      // à la connexion : fournisseur utilisé (affiché sur /compte), heure de connexion, adresse vérifiée ou non
+      if (account) {
+        token.provider = account.provider;
+        token.authAt = Math.floor(Date.now() / 1000);
+        token.emailVerified =
+          account.provider === "credentials" ||
+          (await oauthEmailVerified(account.provider, profile as Record<string, unknown> | undefined, account.access_token));
+      }
       return token;
     },
     session({ session, token }) {
       session.user.id = token.sub ?? "";
       session.user.provider = typeof token.provider === "string" ? token.provider : "credentials";
+      session.user.authAt = typeof token.authAt === "number" ? token.authAt : 0;
+      session.user.emailTrusted = token.emailVerified === true;
       return session;
     },
   },

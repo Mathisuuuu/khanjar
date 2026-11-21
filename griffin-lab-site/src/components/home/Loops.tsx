@@ -4,6 +4,8 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CORRELATION_LIMIT, newStrategyExample, type LoopColor } from "@/content/home";
 import { getHomeLoops } from "@/lib/books/home";
 import { formatNumber } from "@/lib/format";
+import { makeT } from "@/lib/i18n/core";
+import { getLocale } from "@/lib/i18n/server";
 import { ImprovementStats } from "./ImprovementStats";
 import styles from "./Loops.module.css";
 
@@ -23,30 +25,40 @@ const loopRgb: Record<LoopColor, string> = {
 const rowCenter = (index: number, count: number) => ((index + 0.5) / count) * 300;
 
 export async function Loops() {
-  const loops = await getHomeLoops();
+  const [loops, locale] = await Promise.all([getHomeLoops(), getLocale()]);
+  const t = makeT(locale);
   const routes = loops.map((loop) => {
     const rho = newStrategyExample.correlation[loop.id] ?? 1;
     return { loop, rho, accepted: rho < CORRELATION_LIMIT };
   });
-  const limit = formatNumber(CORRELATION_LIMIT, 1);
+  const limit = formatNumber(CORRELATION_LIMIT, 1, locale);
 
   return (
     <Section id="books" tone="alt">
-      <SectionHeading kicker="04 · Les books" title="Chaque stratégie ajoutée rend le bot meilleur et t'y donne accès." align="center">
-        Le bot est fait de books de stratégies peu corrélées. Une stratégie validée rejoint le book où elle apporte
-        de la diversification : là où sa corrélation reste sous {limit}.
+      <SectionHeading
+        kicker={t("04 · Les books", "04 · The books")}
+        title={t(
+          "Chaque stratégie ajoutée rend le bot meilleur et t'y donne accès.",
+          "Every strategy added makes the bot better and gives you access to it.",
+        )}
+        align="center"
+      >
+        {t(
+          `Le bot est fait de books de stratégies peu corrélées. Une stratégie validée rejoint le book où elle apporte de la diversification : là où sa corrélation reste sous ${limit}.`,
+          `The bot is made of books of weakly correlated strategies. A validated strategy joins the book where it adds diversification: where its correlation stays below ${limit}.`,
+        )}
       </SectionHeading>
 
       <div className={styles.stage}>
         {/* Nouvelle stratégie */}
         <div className={styles.strategy}>
           <span className={styles.eyebrow}>
-            <i className={styles.pulse} /> nouvelle stratégie
+            <i className={styles.pulse} /> {t("nouvelle stratégie", "new strategy")}
           </span>
           <b className={styles.strategyName}>{newStrategyExample.name}</b>
-          <span className={styles.strategyMeta}>score {newStrategyExample.score}/100 · validée</span>
+          <span className={styles.strategyMeta}>score {newStrategyExample.score}/100 · {t("validée", "validated")}</span>
           <span className={styles.strategyRule}>
-            cherche un book où <em>ρ &lt; {limit}</em>
+            {t("cherche un book où", "looks for a book where")} <em>ρ &lt; {limit}</em>
           </span>
         </div>
 
@@ -80,16 +92,16 @@ export async function Loops() {
                   <small>
                     {r.accepted ? (
                       <>
-                        {r.loop.strategies} → <em>{r.loop.strategies + 1} stratégies</em>
+                        {r.loop.strategies} → <em>{r.loop.strategies + 1} {t("stratégies", "strategies")}</em>
                       </>
                     ) : (
-                      `${r.loop.strategies} stratégies`
+                      `${r.loop.strategies} ${t("stratégies", "strategies")}`
                     )}
                   </small>
                 </span>
                 <span className={`${styles.verdict} ${r.accepted ? styles.verdictOk : styles.verdictKo}`}>
-                  ρ {formatNumber(r.rho)}
-                  <span>{r.accepted ? "rejoint" : "trop corrélée"}</span>
+                  ρ {formatNumber(r.rho, 2, locale)}
+                  <span>{r.accepted ? t("rejoint", "joins") : t("trop corrélée", "too correlated")}</span>
                 </span>
               </div>
             </li>

@@ -15,6 +15,7 @@ import { liveStats } from "@/lib/books/simulation";
 import { canRead } from "@/lib/research/access";
 import { getResearchRepository } from "@/lib/research/repository";
 import { resolveIdentities } from "@/lib/users/identity";
+import { getLocale } from "@/lib/i18n/server";
 import { getViewer } from "@/lib/viewer";
 import { BookWorkspace } from "./BookWorkspace";
 import type {
@@ -161,7 +162,8 @@ export async function BooksView({ selectedId }: { selectedId?: string }) {
           masked: identities.get(key)!.maskedForOthers,
           canView: viewers.has(key),
         }));
-        const num = (value: number | undefined) => (value === undefined ? "" : String(value).replace(".", ","));
+        const decimal = (await getLocale()) === "en" ? "." : ",";
+        const num = (value: number | undefined) => (value === undefined ? "" : String(value).replace(".", decimal));
         editable = {
           name: book.name,
           description: book.description,

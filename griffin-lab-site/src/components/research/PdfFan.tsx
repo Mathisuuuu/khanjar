@@ -4,6 +4,7 @@ import { useState, type CSSProperties } from "react";
 import type { PdfFile } from "@/lib/research/pdf-client";
 import { PdfViewer } from "./PdfViewer";
 import { usePdfThumbnails } from "./usePdfThumbnails";
+import { useT } from "@/components/i18n/LocaleProvider";
 import styles from "./Research.module.css";
 
 /**
@@ -25,6 +26,7 @@ const layouts: Record<number, { x: number; y: number; r: number; hx: number; hy:
 
 /** Les PDF d'un groupe, en cartes qui dépassent du haut de sa carte. Un clic ouvre le lecteur. */
 export function PdfFan({ files, groupName }: { files: PdfFile[]; groupName: string }) {
+  const t = useT();
   const shown = files.slice(0, 3);
   const images = usePdfThumbnails(shown);
   const [openAt, setOpenAt] = useState<number | null>(null);
@@ -52,7 +54,7 @@ export function PdfFan({ files, groupName }: { files: PdfFile[]; groupName: stri
                   zIndex: isCenter ? 3 : 1 + i,
                 } as CSSProperties
               }
-              aria-label={`Lire ${file.name} (${groupName})`}
+              aria-label={t(`Lire ${file.name} (${groupName})`, `Read ${file.name} (${groupName})`)}
               onClick={() => setOpenAt(i)}
             >
               {/* miniature générée côté client (data URL) */}

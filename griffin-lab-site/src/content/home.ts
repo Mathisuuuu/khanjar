@@ -4,6 +4,8 @@
  * résultats du bot avant de diffuser le site.
  */
 
+import type { T } from "@/lib/i18n/core";
+
 export type LoopColor = "cyan" | "violet" | "amber";
 
 export type Loop = {
@@ -77,29 +79,29 @@ export type StrategyStat = {
   total: number;
 };
 
-export const strategyStats: StrategyStat[] = [
+export const strategyStats = (t: T): StrategyStat[] => [
   {
     status: "pending",
-    label: "En attente",
+    label: t("En attente", "Pending"),
     thisWeek: 6,
-    factLabel: "Délai moyen avant test",
-    factValue: "2 jours",
+    factLabel: t("Délai moyen avant test", "Average wait before testing"),
+    factValue: t("2 jours", "2 days"),
     total: 15,
   },
   {
     status: "validated",
-    label: "Validées",
+    label: t("Validées", "Validated"),
     thisWeek: 2,
-    factLabel: "Score moyen",
+    factLabel: t("Score moyen", "Average score"),
     factValue: "83/100",
     total: 14,
   },
   {
     status: "rejected",
-    label: "Refusées",
+    label: t("Refusées", "Rejected"),
     thisWeek: 9,
-    factLabel: "Motif le plus fréquent",
-    factValue: "Drawdown > rendement annuel",
+    factLabel: t("Motif le plus fréquent", "Most common reason"),
+    factValue: t("Drawdown > rendement annuel", "Drawdown > annual return"),
     total: 56,
   },
 ];
@@ -112,28 +114,48 @@ export type Contribution = {
   snippet: { tone?: "comment" | "keyword" | "value"; text: string }[][];
 };
 
-export const contributions: Contribution[] = [
+export const contributions = (t: T): Contribution[] => [
   {
     key: "idea",
-    lead: { highlight: "Une idée", after: "décrite en quelques phrases, sans une ligne de code." },
-    text: "Pas besoin de savoir coder : la règle suffit.",
-    snippet: [
-      [{ tone: "comment", text: "# exemple" }],
+    lead: t(
+      { highlight: "Une idée", after: "décrite en quelques phrases, sans une ligne de code." },
+      { highlight: "An idea", after: "described in a few sentences, without a line of code." },
+    ),
+    text: t("Pas besoin de savoir coder : la règle suffit.", "No coding needed: the rule is enough."),
+    snippet: t<Contribution["snippet"]>(
       [
-        { text: "Acheter " },
-        { tone: "value", text: "NQ" },
-        { text: " quand le " },
-        { tone: "keyword", text: "RSI 5 min" },
-        { text: " repasse au-dessus de " },
-        { tone: "value", text: "30" },
-        { text: " à l'ouverture de New York." },
+        [{ tone: "comment", text: "# exemple" }],
+        [
+          { text: "Acheter " },
+          { tone: "value", text: "NQ" },
+          { text: " quand le " },
+          { tone: "keyword", text: "RSI 5 min" },
+          { text: " repasse au-dessus de " },
+          { tone: "value", text: "30" },
+          { text: " à l'ouverture de New York." },
+        ],
       ],
-    ],
+      [
+        [{ tone: "comment", text: "# example" }],
+        [
+          { text: "Buy " },
+          { tone: "value", text: "NQ" },
+          { text: " when the " },
+          { tone: "keyword", text: "5-min RSI" },
+          { text: " crosses back above " },
+          { tone: "value", text: "30" },
+          { text: " at the New York open." },
+        ],
+      ],
+    ),
   },
   {
     key: "script",
-    lead: { before: "Ou un", highlight: "script", after: "déjà codé, prêt à être branché." },
-    text: "Il passe directement dans le script de test.",
+    lead: t(
+      { before: "Ou un", highlight: "script", after: "déjà codé, prêt à être branché." },
+      { before: "Or a", highlight: "script", after: "already coded, ready to plug in." },
+    ),
+    text: t("Il passe directement dans le script de test.", "It goes straight into the test script."),
     snippet: [
       [{ tone: "keyword", text: "def" }, { text: " signal(bar):" }],
       [
@@ -149,30 +171,88 @@ export const contributions: Contribution[] = [
   },
   {
     key: "paper",
-    lead: { before: "Ou encore un", highlight: "papier SSRN", after: "." },
-    text: "Une recherche académique dont l'effet décrit peut être testé sur données réelles.",
-    snippet: [
-      [{ tone: "comment", text: "# papier → hypothèse testable" }],
-      [{ tone: "keyword", text: "effet" }, { text: ": retour à la moyenne court terme" }],
-      [{ tone: "keyword", text: "marché" }, { text: ": " }, { tone: "value", text: "futures sur indices" }],
-    ],
+    lead: t(
+      { before: "Ou encore un", highlight: "papier SSRN", after: "." },
+      { before: "Or even an", highlight: "SSRN paper", after: "." },
+    ),
+    text: t(
+      "Une recherche académique dont l'effet décrit peut être testé sur données réelles.",
+      "Academic research whose effect can be tested on real data.",
+    ),
+    snippet: t<Contribution["snippet"]>(
+      [
+        [{ tone: "comment", text: "# papier → hypothèse testable" }],
+        [{ tone: "keyword", text: "effet" }, { text: ": retour à la moyenne court terme" }],
+        [{ tone: "keyword", text: "marché" }, { text: ": " }, { tone: "value", text: "futures sur indices" }],
+      ],
+      [
+        [{ tone: "comment", text: "# paper → testable hypothesis" }],
+        [{ tone: "keyword", text: "effect" }, { text: ": short-term mean reversion" }],
+        [{ tone: "keyword", text: "market" }, { text: ": " }, { tone: "value", text: "index futures" }],
+      ],
+    ),
   },
 ];
 
 export type Check = {
   name: string;
   threshold: string;
+  /** Ce que vérifie le contrôle (tableau de la page Règles). */
+  explanation: string;
 };
 
 /** Les sept contrôles du script de test (repris dans la page Règles). */
-export const checks: Check[] = [
-  { name: "Backtest", threshold: "15 ans · 2011–2025" },
-  { name: "Hors échantillon", threshold: "5 ans · 2021–2025" },
-  { name: "Anti-surapprentissage", threshold: "walk-forward · Sharpe déflaté" },
-  { name: "IC (coefficient de corrélation)", threshold: "IC > 0,05" },
-  { name: "Drawdown max", threshold: "< rendement annuel" },
-  { name: "Monte Carlo", threshold: "1 000 tirages" },
-  { name: "Placement dans un book", threshold: "ρ < 0,3" },
+export const checks = (t: T): Check[] => [
+  {
+    name: "Backtest",
+    threshold: t("15 ans · 2011–2025", "15 years · 2011–2025"),
+    explanation: t("Que l'effet tient sur plusieurs régimes de marché.", "That the effect holds across several market regimes."),
+  },
+  {
+    name: t("Hors échantillon", "Out of sample"),
+    threshold: t("5 ans · 2021–2025", "5 years · 2021–2025"),
+    explanation: t(
+      "Que la stratégie marche sur des données qu'elle n'a pas vues.",
+      "That the strategy works on data it has never seen.",
+    ),
+  },
+  {
+    name: t("Anti-surapprentissage", "Anti-overfitting"),
+    threshold: t("walk-forward · Sharpe déflaté", "walk-forward · deflated Sharpe"),
+    explanation: t(
+      "Que les résultats ne viennent pas d'un réglage sur mesure du passé : validation glissante (walk-forward) et Sharpe corrigé du nombre d'essais.",
+      "That the results don't come from tuning to the past: rolling validation (walk-forward) and a Sharpe ratio corrected for the number of trials.",
+    ),
+  },
+  {
+    name: t("IC (coefficient de corrélation)", "IC (information coefficient)"),
+    threshold: t("IC > 0,05", "IC > 0.05"),
+    explanation: t(
+      "Que le signal prédit vraiment : corrélation entre le signal et les rendements qui suivent.",
+      "That the signal really predicts: correlation between the signal and the returns that follow.",
+    ),
+  },
+  {
+    name: "Drawdown max",
+    threshold: t("< rendement annuel", "< annual return"),
+    explanation: t(
+      "Que la pire perte depuis un plus haut reste inférieure au rendement de l'année.",
+      "That the worst loss from a peak stays below the year's return.",
+    ),
+  },
+  {
+    name: "Monte Carlo",
+    threshold: t("1 000 tirages", "1,000 runs"),
+    explanation: t("Que le résultat ne dépend pas de l'ordre des trades.", "That the result doesn't depend on the order of trades."),
+  },
+  {
+    name: t("Placement dans un book", "Book placement"),
+    threshold: t("ρ < 0,3", "ρ < 0.3"),
+    explanation: t(
+      "La corrélation avec chaque book. La stratégie rejoint un book avec lequel elle est peu corrélée.",
+      "Correlation with each book. The strategy joins a book it is weakly correlated with.",
+    ),
+  },
 ];
 
 export type TerminalLine = {
@@ -184,24 +264,46 @@ export type TerminalLine = {
 };
 
 /** Faux test joué en boucle dans le terminal de la section « Script de test ». */
-export const terminalScript: TerminalLine[] = [
+export const terminalScript = (t: T): TerminalLine[] => [
   { kind: "command", text: "griffin test strategy_rsi_ny.py" },
-  { kind: "output", text: "→ chargement des données NQ 5 min · 2011–2025" },
-  { kind: "output", text: "[1/7] backtest 15 ans ....... 2 716 trades" },
-  { kind: "success", text: "      ✓ robustesse historique", validates: 0 },
-  { kind: "output", text: "[2/7] hors échantillon 5 ans (2021–2025) ... PF 1,38" },
-  { kind: "success", text: "      ✓ tient sur données jamais vues", validates: 1 },
-  { kind: "output", text: "[3/7] anti-surapprentissage ... walk-forward 9/10 · DSR 0,97" },
-  { kind: "success", text: "      ✓ pas de sur-optimisation", validates: 2 },
-  { kind: "output", text: "[4/7] IC signal / rendement futur ... 0,08 (seuil 0,05)" },
-  { kind: "success", text: "      ✓ le signal prédit vraiment", validates: 3 },
-  { kind: "output", text: "[5/7] drawdown max 6,2 % < rendement annuel 14,8 %" },
-  { kind: "success", text: "      ✓ perte maximale maîtrisée", validates: 4 },
-  { kind: "output", text: "[6/7] monte carlo 1 000 tirages ... 94 % positifs" },
-  { kind: "success", text: "      ✓ résultat indépendant de l'ordre des trades", validates: 5 },
-  { kind: "output", text: "[7/7] corrélation : Book A 0,42 · Book B 0,12 · Book C 0,31" },
-  { kind: "success", text: "      ✓ placée dans le Book B (ρ < 0,3)", validates: 6 },
-  { kind: "result", text: "score 86/100 · VALIDÉE · le bot s'améliore" },
+  { kind: "output", text: t("→ chargement des données NQ 5 min · 2011–2025", "→ loading NQ 5-min data · 2011–2025") },
+  { kind: "output", text: t("[1/7] backtest 15 ans ....... 2 716 trades", "[1/7] backtest 15 years ..... 2,716 trades") },
+  { kind: "success", text: t("      ✓ robustesse historique", "      ✓ historical robustness"), validates: 0 },
+  {
+    kind: "output",
+    text: t("[2/7] hors échantillon 5 ans (2021–2025) ... PF 1,38", "[2/7] out of sample 5 years (2021–2025) ... PF 1.38"),
+  },
+  { kind: "success", text: t("      ✓ tient sur données jamais vues", "      ✓ holds on unseen data"), validates: 1 },
+  {
+    kind: "output",
+    text: t("[3/7] anti-surapprentissage ... walk-forward 9/10 · DSR 0,97", "[3/7] anti-overfitting ... walk-forward 9/10 · DSR 0.97"),
+  },
+  { kind: "success", text: t("      ✓ pas de sur-optimisation", "      ✓ no over-optimisation"), validates: 2 },
+  {
+    kind: "output",
+    text: t("[4/7] IC signal / rendement futur ... 0,08 (seuil 0,05)", "[4/7] IC signal / future return ... 0.08 (threshold 0.05)"),
+  },
+  { kind: "success", text: t("      ✓ le signal prédit vraiment", "      ✓ the signal really predicts"), validates: 3 },
+  {
+    kind: "output",
+    text: t("[5/7] drawdown max 6,2 % < rendement annuel 14,8 %", "[5/7] max drawdown 6.2% < annual return 14.8%"),
+  },
+  { kind: "success", text: t("      ✓ perte maximale maîtrisée", "      ✓ maximum loss under control"), validates: 4 },
+  {
+    kind: "output",
+    text: t("[6/7] monte carlo 1 000 tirages ... 94 % positifs", "[6/7] monte carlo 1,000 runs ... 94% positive"),
+  },
+  {
+    kind: "success",
+    text: t("      ✓ résultat indépendant de l'ordre des trades", "      ✓ result independent of trade order"),
+    validates: 5,
+  },
+  {
+    kind: "output",
+    text: t("[7/7] corrélation : Book A 0,42 · Book B 0,12 · Book C 0,31", "[7/7] correlation: Book A 0.42 · Book B 0.12 · Book C 0.31"),
+  },
+  { kind: "success", text: t("      ✓ placée dans le Book B (ρ < 0,3)", "      ✓ placed in Book B (ρ < 0.3)"), validates: 6 },
+  { kind: "result", text: t("score 86/100 · VALIDÉE · le bot s'améliore", "score 86/100 · VALIDATED · the bot improves") },
 ];
 
 /**
@@ -217,11 +319,3 @@ export const improvementSteps: { strategies: number; sharpe: number; maxDrawdown
   { strategies: 14, sharpe: 1.66, maxDrawdown: -8.8 },
   { strategies: 16, sharpe: 1.84, maxDrawdown: -8.1 },
 ];
-
-/** Ce que débloque une stratégie validée (section « La contrepartie »). */
-export const perks = [
-  { icon: "layers", title: "Tous les books", text: "Chaque stratégie de chaque book du bot." },
-  { icon: "activity", title: "Signaux en temps réel", text: "Chaque entrée et sortie, au moment où elle se produit." },
-  { icon: "zap", title: "Exécution automatique", text: "Le bot exécute pour toi, sans intervention." },
-  { icon: "refresh", title: "Chaque amélioration", text: "Toutes les nouvelles stratégies et tous les nouveaux books du bot." },
-] as const;

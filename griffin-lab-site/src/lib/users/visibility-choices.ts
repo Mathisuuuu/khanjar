@@ -16,3 +16,12 @@ export const visibilityChoices: Record<ProfileVisibility, { label: string; help:
   },
   anonymous: { label: "Anonyme pour tout le monde", help: "Tu apparais comme « Anonyme » partout, sans profil." },
 };
+
+export const visibilityChoicesEn: Record<ProfileVisibility, { label: string; help: string }> = {
+  public: { label: "Public", help: "Your username and profile are visible to everyone." },
+  books: {
+    label: "Anonymous outside my books",
+    help: "Only people who share a book with you see your username and profile.",
+  },
+  anonymous: { label: "Anonymous to everyone", help: "You appear as “Anonymous” everywhere, with no profile." },
+};

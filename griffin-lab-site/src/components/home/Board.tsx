@@ -3,6 +3,8 @@ import type { CSSProperties } from "react";
 import { strategyStats, type LoopColor, type StrategyStat } from "@/content/home";
 import { getHomeLoops } from "@/lib/books/home";
 import { formatNumber, formatPercent } from "@/lib/format";
+import { makeT } from "@/lib/i18n/core";
+import { getLocale } from "@/lib/i18n/server";
 import { Sparkline } from "./Sparkline";
 import styles from "./Board.module.css";
 
@@ -39,11 +41,14 @@ const statusIcon: Record<StrategyStat["status"], React.ReactNode> = {
 };
 
 export async function Board() {
-  const loops = await getHomeLoops();
-  const totalStrategies = strategyStats.reduce((sum, stat) => sum + stat.total, 0);
+  const [loops, locale] = await Promise.all([getHomeLoops(), getLocale()]);
+  const t = makeT(locale);
+  const stats = strategyStats(t);
+  const pct = (value: number) => formatPercent(value, 1, true, locale);
+  const totalStrategies = stats.reduce((sum, stat) => sum + stat.total, 0);
 
   return (
-    <figure className={styles.board} aria-label="Aperçu du bot : books et stratégies proposées">
+    <figure className={styles.board} aria-label={t("Aperçu du bot : books et stratégies proposées", "Bot overview: books and submitted strategies")}>
       {/* Books */}
       <div className={`${styles.group} ${styles.loopGrid}`}>
         <b className={styles.groupTitle}>
@@ -53,10 +58,10 @@ export async function Board() {
           </svg>
           Books <span className={styles.count}>{loops.length}</span>
         </b>
-        <span className={`${styles.col} ${styles.hideMd}`}>Rendement · semaine</span>
+        <span className={`${styles.col} ${styles.hideMd}`}>{t("Rendement · semaine", "Return · week")}</span>
         <span className={`${styles.col} ${styles.hideMd}`}>Sharpe</span>
         <span className={`${styles.col} ${styles.hideMd}`}>DD max</span>
-        <span className={`${styles.col} ${styles.end}`}>30 J</span>
+        <span className={`${styles.col} ${styles.end}`}>{t("30 J", "30 D")}</span>
       </div>
 
       {loops.map((loop) => (
@@ -67,7 +72,7 @@ export async function Board() {
             </span>
             <div>
               <b>{loop.name}</b>
-              <small>{loop.strategies} stratégies</small>
+              <small>{loop.strategies} {t("stratégies", "strategies")}</small>
             </div>
           </div>
           <Sparkline
@@ -77,16 +82,16 @@ export async function Board() {
             className={`${styles.spark} ${styles.hideSm}`}
             label={
               loop.weekReturn !== undefined
-                ? `${loop.name} : ${formatPercent(loop.weekReturn)} sur 7 jours`
+                ? t(`${loop.name} : ${pct(loop.weekReturn)} sur 7 jours`, `${loop.name}: ${pct(loop.weekReturn)} over 7 days`)
                 : undefined
             }
           />
           <span className={`${styles.tag} ${styles.hideMd}`}>
             <i style={{ background: loop.sharpe >= 1.3 ? "#22C55E" : "#F5B524" }} />
-            Sharpe {formatNumber(loop.sharpe)}
+            Sharpe {formatNumber(loop.sharpe, 2, locale)}
           </span>
-          <span className={`${styles.muted} ${styles.hideMd}`}>{formatPercent(loop.maxDrawdown)}</span>
-          <span className={styles.month}>{formatPercent(loop.monthReturn)}</span>
+          <span className={`${styles.muted} ${styles.hideMd}`}>{pct(loop.maxDrawdown)}</span>
+          <span className={styles.month}>{pct(loop.monthReturn)}</span>
         </div>
       ))}
 
@@ -97,14 +102,14 @@ export async function Board() {
             <rect x="2.5" y="3" width="13" height="12" rx="2.5" fill="none" stroke="#C9CCD1" strokeWidth="1.8" />
             <path d="M6 7h6M6 11h4" stroke="#C9CCD1" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
-          Stratégies <span className={styles.count}>{totalStrategies}</span>
+          {t("Stratégies", "Strategies")} <span className={styles.count}>{totalStrategies}</span>
         </b>
-        <span className={`${styles.col} ${styles.hideMd}`}>Cette semaine</span>
-        <span className={`${styles.col} ${styles.hideSm}`}>À savoir</span>
+        <span className={`${styles.col} ${styles.hideMd}`}>{t("Cette semaine", "This week")}</span>
+        <span className={`${styles.col} ${styles.hideSm}`}>{t("À savoir", "Good to know")}</span>
         <span className={`${styles.col} ${styles.end}`}>Total</span>
       </div>
 
-      {strategyStats.map((stat) => (
+      {stats.map((stat) => (
         <div key={stat.status} className={`${styles.row} ${styles.statGrid}`}>
           <div className={styles.name}>
             <span className={styles.statusIcon}>{statusIcon[stat.status]}</span>
@@ -121,10 +126,12 @@ export async function Board() {
 
       <figcaption className={styles.caption}>
         <span>
-          Un book regroupe plusieurs stratégies décorrélées. Quand deux stratégies sont corrélées, la nouvelle
-          rejoint un autre book.
+          {t(
+            "Un book regroupe plusieurs stratégies décorrélées. Quand deux stratégies sont corrélées, la nouvelle rejoint un autre book.",
+            "A book groups several uncorrelated strategies. When two strategies are correlated, the new one joins another book.",
+          )}
         </span>
-        <Link href="/proposer">Voir votre file</Link>
+        <Link href="/proposer">{t("Voir votre file", "See your queue")}</Link>
       </figcaption>
     </figure>
   );

@@ -4,6 +4,8 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/Button";
 import type { FormState } from "@/app/recherches/actions";
 import type { GroupKind, Visibility } from "@/lib/research/types";
+import { useMessage, useT } from "@/components/i18n/LocaleProvider";
+import type { T } from "@/lib/i18n/core";
 import styles from "./Research.module.css";
 
 type GroupFormProps = {
@@ -14,14 +16,14 @@ type GroupFormProps = {
   submitLabel: string;
 };
 
-const visibilityOptions: { value: Visibility; label: string; help: string }[] = [
-  { value: "public", label: "Public", help: "Visible par tout le monde." },
-  { value: "private", label: "Privé", help: "Toi et les membres invités." },
+const visibilityOptions = (t: T): { value: Visibility; label: string; help: string }[] => [
+  { value: "public", label: "Public", help: t("Visible par tout le monde.", "Visible to everyone.") },
+  { value: "private", label: t("Privé", "Private"), help: t("Toi et les membres invités.", "You and invited members.") },
 ];
 
-const kindOptions: { value: GroupKind; label: string; help: string }[] = [
-  { value: "official", label: "Griffin Lab", help: "Recherche officielle de l'équipe." },
-  { value: "community", label: "Communauté", help: "Recherche personnelle partagée." },
+const kindOptions = (t: T): { value: GroupKind; label: string; help: string }[] => [
+  { value: "official", label: "Griffin Lab", help: t("Recherche officielle de l'équipe.", "Official team research.") },
+  { value: "community", label: t("Communauté", "Community"), help: t("Recherche personnelle partagée.", "Shared personal research.") },
 ];
 
 /** Création d'un groupe et réglages (nom, description, visibilité). */
@@ -29,12 +31,14 @@ export function GroupForm({ action, initial, canChooseKind, submitLabel }: Group
   const [state, formAction, pending] = useActionState(action, {});
   const values: Record<string, string | undefined> = { ...initial, ...state.values };
   const errors = state.fieldErrors ?? {};
+  const t = useT();
+  const message = useMessage();
 
   return (
     <form action={formAction} className={styles.form} noValidate>
       <div className={styles.field}>
         <label className={styles.label} htmlFor="group-name">
-          Nom du groupe
+          {t("Nom du groupe", "Group name")}
         </label>
         <input
           id="group-name"
@@ -43,9 +47,9 @@ export function GroupForm({ action, initial, canChooseKind, submitLabel }: Group
           maxLength={80}
           defaultValue={values.name}
           aria-invalid={!!errors.name}
-          placeholder="Ex. Momentum intraday sur le BTC"
+          placeholder={t("Ex. Momentum intraday sur le BTC", "e.g. Intraday momentum on BTC")}
         />
-        {errors.name && <span className={styles.error}>{errors.name}</span>}
+        {errors.name && <span className={styles.error}>{message(errors.name)}</span>}
       </div>
 
       <div className={styles.field}>
@@ -58,30 +62,30 @@ export function GroupForm({ action, initial, canChooseKind, submitLabel }: Group
           maxLength={600}
           defaultValue={values.description}
           aria-invalid={!!errors.description}
-          placeholder="Le sujet, les questions étudiées, ce que les membres peuvent partager."
+          placeholder={t("Le sujet, les questions étudiées, ce que les membres peuvent partager.", "The topic, the questions studied, what members can share.")}
         />
-        {errors.description && <span className={styles.error}>{errors.description}</span>}
+        {errors.description && <span className={styles.error}>{message(errors.description)}</span>}
       </div>
 
       {canChooseKind && (
-        <RadioGroup name="kind" legend="Type de recherche" options={kindOptions} value={values.kind ?? "community"} />
+        <RadioGroup name="kind" legend={t("Type de recherche", "Research type")} options={kindOptions(t)} value={values.kind ?? "community"} />
       )}
 
       <RadioGroup
         name="visibility"
-        legend="Visibilité"
-        options={visibilityOptions}
+        legend={t("Visibilité", "Visibility")}
+        options={visibilityOptions(t)}
         value={values.visibility ?? "public"}
-        error={errors.visibility}
+        error={message(errors.visibility)}
       />
 
       <div className={styles.formActions}>
         <Button type="submit" disabled={pending}>
-          {pending ? "Enregistrement…" : submitLabel}
+          {pending ? t("Enregistrement…", "Saving…") : submitLabel}
         </Button>
         {state.message && (
           <span className={state.ok ? styles.success : styles.error} role="status">
-            {state.message}
+            {message(state.message)}
           </span>
         )}
       </div>

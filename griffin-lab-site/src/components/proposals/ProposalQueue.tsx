@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { Mascot } from "@/components/ui/Mascot";
+import { useLocale, useMessage } from "@/components/i18n/LocaleProvider";
 import { formatShortDate } from "@/lib/format";
-import { PROPOSAL_STATUSES, statusLabels, typeLabels, type ProposalStatus, type PublicProposal } from "@/lib/proposals/types";
+import { makeT } from "@/lib/i18n/core";
+import { marketLabel, PROPOSAL_STATUSES, statusLabel, typeLabel, type ProposalStatus, type PublicProposal } from "@/lib/proposals/types";
 import panel from "./Panel.module.css";
 import { StatusPill } from "./StatusPill";
 import styles from "./ProposalQueue.module.css";
@@ -20,6 +22,9 @@ const EXCERPT = 220;
 
 /** Propositions de l'utilisateur connecté (l'API ne renvoie que les siennes). */
 export function ProposalQueue({ proposals, loading, error }: ProposalQueueProps) {
+  const locale = useLocale();
+  const t = makeT(locale);
+  const message = useMessage();
   const [filter, setFilter] = useState<Filter>("all");
   const visible = filter === "all" ? proposals : proposals.filter((p) => p.status === filter);
   const count = (status: Filter) => (status === "all" ? proposals.length : proposals.filter((p) => p.status === status).length);
@@ -28,11 +33,11 @@ export function ProposalQueue({ proposals, loading, error }: ProposalQueueProps)
   return (
     <div className={panel.panel}>
       <div className={panel.head}>
-        <h2>Mes propositions</h2>
-        <div className={styles.chips} role="group" aria-label="Filtrer par statut">
+        <h2>{t("Mes propositions", "My submissions")}</h2>
+        <div className={styles.chips} role="group" aria-label={t("Filtrer par statut", "Filter by status")}>
           {filters.map((f) => (
             <button key={f} type="button" className={styles.chip} data-status={f} aria-pressed={filter === f} onClick={() => setFilter(f)}>
-              {f === "all" ? "Toutes" : statusLabels[f]} <b>{count(f)}</b>
+              {f === "all" ? t("Toutes", "All") : statusLabel(f, locale)} <b>{count(f)}</b>
             </button>
           ))}
         </div>
@@ -41,13 +46,16 @@ export function ProposalQueue({ proposals, loading, error }: ProposalQueueProps)
       {visible.length === 0 ? (
         <div className={panel.empty}>
           <Mascot width={34} />
-          <b>{emptyTitle({ loading, error, total: proposals.length })}</b>
+          <b>{emptyTitle({ loading, error, total: proposals.length, t })}</b>
           <span>
             {error
-              ? "Recharge la page dans un instant."
+              ? t("Recharge la page dans un instant.", "Reload the page in a moment.")
               : proposals.length
-                ? "Choisis un autre filtre."
-                : "Tes propositions apparaissent ici avec leur statut. Toi seul les vois."}
+                ? t("Choisis un autre filtre.", "Pick another filter.")
+                : t(
+                    "Tes propositions apparaissent ici avec leur statut. Toi seul les vois.",
+                    "Your submissions appear here with their status. Only you can see them.",
+                  )}
           </span>
         </div>
       ) : (
@@ -61,9 +69,9 @@ export function ProposalQueue({ proposals, loading, error }: ProposalQueueProps)
                 </div>
                 <div className={styles.meta}>
                   <span>@{p.pseudo}</span>
-                  <span>{typeLabels[p.type]}</span>
-                  <span>{p.market}</span>
-                  <span>{formatShortDate(p.createdAt)}</span>
+                  <span>{typeLabel(p.type, locale)}</span>
+                  <span>{marketLabel(p.market, locale)}</span>
+                  <span>{formatShortDate(p.createdAt, locale)}</span>
                 </div>
                 <p>
                   {p.description.slice(0, EXCERPT)}
@@ -75,7 +83,7 @@ export function ProposalQueue({ proposals, loading, error }: ProposalQueueProps)
                     {p.paper.authors && ` · ${p.paper.authors}`}
                   </p>
                 )}
-                {p.status === "rejected" && p.reason && <div className={styles.reason}>Raison : {p.reason}</div>}
+                {p.status === "rejected" && p.reason && <div className={styles.reason}>{t("Raison :", "Reason:")} {message(p.reason)}</div>}
                 {p.status === "validated" && (
                   <div className={`${styles.reason} ${styles.positive}`}>
                     Score {p.score ?? "—"}/100{p.reason && ` · ${p.reason}`}
@@ -90,8 +98,18 @@ export function ProposalQueue({ proposals, loading, error }: ProposalQueueProps)
   );
 }
 
-function emptyTitle({ loading, error, total }: { loading: boolean; error: string | null; total: number }) {
-  if (loading) return "Chargement de la file…";
-  if (error) return "Impossible de charger la file";
-  return total ? "Aucune proposition avec ce statut" : "Tu n'as encore rien proposé";
+function emptyTitle({
+  loading,
+  error,
+  total,
+  t,
+}: {
+  loading: boolean;
+  error: string | null;
+  total: number;
+  t: ReturnType<typeof makeT>;
+}) {
+  if (loading) return t("Chargement de la file…", "Loading the queue…");
+  if (error) return t("Impossible de charger la file", "Couldn't load the queue");
+  return total ? t("Aucune proposition avec ce statut", "No submission with this status") : t("Tu n'as encore rien proposé", "You haven't submitted anything yet");
 }

@@ -7,6 +7,10 @@ export const DEFAULT_AFTER_SIGN_IN = "/compte";
  */
 export function safeCallbackUrl(value: unknown): string {
   if (typeof value !== "string") return DEFAULT_AFTER_SIGN_IN;
-  if (!value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) return DEFAULT_AFTER_SIGN_IN;
+  if (!value.startsWith("/") || value.length > 512) return DEFAULT_AFTER_SIGN_IN;
+  // les navigateurs ignorent tabulations et retours à la ligne dans une adresse, et lisent « \ » comme « / » :
+  // « /\t/site.com » ou « /\site.com » deviendraient « //site.com », un autre site
+  if (/[\u0000-\u001f\u007f\\]/.test(value)) return DEFAULT_AFTER_SIGN_IN;
+  if (value.startsWith("//")) return DEFAULT_AFTER_SIGN_IN;
   return value;
 }

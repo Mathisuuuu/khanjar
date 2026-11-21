@@ -9,6 +9,7 @@ import {
   signUpWithEmail,
   type AuthFormState,
 } from "@/app/connexion/actions";
+import { useMessage, useT } from "@/components/i18n/LocaleProvider";
 import { Mascot } from "@/components/ui/Mascot";
 import { BrandIcon } from "@/components/ui/BrandIcon";
 import type { OAuthProviderId } from "@/lib/auth-providers";
@@ -31,6 +32,7 @@ type AuthPanelProps = {
 };
 
 export function AuthPanel({ providers, callbackUrl, verified = false, reset = false }: AuthPanelProps) {
+  const t = useT();
   const [mode, setMode] = useState<Mode>("signin");
   const [discord, ...others] = providers;
   const proposing = callbackUrl === "/proposer";
@@ -39,22 +41,22 @@ export function AuthPanel({ providers, callbackUrl, verified = false, reset = fa
     <div className={styles.card}>
       <div className={styles.top}>
         <Mascot width={34} />
-        <h1>{mode === "signin" ? "Content de te revoir" : "Crée ton compte"}</h1>
+        <h1>{mode === "signin" ? t("Content de te revoir", "Welcome back") : t("Crée ton compte", "Create your account")}</h1>
         <p>
           {proposing
-            ? "Connecte-toi pour proposer ta stratégie."
-            : "Pour proposer tes stratégies et suivre leur statut."}
+            ? t("Connecte-toi pour proposer ta stratégie.", "Sign in to submit your strategy.")
+            : t("Pour proposer tes stratégies et suivre leur statut.", "To submit your strategies and follow their status.")}
         </p>
       </div>
 
       {verified && (
         <p className={styles.notice} role="status">
-          Adresse confirmée ! Tu peux maintenant te connecter.
+          {t("Adresse confirmée ! Tu peux maintenant te connecter.", "Email confirmed! You can now sign in.")}
         </p>
       )}
       {reset && (
         <p className={styles.notice} role="status">
-          Mot de passe changé ! Connecte-toi avec le nouveau.
+          {t("Mot de passe changé ! Connecte-toi avec le nouveau.", "Password changed! Sign in with the new one.")}
         </p>
       )}
 
@@ -68,21 +70,28 @@ export function AuthPanel({ providers, callbackUrl, verified = false, reset = fa
       </div>
 
       <div className={styles.separator}>
-        <span>ou avec ton e-mail</span>
+        <span>{t("ou avec ton e-mail", "or with your email")}</span>
       </div>
 
       {/* la clé remet le formulaire à zéro quand on change de mode */}
       <EmailForm key={mode} mode={mode} callbackUrl={callbackUrl} />
 
       <p className={styles.switch}>
-        {mode === "signin" ? "Pas encore de compte ?" : "Déjà un compte ?"}{" "}
+        {mode === "signin" ? t("Pas encore de compte ?", "No account yet?") : t("Déjà un compte ?", "Already have an account?")}{" "}
         <button type="button" onClick={() => setMode(mode === "signin" ? "signup" : "signin")}>
-          {mode === "signin" ? "Créer un compte" : "Se connecter"}
+          {mode === "signin" ? t("Créer un compte", "Create an account") : t("Se connecter", "Sign in")}
         </button>
       </p>
 
       <p className={styles.legal}>
-        En continuant, tu acceptes les <Link href="/a-propos#regles">règles de contribution</Link>.
+        {t(
+          <>
+            En continuant, tu acceptes les <Link href="/a-propos#regles">règles de contribution</Link>.
+          </>,
+          <>
+            By continuing, you accept the <Link href="/a-propos#regles">contribution rules</Link>.
+          </>,
+        )}
       </p>
     </div>
   );
@@ -91,17 +100,18 @@ export function AuthPanel({ providers, callbackUrl, verified = false, reset = fa
 type ProviderButtonProps = { provider: ProviderOption; callbackUrl: string; featured?: boolean };
 
 function ProviderButton({ provider, callbackUrl, featured = false }: ProviderButtonProps) {
+  const t = useT();
   const action = signInWithProvider.bind(null, provider.id, callbackUrl);
   return (
     <form action={action} className={featured ? styles.featuredForm : undefined}>
       <button
         type="submit"
         disabled={!provider.enabled}
-        title={provider.enabled ? undefined : `Connexion ${provider.label} pas encore configurée`}
+        title={provider.enabled ? undefined : t(`Connexion ${provider.label} pas encore configurée`, `${provider.label} sign-in not set up yet`)}
         className={`glass ${styles.provider} ${featured ? styles.discord : ""}`}
       >
         <BrandIcon name={provider.id} size={featured ? 22 : 18} />
-        {featured ? `Continuer avec ${provider.label}` : provider.label}
+        {featured ? t(`Continuer avec ${provider.label}`, `Continue with ${provider.label}`) : provider.label}
       </button>
     </form>
   );
@@ -112,6 +122,8 @@ const initialState: AuthFormState = {};
 function EmailForm({ mode, callbackUrl }: { mode: Mode; callbackUrl: string }) {
   const [state, formAction, pending] = useActionState(mode === "signin" ? signInWithEmail : signUpWithEmail, initialState);
   const errors = state.fieldErrors ?? {};
+  const t = useT();
+  const message = useMessage();
 
   return (
     <form action={formAction} className={styles.form} noValidate>
@@ -119,48 +131,48 @@ function EmailForm({ mode, callbackUrl }: { mode: Mode; callbackUrl: string }) {
       {mode === "signup" && (
         <Field
           name="name"
-          label="Pseudo"
+          label={t("Pseudo", "Username")}
           autoComplete="nickname"
           defaultValue={state.values?.name}
-          error={errors.name}
-          help="Affiché sur le site. 3 à 24 caractères, sans espace."
+          error={message(errors.name)}
+          help={t("Affiché sur le site. 3 à 24 caractères, sans espace.", "Shown on the site. 3 to 24 characters, no spaces.")}
         />
       )}
       <Field
         name="email"
-        label="E-mail"
+        label={t("E-mail", "Email")}
         type="email"
         autoComplete="email"
         defaultValue={state.values?.email}
-        error={errors.email}
+        error={message(errors.email)}
       />
       <Field
         name="password"
-        label="Mot de passe"
+        label={t("Mot de passe", "Password")}
         type="password"
         autoComplete={mode === "signin" ? "current-password" : "new-password"}
-        error={errors.password}
-        help={mode === "signup" ? "8 caractères minimum." : undefined}
+        error={message(errors.password)}
+        help={mode === "signup" ? t("8 caractères minimum.", "At least 8 characters.") : undefined}
       />
       {mode === "signin" && (
         <Link href="/mot-de-passe-oublie" className={styles.forgot}>
-          Mot de passe oublié ?
+          {t("Mot de passe oublié ?", "Forgot your password?")}
         </Link>
       )}
 
       {state.error && (
         <p className={styles.formError} role="alert">
-          {state.error}
+          {message(state.error)}
         </p>
       )}
       {state.notice && (
         <p className={styles.notice} role="status">
-          {state.notice}
+          {message(state.notice)}
         </p>
       )}
 
       <button type="submit" className={styles.submit} disabled={pending}>
-        {pending ? "Un instant…" : mode === "signin" ? "Se connecter" : "Créer mon compte"}
+        {pending ? t("Un instant…", "One moment…") : mode === "signin" ? t("Se connecter", "Sign in") : t("Créer mon compte", "Create my account")}
       </button>
 
       {state.unverifiedEmail && <ResendButton email={state.unverifiedEmail} />}
@@ -171,6 +183,8 @@ function EmailForm({ mode, callbackUrl }: { mode: Mode; callbackUrl: string }) {
 /** « Renvoyer l'e-mail » : formulaire séparé (un formulaire ne peut pas en contenir un autre, d'où formAction). */
 function ResendButton({ email }: { email: string }) {
   const [state, resendAction, pending] = useActionState(resendVerification, initialState);
+  const t = useT();
+  const message = useMessage();
   return (
     <div className={styles.resend}>
       <button
@@ -181,11 +195,11 @@ function ResendButton({ email }: { email: string }) {
         }}
         disabled={pending}
       >
-        {pending ? "Envoi…" : "Renvoyer l'e-mail de confirmation"}
+        {pending ? t("Envoi…", "Sending…") : t("Renvoyer l'e-mail de confirmation", "Resend the confirmation email")}
       </button>
       {(state.notice || state.error) && (
         <span role="status" className={state.error ? styles.error : styles.help}>
-          {state.notice ?? state.error}
+          {message(state.notice ?? state.error)}
         </span>
       )}
     </div>

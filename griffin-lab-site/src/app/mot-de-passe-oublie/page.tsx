@@ -8,8 +8,12 @@ import { PasswordFields, RequestResetForm, ResetLinkForm } from "@/components/au
 import { isResetLinkValid } from "@/lib/users/password-reset";
 import { signInSchema } from "@/lib/users/schema";
 import { RESET_COOKIE } from "@/lib/users/verify-cookie";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: "Mot de passe oublié", robots: { index: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t("Mot de passe oublié", "Forgot password"), robots: { index: false } };
+}
 
 type Props = { searchParams: Promise<{ token?: string; changer?: string }> };
 
@@ -22,7 +26,8 @@ function KeyIcon() {
   );
 }
 
-function Shell({ title, lead, children }: { title: string; lead: string; children: React.ReactNode }) {
+async function Shell({ title, lead, children }: { title: string; lead: string; children: React.ReactNode }) {
+  const t = await getT();
   return (
     <div className={styles.page}>
       <div className={styles.card}>
@@ -35,7 +40,7 @@ function Shell({ title, lead, children }: { title: string; lead: string; childre
         </div>
         {children}
         <p className={styles.footer}>
-          Tu t&apos;en souviens ? <Link href="/connexion">Se connecter</Link>
+          {t("Tu t'en souviens ?", "Remember it?")} <Link href="/connexion">{t("Se connecter", "Sign in")}</Link>
         </p>
       </div>
     </div>
@@ -49,14 +54,18 @@ function Shell({ title, lead, children }: { title: string; lead: string; childre
  */
 export default async function ForgotPasswordPage({ searchParams }: Props) {
   const { token, changer } = await searchParams;
+  const t = await getT();
 
   if (token) {
     return (await isResetLinkValid(token)) ? (
-      <Shell title="Nouveau mot de passe" lead="Choisis ton nouveau mot de passe Griffin Lab.">
+      <Shell title={t("Nouveau mot de passe", "New password")} lead={t("Choisis ton nouveau mot de passe Griffin Lab.", "Choose your new Griffin Lab password.")}>
         <ResetLinkForm token={token} />
       </Shell>
     ) : (
-      <Shell title="Lien expiré" lead="Ce lien a expiré ou a déjà servi. Demande un nouveau code ci-dessous.">
+      <Shell
+        title={t("Lien expiré", "Link expired")}
+        lead={t("Ce lien a expiré ou a déjà servi. Demande un nouveau code ci-dessous.", "This link has expired or has already been used. Request a new code below.")}
+      >
         <RequestResetForm />
       </Shell>
     );
@@ -66,14 +75,17 @@ export default async function ForgotPasswordPage({ searchParams }: Props) {
   if (pending.success && !changer) {
     return (
       <Shell
-        title="Vérifie ta boîte mail"
-        lead="Si un compte existe pour cette adresse, un code à 6 chiffres vient d'y être envoyé. Entre-le avec ton nouveau mot de passe."
+        title={t("Vérifie ta boîte mail", "Check your inbox")}
+        lead={t(
+          "Si un compte existe pour cette adresse, un code à 6 chiffres vient d'y être envoyé. Entre-le avec ton nouveau mot de passe.",
+          "If an account exists for this address, a 6-digit code has just been sent to it. Enter it with your new password.",
+        )}
       >
         <CodeForm
           email={pending.data}
           action={resetPasswordWithCodeAction}
           resend={resendPasswordReset}
-          submitLabel="Changer mon mot de passe"
+          submitLabel={t("Changer mon mot de passe", "Change my password")}
         >
           <PasswordFields />
         </CodeForm>
@@ -82,7 +94,13 @@ export default async function ForgotPasswordPage({ searchParams }: Props) {
   }
 
   return (
-    <Shell title="Mot de passe oublié" lead="Indique l'adresse de ton compte : on t'envoie un code pour choisir un nouveau mot de passe.">
+    <Shell
+      title={t("Mot de passe oublié", "Forgot password")}
+      lead={t(
+        "Indique l'adresse de ton compte : on t'envoie un code pour choisir un nouveau mot de passe.",
+        "Enter your account's email address: we'll send you a code to choose a new password.",
+      )}
+    >
       <RequestResetForm email={pending.success ? pending.data : undefined} />
     </Shell>
   );

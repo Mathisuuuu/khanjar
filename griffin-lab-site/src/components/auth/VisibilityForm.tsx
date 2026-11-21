@@ -4,30 +4,34 @@ import { useActionState } from "react";
 import { setVisibilityAction } from "@/app/compte/actions";
 import styles from "@/app/compte/compte.module.css";
 import { Button } from "@/components/ui/Button";
-import { PROFILE_VISIBILITIES, visibilityChoices, type ProfileVisibility } from "@/lib/users/visibility-choices";
+import { useLocale, useMessage } from "@/components/i18n/LocaleProvider";
+import { PROFILE_VISIBILITIES, visibilityChoices, visibilityChoicesEn, type ProfileVisibility } from "@/lib/users/visibility-choices";
 
 /** Choix de l'anonymat sur /compte. */
 export function VisibilityForm({ current }: { current: ProfileVisibility }) {
   const [state, action, pending] = useActionState(setVisibilityAction, {});
+  const locale = useLocale();
+  const message = useMessage();
+  const choices = locale === "en" ? visibilityChoicesEn : visibilityChoices;
   return (
     <form action={action} className={styles.visibility} id="visibilite">
       <fieldset>
-        <legend>Qui voit mon pseudo et mon profil ?</legend>
+        <legend>{locale === "en" ? "Who sees my username and profile?" : "Qui voit mon pseudo et mon profil ?"}</legend>
         {PROFILE_VISIBILITIES.map((value) => (
           <label key={value} className={styles.choice}>
             <input type="radio" name="visibility" value={value} defaultChecked={current === value} />
             <span>
-              <b>{visibilityChoices[value].label}</b>
-              <small>{visibilityChoices[value].help}</small>
+              <b>{choices[value].label}</b>
+              <small>{choices[value].help}</small>
             </span>
           </label>
         ))}
       </fieldset>
       <div className={styles.visibilityFoot}>
         <Button type="submit" size="sm" variant="glass" disabled={pending}>
-          {pending ? "…" : "Enregistrer"}
+          {pending ? "…" : locale === "en" ? "Save" : "Enregistrer"}
         </Button>
-        {state.message && <span className={state.ok ? styles.saved : styles.failed}>{state.message}</span>}
+        {state.message && <span className={state.ok ? styles.saved : styles.failed}>{message(state.message)}</span>}
       </div>
     </form>
   );

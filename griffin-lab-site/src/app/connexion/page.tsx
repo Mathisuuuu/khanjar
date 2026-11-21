@@ -1,14 +1,21 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
 import { AuthPanel } from "@/components/auth/AuthPanel";
 import { isProviderConfigured, oauthProviders } from "@/lib/auth-providers";
+import { getT } from "@/lib/i18n/server";
 import { safeCallbackUrl } from "@/lib/safe-redirect";
+import { getViewer } from "@/lib/viewer";
 
-export const metadata: Metadata = {
-  title: "Connexion",
-  description: "Connecte-toi à Griffin Lab avec Discord, Google, Apple, GitHub ou ton e-mail.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return {
+    title: t("Connexion", "Sign in"),
+    description: t(
+      "Connecte-toi à Griffin Lab avec Discord, Google, Apple, GitHub ou ton e-mail.",
+      "Sign in to Griffin Lab with Discord, Google, Apple, GitHub or your email.",
+    ),
+  };
+}
 
 type Props = { searchParams: Promise<{ callbackUrl?: string; verifie?: string; reinitialise?: string }> };
 
@@ -16,7 +23,8 @@ export default async function ConnexionPage({ searchParams }: Props) {
   const params = await searchParams;
   // page à rejoindre après la connexion (ex. /proposer), chemins internes uniquement
   const callbackUrl = safeCallbackUrl(params.callbackUrl);
-  if (await auth()) redirect(callbackUrl);
+  // session valide uniquement : une session révoquée (compte banni, mot de passe changé) reste sur cette page
+  if (await getViewer()) redirect(callbackUrl);
 
   const providers = oauthProviders.map((p) => ({ id: p.id, label: p.label, enabled: isProviderConfigured(p.id) }));
 
