@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { strategyStats, type LoopColor, type StrategyStat } from "@/content/home";
 import { getHomeLoops } from "@/lib/books/home";
-import { formatNumber, formatPercent } from "@/lib/format";
+import { getStrategyCounts } from "@/lib/proposals/counts";
+import { formatNumber, formatPercent } from "@/lib/shared/format";
 import { makeT } from "@/lib/i18n/core";
 import { getLocale } from "@/lib/i18n/server";
 import { Sparkline } from "./Sparkline";
@@ -41,9 +42,10 @@ const statusIcon: Record<StrategyStat["status"], React.ReactNode> = {
 };
 
 export async function Board() {
-  const [loops, locale] = await Promise.all([getHomeLoops(), getLocale()]);
+  const [loops, locale, counts] = await Promise.all([getHomeLoops(), getLocale(), getStrategyCounts()]);
   const t = makeT(locale);
-  const stats = strategyStats(t);
+  // chiffres de départ + propositions réelles (lib/proposals/counts.ts)
+  const stats = strategyStats(t).map((stat) => ({ ...stat, total: counts[stat.status].total, thisWeek: counts[stat.status].week }));
   const pct = (value: number) => formatPercent(value, 1, true, locale);
   const totalStrategies = stats.reduce((sum, stat) => sum + stat.total, 0);
 
@@ -131,7 +133,7 @@ export async function Board() {
             "A book groups several uncorrelated strategies. When two strategies are correlated, the new one joins another book.",
           )}
         </span>
-        <Link href="/proposer">{t("Voir votre file", "See your queue")}</Link>
+        <Link href="/submit">{t("Voir votre file", "See your queue")}</Link>
       </figcaption>
     </figure>
   );

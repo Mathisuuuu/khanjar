@@ -1,10 +1,12 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { announceProposalStatus } from "@/lib/discord/announce";
 import { isAdminRequest, isModeratorRequest } from "@/lib/proposals/auth";
 import { getCurrentAuthor } from "@/lib/proposals/author";
 import { getProposalRepository } from "@/lib/proposals/repository";
 import { fieldErrors, newProposalSchema } from "@/lib/proposals/schema";
 import { toPublic } from "@/lib/proposals/types";
-import { consume } from "@/lib/rate-limit";
+import { consume } from "@/lib/security/rate-limit";
+import { readJson } from "@/lib/security/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -39,12 +41,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Trop de propositions d'un coup. Réessaie dans une heure." }, { status: 429 });
   }
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
-  }
+  const body = await readJson(request); // 128 Ko au plus
+  if (body === undefined) return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
 
   const parsed = newProposalSchema.safeParse(body);
   if (!parsed.success) {
@@ -52,5 +50,6 @@ export async function POST(request: Request) {
   }
 
   const proposal = await getProposalRepository().create(parsed.data, author);
+  after(() => announceProposalStatus("pending")); // annonce anonyme sur Discord, après la réponse
   return NextResponse.json({ proposal: toPublic(proposal) }, { status: 201 });
 }

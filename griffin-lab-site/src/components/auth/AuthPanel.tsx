@@ -8,11 +8,11 @@ import {
   signInWithProvider,
   signUpWithEmail,
   type AuthFormState,
-} from "@/app/connexion/actions";
+} from "@/app/sign-in/actions";
 import { useMessage, useT } from "@/components/i18n/LocaleProvider";
 import { Mascot } from "@/components/ui/Mascot";
 import { BrandIcon } from "@/components/ui/BrandIcon";
-import type { OAuthProviderId } from "@/lib/auth-providers";
+import type { OAuthProviderId } from "@/lib/auth/providers";
 import styles from "./AuthPanel.module.css";
 
 type ProviderOption = { id: OAuthProviderId; label: string; enabled: boolean };
@@ -35,7 +35,7 @@ export function AuthPanel({ providers, callbackUrl, verified = false, reset = fa
   const t = useT();
   const [mode, setMode] = useState<Mode>("signin");
   const [discord, ...others] = providers;
-  const proposing = callbackUrl === "/proposer";
+  const proposing = callbackUrl === "/submit";
 
   return (
     <div className={styles.card}>
@@ -86,10 +86,10 @@ export function AuthPanel({ providers, callbackUrl, verified = false, reset = fa
       <p className={styles.legal}>
         {t(
           <>
-            En continuant, tu acceptes les <Link href="/a-propos#regles">règles de contribution</Link>.
+            En continuant, tu acceptes les <Link href="/about#rules">règles de contribution</Link>.
           </>,
           <>
-            By continuing, you accept the <Link href="/a-propos#regles">contribution rules</Link>.
+            By continuing, you accept the <Link href="/about#rules">contribution rules</Link>.
           </>,
         )}
       </p>
@@ -155,7 +155,7 @@ function EmailForm({ mode, callbackUrl }: { mode: Mode; callbackUrl: string }) {
         help={mode === "signup" ? t("8 caractères minimum.", "At least 8 characters.") : undefined}
       />
       {mode === "signin" && (
-        <Link href="/mot-de-passe-oublie" className={styles.forgot}>
+        <Link href="/forgot-password" className={styles.forgot}>
           {t("Mot de passe oublié ?", "Forgot your password?")}
         </Link>
       )}

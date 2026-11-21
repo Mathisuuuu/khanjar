@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Griffin Lab en vidéo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Newsreader:ital,wght@1,500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090a; --card: #111214; --card-2: #16171a; --border: rgba(255,255,255,.08); --border-2: rgba(255,255,255,.14);
+  --fg: #f7f8f8; --fg-2: #c9ccd1; --fg-3: #8a8f98;
+  --green: #22c55e; --green-2: #4ade80; --cyan: #38bdf8; --violet: #a855f7; --amber: #f5b524; --red: #ef4444;
+  --sans: Inter, system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace; --serif: Newsreader, Georgia, serif;
+}
+:root[data-theme="light"] { --bg: #08090a; }
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; background: #000; color: var(--fg); font-family: var(--sans); overflow: hidden; }
+body.render { background: var(--bg); }
+
+#viewport { position: fixed; inset: 0 0 64px 0; display: grid; place-items: center; }
+body.render #viewport { inset: 0; }
+#stage {
+  position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: 0 0;
+  background: var(--bg); overflow: hidden;
+}
+.layer { position: absolute; inset: 0; }
+.abs { position: absolute; }
+
+/* fond */
+.grid {
+  background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, #000 30%, transparent 100%);
+}
+.blob { position: absolute; width: 900px; height: 900px; border-radius: 50%; filter: blur(140px); opacity: .22; }
+
+/* typo */
+.eyebrow { font-family: var(--mono); font-size: 22px; letter-spacing: .18em; text-transform: uppercase; color: var(--green); }
+.h1 { font-size: 84px; font-weight: 800; letter-spacing: -.035em; line-height: 1.02; }
+.h2 { font-size: 64px; font-weight: 800; letter-spacing: -.03em; line-height: 1.05; }
+.serif { font-family: var(--serif); font-style: italic; font-weight: 500; letter-spacing: -.01em; }
+.lead { font-size: 30px; color: var(--fg-2); line-height: 1.4; }
+.muted { color: var(--fg-3); }
+.center { left: 0; right: 0; text-align: center; }
+
+.card {
+  position: absolute; background: linear-gradient(180deg, var(--card-2), var(--card)); border: 1px solid var(--border-2);
+  border-radius: 24px; box-shadow: 0 30px 80px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.pill { display: inline-flex; align-items: center; gap: 14px; padding: 16px 28px; border-radius: 999px; border: 1px solid var(--border-2); background: rgba(255,255,255,.05); font-size: 28px; font-weight: 600; }
+
+/* logo */
+.logo { display: flex; align-items: center; justify-content: center; gap: 28px; font-weight: 800; font-size: 120px; letter-spacing: .02em; }
+.logo .dot { color: var(--green); }
+.logo .ch { display: inline-block; }
+
+/* scène 3 : contrôles */
+.check { position: absolute; left: 30px; right: 30px; height: 74px; display: grid; grid-template-columns: 56px 1fr auto; align-items: center; gap: 22px; padding: 0 30px; border-radius: 16px; font-size: 28px; }
+.check .box { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--border-2); display: grid; place-items: center; }
+.check .val { font-family: var(--mono); font-size: 24px; color: var(--fg-2); }
+
+/* scène 5 : tableau */
+.row { position: absolute; left: 40px; right: 40px; height: 104px; display: grid; grid-template-columns: 76px 1fr 300px 170px; align-items: center; gap: 24px; border-top: 1px solid var(--border); }
+.badge { width: 60px; height: 60px; border-radius: 16px; display: grid; place-items: center; font-weight: 800; font-size: 28px; }
+.num { font-family: var(--mono); font-weight: 700; }
+
+/* commandes du lecteur */
+#controls { position: fixed; left: 0; right: 0; bottom: 0; height: 64px; display: flex; align-items: center; gap: 16px; padding: 0 20px; background: #0c0d0f; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 14px; color: var(--fg-2); }
+#controls button { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border-2); background: rgba(255,255,255,.06); color: var(--fg); cursor: pointer; font-size: 16px; }
+#controls button:focus-visible, #scrub:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+#scrub { flex: 1; accent-color: var(--green); }
+body.render #controls { display: none; }
+@media (max-width: 520px) { #controls { gap: 10px; padding: 0 12px; } #time { display: none; } }
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+
+  <!-- Fond -->
+  <div class="layer grid" id="grid"></div>
+  <div class="blob" id="blobA" style="background: var(--green)"></div>
+  <div class="blob" id="blobB" style="background: var(--cyan)"></div>
+  <div class="blob" id="blobC" style="background: var(--violet)"></div>
+
+  <!-- 1. Logo -->
+  <div class="layer" id="s1">
+    <div class="abs center" style="top: 330px">
+      <div class="logo" id="logo">
+        <svg id="mascot" viewBox="0 0 16 21" width="112" height="147" shape-rendering="crispEdges">
+          <rect x="4" y="0" width="8" height="2" fill="#3B2A1E"/><rect x="3" y="1" width="1" height="3" fill="#3B2A1E"/>
+          <rect x="4" y="2" width="8" height="6" fill="#F2C29B"/><rect x="3" y="4" width="1" height="3" fill="#F2C29B"/><rect x="12" y="3" width="1" height="4" fill="#F2C29B"/>
+          <rect x="6" y="4" width="1" height="2" fill="#0F172A"/><rect x="10" y="4" width="1" height="2" fill="#0F172A"/><rect x="7" y="7" width="3" height="1" fill="#C98E6A"/>
+          <rect x="3" y="8" width="10" height="6" fill="#F8FAFC"/><rect x="3" y="8" width="10" height="1" fill="#E2E8F0"/>
+          <rect x="1" y="9" width="2" height="4" fill="#F8FAFC"/><rect x="1" y="13" width="2" height="1" fill="#F2C29B"/>
+          <g id="arm"><rect x="13" y="6" width="2" height="4" fill="#F8FAFC"/><rect x="13" y="5" width="2" height="1" fill="#F2C29B"/></g>
+          <rect x="4" y="14" width="8" height="3" fill="#16A34A"/><rect x="4" y="17" width="3" height="2" fill="#16A34A"/><rect x="9" y="17" width="3" height="2" fill="#16A34A"/>
+          <rect x="3" y="19" width="4" height="2" fill="#64748B"/><rect x="9" y="19" width="4" height="2" fill="#64748B"/>
+        </svg>
+        <span id="wordmark"></span>
+      </div>
+    </div>
+    <div class="abs center lead" id="tagline" style="top: 560px; font-size: 40px">
+      Le bot de trading <span class="serif" style="color: var(--fg)">construit par sa communauté.</span>
+    </div>
+  </div>
+
+  <!-- 2. Trois formats -->
+  <div class="layer" id="s2">
+    <div class="abs center eyebrow" id="s2eye" style="top: 190px">01 · Proposer</div>
+    <div class="abs center h1" id="s2title" style="top: 240px">Tu as une idée de <span class="serif" style="color: var(--green)">stratégie</span> ?</div>
+    <div class="card" id="fmt0" style="left: 250px; top: 470px; width: 440px; height: 300px; padding: 44px"></div>
+    <div class="card" id="fmt1" style="left: 740px; top: 470px; width: 440px; height: 300px; padding: 44px"></div>
+    <div class="card" id="fmt2" style="left: 1230px; top: 470px; width: 440px; height: 300px; padding: 44px"></div>
+    <div class="abs center" id="s2pill" style="top: 590px"><span class="pill" style="font-size: 34px; padding: 22px 40px; border-color: rgba(34,197,94,.55); background: rgba(34,197,94,.12)">
+      <span style="width: 14px; height: 14px; border-radius: 50%; background: var(--green); box-shadow: 0 0 20px var(--green)"></span>
+      Proposée sur le site, gratuitement</span></div>
+  </div>
+
+  <!-- 3. Le test -->
+  <div class="layer" id="s3">
+    <div class="abs eyebrow" id="s3eye" style="left: 160px; top: 150px">02 · Tester</div>
+    <div class="abs h2" id="s3title" style="left: 160px; top: 200px; width: 760px">Le même test<br><span class="serif" style="color: var(--green)">pour tout le monde.</span></div>
+    <div class="abs lead" id="s3lead" style="left: 160px; top: 380px; width: 640px">Sept contrôles, sans exception. Aucune stratégie ne passe au feeling.</div>
+    <svg class="abs" id="ring" style="left: 250px; top: 520px" width="400" height="400" viewBox="0 0 400 400">
+      <circle cx="200" cy="200" r="160" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="22"/>
+      <circle id="ringArc" cx="200" cy="200" r="160" fill="none" stroke="#22c55e" stroke-width="22" stroke-linecap="round" transform="rotate(-90 200 200)" stroke-dasharray="1005.3" stroke-dashoffset="1005.3"/>
+      <text id="score" x="200" y="215" text-anchor="middle" fill="#f7f8f8" font-family="JetBrains Mono" font-weight="700" font-size="96">0</text>
+      <text x="200" y="270" text-anchor="middle" fill="#8a8f98" font-family="Inter" font-size="26">score / 100</text>
+    </svg>
+    <div class="card" id="checks" style="left: 960px; top: 160px; width: 800px; height: 760px"></div>
+    <div class="abs" id="validated" style="left: 290px; top: 940px"><span class="pill" style="color: var(--green); border-color: rgba(34,197,94,.55); background: rgba(34,197,94,.12)">✓ Stratégie validée</span></div>
+  </div>
+
+  <!-- 4. Les books -->
+  <div class="layer" id="s4">
+    <div class="abs center eyebrow" id="s4eye" style="top: 110px">03 · Placer</div>
+    <div class="abs center h2" id="s4title" style="top: 160px">Elle rejoint le book <span class="serif" style="color: var(--green)">qui lui ressemble le moins.</span></div>
+    <svg class="abs" id="books" style="left: 0; top: 0" width="1920" height="1080" viewBox="0 0 1920 1080"></svg>
+    <div class="abs center lead" id="s4lead" style="top: 950px; left: 260px; right: 260px; font-size: 27px">Corrélation sous <b class="num" style="color: var(--fg)">0,3</b> : le bot gagne une source de rendement différente, et ses pertes arrivent moins souvent en même temps.</div>
+  </div>
+
+  <!-- 5. Le tableau -->
+  <div class="layer" id="s5">
+    <div class="abs eyebrow" id="s5eye" style="left: 160px; top: 130px">04 · Suivre</div>
+    <div class="abs h2" id="s5title" style="left: 160px; top: 180px">Tout est suivi <span class="serif" style="color: var(--green)">en direct.</span></div>
+    <div class="card" id="board" style="left: 160px; top: 340px; width: 1000px; height: 520px; padding-top: 40px">
+      <div class="abs" style="left: 40px; top: 34px; font-size: 24px; font-weight: 700">Books <span class="muted num" style="font-size: 20px; margin-left: 8px">3</span></div>
+      <div class="abs muted" style="right: 40px; top: 38px; font-family: var(--mono); font-size: 18px; letter-spacing: .1em">30 J</div>
+    </div>
+    <div class="card" id="counter" style="left: 1220px; top: 340px; width: 540px; height: 520px; padding: 40px"></div>
+    <div class="abs muted" id="s5note" style="left: 160px; top: 900px; font-size: 22px">Rendements simulés affichés sur le site. Les performances passées ne garantissent pas les performances futures.</div>
+  </div>
+
+  <!-- 6. Communauté -->
+  <div class="layer" id="s6">
+    <div class="abs center eyebrow" id="s6eye" style="top: 170px">05 · Ensemble</div>
+    <div class="abs center h1" id="s6title" style="top: 220px">Une communauté, <span class="serif" style="color: var(--green)">100 % gratuite.</span></div>
+    <div class="card" id="com0" style="left: 200px; top: 470px; width: 480px; height: 360px; padding: 44px"></div>
+    <div class="card" id="com1" style="left: 720px; top: 470px; width: 480px; height: 360px; padding: 44px"></div>
+    <div class="card" id="com2" style="left: 1240px; top: 470px; width: 480px; height: 360px; padding: 44px"></div>
+  </div>
+
+  <!-- 7. Appel à l'action -->
+  <div class="layer" id="s7">
+    <div class="abs center h1" id="s7title" style="top: 330px">Propose l'idée.<br><span class="serif" style="color: var(--green)">Débloque le bot.</span></div>
+    <div class="abs center" id="s7cta" style="top: 610px"><span class="pill" style="font-size: 34px; padding: 22px 44px; background: var(--green); color: #04130a; border-color: transparent">Proposer une stratégie →</span></div>
+    <div class="abs center muted" id="s7url" style="top: 730px; font-family: var(--mono); font-size: 28px">57.129.191.2/submit</div>
+    <div class="abs center muted" id="s7legal" style="top: 990px; font-size: 20px">Rien dans cette vidéo n'est un conseil financier. Le trading comporte un risque de perte en capital.</div>
+  </div>
+
+</div></div>
+
+<div id="controls">
+  <button id="play" aria-label="Lecture / pause">❚❚</button>
+  <button id="restart" aria-label="Recommencer">↺</button>
+  <input id="scrub" type="range" min="0" max="57" step="0.01" value="0" aria-label="Position dans la vidéo">
+  <span id="time">0:00 / 0:57</span>
+</div>
+
+<script>
+const DURATION = 57;
+const $ = (id) => document.getElementById(id);
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+const easeInOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const back = (x) => { const c = 1.6; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const lerp = (a, b, x) => a + (b - a) * x;
+
+/** Entrée (montée + fondu) puis sortie d'un élément. */
+function show(el, t, inAt, outAt, { dy = 40, dur = 0.7, scale = 0, outDur = 0.5 } = {}) {
+  const i = easeOut(prog(t, inAt, inAt + dur));
+  const o = outAt == null ? 0 : easeInOut(prog(t, outAt, outAt + outDur));
+  const s = scale ? lerp(1 - scale, 1, i) * lerp(1, 1 - scale / 2, o) : 1;
+  el.style.opacity = (i * (1 - o)).toFixed(3);
+  el.style.transform = `translateY(${(1 - i) * dy - o * dy * 0.5}px) scale(${s})`;
+}
+const visible = (el, on) => (el.style.display = on ? "" : "none");
+
+/* ---------- construction du contenu ---------- */
+
+// 1. mot « GRIFFIN·LAB » lettre par lettre
+"GRIFFIN·LAB".split("").forEach((c) => {
+  const s = document.createElement("span");
+  s.className = "ch" + (c === "·" ? " dot" : "");
+  s.textContent = c;
+  $("wordmark").appendChild(s);
+});
+
+// 2. formats
+const formats = [
+  ["💡", "Une idée", "La règle en quelques phrases.", "var(--amber)"],
+  ["⌨️", "Un script", "Pine Script ou Python.", "var(--cyan)"],
+  ["📄", "Un papier", "Une recherche SSRN ou arXiv.", "var(--violet)"],
+];
+formats.forEach(([icon, title, text, color], i) => {
+  $("fmt" + i).innerHTML = `
+    <div style="width:84px;height:84px;border-radius:22px;display:grid;place-items:center;font-size:44px;background:color-mix(in srgb, ${color} 16%, transparent);border:1px solid color-mix(in srgb, ${color} 45%, transparent)">${icon}</div>
+    <div style="font-size:40px;font-weight:800;margin-top:36px;letter-spacing:-.02em">${title}</div>
+    <div class="lead" style="font-size:26px;margin-top:10px">${text}</div>`;
+});
+
+// 3. contrôles
+const checks = [
+  ["Backtest", "15 ans · 2011–2025"],
+  ["Hors échantillon", "5 ans · 2021–2025"],
+  ["Anti-surapprentissage", "walk-forward"],
+  ["IC (coefficient d'information)", "IC > 0,05"],
+  ["Drawdown max", "< rendement annuel"],
+  ["Monte Carlo", "1 000 tirages"],
+  ["Placement dans un book", "ρ < 0,3"],
+];
+checks.forEach(([name, value], i) => {
+  const row = document.createElement("div");
+  row.className = "check";
+  row.id = "chk" + i;
+  row.style.top = 40 + i * 100 + "px";
+  row.innerHTML = `<span class="box"><svg width="22" height="22" viewBox="0 0 22 22"><path d="m5 11.5 4 4 8-9" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="20" stroke-dashoffset="20"/></svg></span>
+    <span style="font-weight:600">${name}</span><span class="val">${value}</span>`;
+  $("checks").appendChild(row);
+});
+
+// 4. books (SVG)
+const NS = "http://www.w3.org/2000/svg";
+const svg = (tag, attrs, parent) => {
+  const el = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  (parent ?? $("books")).appendChild(el);
+  return el;
+};
+const BOOKS = [
+  { id: "A", color: "#38bdf8", x: 480, y: 470, rho: 0.42 },
+  { id: "B", color: "#a855f7", x: 960, y: 430, rho: 0.12 },
+  { id: "C", color: "#f5b524", x: 1440, y: 470, rho: 0.58 },
+];
+const NEW = { x: 960, y: 820 };
+BOOKS.forEach((b) => {
+  b.line = svg("line", { x1: NEW.x, y1: NEW.y, x2: NEW.x, y2: NEW.y, stroke: "#8a8f98", "stroke-width": 4, "stroke-dasharray": "10 10", "stroke-linecap": "round" });
+});
+BOOKS.forEach((b) => {
+  b.g = svg("g", {});
+  b.halo = svg("circle", { cx: b.x, cy: b.y, r: 120, fill: b.color, opacity: 0.12 }, b.g);
+  svg("circle", { cx: b.x, cy: b.y, r: 92, fill: "#111214", stroke: b.color, "stroke-width": 4 }, b.g);
+  const t = svg("text", { x: b.x, y: b.y + 22, "text-anchor": "middle", fill: b.color, "font-family": "Inter", "font-weight": 800, "font-size": 64 }, b.g);
+  t.textContent = b.id;
+  const l = svg("text", { x: b.x, y: b.y - 120, "text-anchor": "middle", fill: "#c9ccd1", "font-family": "Inter", "font-weight": 600, "font-size": 28 }, b.g);
+  l.textContent = "Book " + b.id;
+  b.tag = svg("g", {});
+  b.tagBg = svg("rect", { width: 150, height: 52, rx: 26, fill: "#16171a", stroke: "rgba(255,255,255,.14)" }, b.tag);
+  b.tagText = svg("text", { x: 75, y: 35, "text-anchor": "middle", fill: "#f7f8f8", "font-family": "JetBrains Mono", "font-weight": 700, "font-size": 26 }, b.tag);
+});
+const plusOne = svg("text", { x: 1080, y: 380, fill: "#4ade80", "font-family": "Inter", "font-weight": 800, "font-size": 34 });
+plusOne.textContent = "+1 stratégie";
+const dotG = svg("g", {});
+const dotHalo = svg("circle", { cx: 0, cy: 0, r: 64, fill: "#22c55e", opacity: 0.18 }, dotG);
+svg("circle", { cx: 0, cy: 0, r: 40, fill: "#22c55e" }, dotG);
+const dotLabel = svg("text", { x: 0, y: 100, "text-anchor": "middle", fill: "#f7f8f8", "font-family": "Inter", "font-weight": 700, "font-size": 28 }, dotG);
+dotLabel.textContent = "Ta stratégie";
+
+// 5. tableau des books + compteur
+const LIVE = [
+  { id: "A", color: "#38bdf8", name: "Book A", n: 6, ret: 21.3, seed: 3 },
+  { id: "B", color: "#a855f7", name: "Book B", n: 5, ret: 21.1, seed: 7 },
+  { id: "C", color: "#f5b524", name: "Book C", n: 3, ret: 14.3, seed: 11 },
+];
+LIVE.forEach((b, i) => {
+  const row = document.createElement("div");
+  row.className = "row";
+  row.id = "row" + i;
+  row.style.top = 100 + i * 128 + "px";
+  // courbe : marche aléatoire déterministe qui finit sur le rendement
+  let v = 0, s = b.seed;
+  const pts = [];
+  for (let k = 0; k <= 40; k++) {
+    s = (s * 9301 + 49297) % 233280;
+    v += (b.ret / 40) + ((s / 233280) - 0.5) * 2.4;
+    pts.push(v);
+  }
+  const min = Math.min(0, ...pts), max = Math.max(...pts);
+  const path = pts.map((p, k) => `${k ? "L" : "M"}${(k / 40) * 280},${70 - ((p - min) / (max - min)) * 60}`).join(" ");
+  row.innerHTML = `
+    <span class="badge" style="color:${b.color};background:color-mix(in srgb, ${b.color} 14%, transparent);border:1px solid color-mix(in srgb, ${b.color} 45%, transparent)">${b.id}</span>
+    <span><b style="font-size:28px">${b.name}</b><br><span class="muted" style="font-size:20px">${b.n} stratégies</span></span>
+    <svg width="280" height="76" viewBox="0 0 280 76"><path id="spark${i}" d="${path}" fill="none" stroke="#22c55e" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="num" id="ret${i}" style="text-align:right;font-size:34px;color:var(--green)">+0,0 %</span>`;
+  $("board").appendChild(row);
+});
+const COUNTS = [
+  ["En attente", 15, "#f5b524", "◷"],
+  ["Validées", 14, "#22c55e", "✓"],
+  ["Refusées", 56, "#ef4444", "✕"],
+];
+$("counter").innerHTML =
+  `<div style="font-size:24px;font-weight:700">Stratégies proposées</div>` +
+  COUNTS.map(([label, , color, icon], i) => `
+    <div id="cnt${i}" style="position:absolute;left:40px;right:40px;top:${110 + i * 128}px;height:104px;display:flex;align-items:center;gap:22px;border-top:1px solid var(--border)">
+      <span style="width:52px;height:52px;border-radius:50%;border:2.5px solid ${color};color:${color};display:grid;place-items:center;font-size:26px;font-weight:800">${icon}</span>
+      <span style="font-size:28px;font-weight:600;flex:1">${label}</span>
+      <span class="num" id="cntv${i}" style="font-size:52px;color:${i === 1 ? "var(--green)" : "var(--fg)"}">0</span>
+    </div>`).join("");
+
+// 6. communauté
+const community = [
+  ["#5865F2", "Discord", "Annonces en direct : chaque stratégie en file, validée ou refusée, et les rendements de chaque book, tous les jours."],
+  ["#22c55e", "Espaces de recherche", "Papiers, scripts et notebooks partagés entre membres, publics ou privés."],
+  ["#f5b524", "Books privés", "Les contributeurs validés rejoignent le book de leur stratégie et suivent son évolution."],
+];
+community.forEach(([color, title, text], i) => {
+  $("com" + i).innerHTML = `
+    <div style="width:20px;height:20px;border-radius:50%;background:${color};box-shadow:0 0 24px ${color}"></div>
+    <div style="font-size:38px;font-weight:800;margin-top:34px;letter-spacing:-.02em">${title}</div>
+    <div class="lead" style="font-size:25px;margin-top:14px">${text}</div>`;
+});
+
+/* ---------- rendu à l'instant t ---------- */
+
+const fmtPct = (v) => `+${v.toFixed(1).replace(".", ",")} %`;
+
+function render(t) {
+  // fond vivant
+  $("blobA").style.transform = `translate(${-200 + Math.sin(t * 0.3) * 160}px, ${-300 + Math.cos(t * 0.25) * 120}px)`;
+  $("blobB").style.transform = `translate(${1300 + Math.cos(t * 0.22) * 180}px, ${200 + Math.sin(t * 0.3) * 140}px)`;
+  $("blobC").style.transform = `translate(${500 + Math.sin(t * 0.18) * 220}px, ${500 + Math.cos(t * 0.2) * 160}px)`;
+  $("grid").style.backgroundPosition = `${t * 8}px ${t * 8}px`;
+
+  /* 1 · logo (0 – 5,5 s) */
+  visible($("s1"), t < 6.2);
+  if (t < 6.2) {
+    const m = $("mascot");
+    const mi = back(prog(t, 0.2, 0.9));
+    m.style.transform = `translateY(${(1 - mi) * 80}px) scale(${lerp(0.4, 1, mi)})`;
+    m.style.opacity = prog(t, 0.2, 0.5);
+    $("arm").style.transform = `rotate(${Math.sin(t * 9) * 14 * prog(t, 1, 1.3) * (1 - prog(t, 3, 3.3))}deg)`;
+    $("arm").style.transformOrigin = "14px 10px";
+    [...$("wordmark").children].forEach((ch, i) => {
+      const x = easeOut(prog(t, 0.6 + i * 0.06, 1.2 + i * 0.06));
+      ch.style.opacity = x;
+      ch.style.transform = `translateY(${(1 - x) * 50}px)`;
+    });
+    show($("logo"), t, -1, 5.2, { dy: 0 });
+    $("logo").style.opacity = 1 - easeInOut(prog(t, 5.2, 5.8));
+    $("logo").style.transform = `translateY(${-easeInOut(prog(t, 5.2, 5.8)) * 40}px)`;
+    show($("tagline"), t, 1.8, 5.1, { dy: 30, dur: 0.9 });
+  }
+
+  /* 2 · formats (5,5 – 13 s) */
+  visible($("s2"), t > 5.3 && t < 13.4);
+  if (t > 5.3 && t < 13.4) {
+    show($("s2eye"), t, 5.6, 12.6);
+    show($("s2title"), t, 5.8, 12.6, { dur: 0.8 });
+    for (let i = 0; i < 3; i++) {
+      const el = $("fmt" + i);
+      const inA = 6.9 + i * 0.35;
+      const x = back(prog(t, inA, inA + 0.8));
+      const merge = easeInOut(prog(t, 10.4, 11.2));
+      const startLeft = [250, 740, 1230][i];
+      el.style.opacity = clamp(prog(t, inA, inA + 0.3)) * (1 - merge);
+      el.style.transform = `translate(${(740 - startLeft) * merge}px, ${(1 - x) * 90 + merge * 40}px) scale(${lerp(1, 0.6, merge)})`;
+    }
+    show($("s2pill"), t, 11.0, 12.6, { scale: 0.3, dy: 0 });
+  }
+
+  /* 3 · test (13 – 25 s) */
+  visible($("s3"), t > 12.9 && t < 25.4);
+  if (t > 12.9 && t < 25.4) {
+    show($("s3eye"), t, 13.1, 24.6);
+    show($("s3title"), t, 13.3, 24.6);
+    show($("s3lead"), t, 13.7, 24.6);
+    show($("checks"), t, 13.6, 24.6, { dy: 60, dur: 0.9 });
+    show($("ring"), t, 14.0, 24.6, { scale: 0.2, dy: 0 });
+    const STEP = 1.05, START = 15.0;
+    checks.forEach((_, i) => {
+      const row = $("chk" + i);
+      const on = prog(t, START + i * STEP, START + i * STEP + 0.45);
+      row.style.background = `rgba(34,197,94,${0.1 * on})`;
+      row.querySelector(".box").style.borderColor = on > 0 ? `rgba(34,197,94,${0.4 + 0.6 * on})` : "";
+      row.querySelector("path").style.strokeDashoffset = 20 * (1 - easeOut(on));
+      const active = t > START + i * STEP - 0.5 && on < 1;
+      row.style.boxShadow = active ? "inset 0 0 0 1px rgba(255,255,255,.18)" : "none";
+      row.style.opacity = 0.45 + 0.55 * Math.max(on, active ? 1 : 0);
+    });
+    const p = easeOut(prog(t, START, START + checks.length * STEP));
+    $("score").textContent = Math.round(86 * p);
+    $("ringArc").style.strokeDashoffset = 1005.3 * (1 - 0.86 * p);
+    show($("validated"), t, START + checks.length * STEP + 0.2, 24.6, { scale: 0.3, dy: 0 });
+  }
+
+  /* 4 · books (25 – 35 s) */
+  visible($("s4"), t > 24.9 && t < 35.4);
+  if (t > 24.9 && t < 35.4) {
+    show($("s4eye"), t, 25.1, 34.6);
+    show($("s4title"), t, 25.3, 34.6);
+    const out = 1 - easeInOut(prog(t, 34.6, 35.2));
+    BOOKS.forEach((b, i) => {
+      const x = back(prog(t, 25.8 + i * 0.25, 26.6 + i * 0.25));
+      b.g.setAttribute("opacity", clamp(x) * out);
+      b.g.setAttribute("transform", `translate(${b.x} ${b.y}) scale(${Math.max(0.01, x)}) translate(${-b.x} ${-b.y})`);
+    });
+    const di = back(prog(t, 27.0, 27.7));
+    // la stratégie part vers le book B (corrélation la plus faible)
+    const travel = easeInOut(prog(t, 31.4, 32.6));
+    const B = BOOKS[1];
+    const dx = lerp(NEW.x, B.x, travel), dy = lerp(NEW.y, B.y, travel);
+    dotG.setAttribute("transform", `translate(${dx} ${dy}) scale(${Math.max(0.01, di * lerp(1, 0.55, travel))})`);
+    dotG.setAttribute("opacity", clamp(di) * out * (1 - prog(t, 32.4, 32.7)));
+    dotLabel.setAttribute("opacity", 1 - travel);
+    dotHalo.setAttribute("r", 64 + Math.sin(t * 4) * 8);
+    BOOKS.forEach((b, i) => {
+      const grow = easeOut(prog(t, 27.8 + i * 0.3, 28.6 + i * 0.3));
+      b.line.setAttribute("x2", lerp(NEW.x, b.x, grow));
+      b.line.setAttribute("y2", lerp(NEW.y, b.y + 92, grow));
+      b.line.setAttribute("stroke-dashoffset", -t * 30);
+      const verdict = prog(t, 30.2, 30.6);
+      const good = b.rho < 0.3;
+      b.line.setAttribute("stroke", verdict > 0 ? (good ? "#22c55e" : "#ef4444") : "#8a8f98");
+      const settle = prog(t, 32.6, 33.2); // une fois placée, les autres liens s'effacent
+      b.line.setAttribute("opacity", (good ? 1 : (1 - 0.65 * verdict) * (1 - 0.8 * settle)) * out * (1 - (good ? prog(t, 32.4, 32.8) : 0)));
+      const mx = lerp(NEW.x, b.x, 0.5) - 75, my = lerp(NEW.y, b.y + 92, 0.5) - 26;
+      b.tag.setAttribute("transform", `translate(${mx} ${my})`);
+      b.tag.setAttribute("opacity", prog(t, 28.4 + i * 0.3, 28.8 + i * 0.3) * out * (good ? 1 : 1 - 0.75 * settle));
+      const r = b.rho * easeOut(prog(t, 28.4 + i * 0.3, 29.8 + i * 0.3));
+      b.tagText.textContent = "ρ " + r.toFixed(2).replace(".", ",");
+      b.tagText.setAttribute("fill", verdict > 0 ? (good ? "#4ade80" : "#ef4444") : "#f7f8f8");
+      b.tagBg.setAttribute("stroke", verdict > 0 ? (good ? "rgba(34,197,94,.6)" : "rgba(239,68,68,.6)") : "rgba(255,255,255,.14)");
+      // le book B grandit en accueillant la stratégie
+      if (good) b.halo.setAttribute("r", 120 + 40 * Math.sin(Math.PI * prog(t, 32.5, 33.5)));
+    });
+    const pl = easeOut(prog(t, 32.7, 33.3));
+    plusOne.setAttribute("opacity", pl * out);
+    plusOne.setAttribute("transform", `translate(0 ${(1 - pl) * 20})`);
+    show($("s4lead"), t, 32.8, 34.6, { dy: 24 });
+  }
+
+  /* 5 · tableau (35 – 43,5 s) */
+  visible($("s5"), t > 34.9 && t < 43.9);
+  if (t > 34.9 && t < 43.9) {
+    show($("s5eye"), t, 35.1, 43.1);
+    show($("s5title"), t, 35.3, 43.1);
+    show($("board"), t, 35.6, 43.1, { dy: 60, dur: 0.9 });
+    show($("counter"), t, 35.9, 43.1, { dy: 60, dur: 0.9 });
+    show($("s5note"), t, 37.5, 43.1, { dy: 10 });
+    LIVE.forEach((b, i) => {
+      show($("row" + i), t, 36.3 + i * 0.25, null, { dy: 20 });
+      const d = easeInOut(prog(t, 36.6 + i * 0.25, 38.6 + i * 0.25));
+      const path = $("spark" + i);
+      const len = path.getTotalLength();
+      path.style.strokeDasharray = len;
+      path.style.strokeDashoffset = len * (1 - d);
+      $("ret" + i).textContent = fmtPct(b.ret * d);
+    });
+    COUNTS.forEach(([, value], i) => {
+      show($("cnt" + i), t, 36.5 + i * 0.25, null, { dy: 20 });
+      $("cntv" + i).textContent = Math.round(value * easeOut(prog(t, 36.8 + i * 0.25, 39.2 + i * 0.25)));
+    });
+  }
+
+  /* 6 · communauté (43,5 – 50,5 s) */
+  visible($("s6"), t > 43.4 && t < 50.9);
+  if (t > 43.4 && t < 50.9) {
+    show($("s6eye"), t, 43.6, 50.1);
+    show($("s6title"), t, 43.8, 50.1, { dur: 0.8 });
+    for (let i = 0; i < 3; i++) show($("com" + i), t, 44.8 + i * 0.4, 50.1, { dy: 80, dur: 0.9 });
+  }
+
+  /* 7 · appel à l'action (50,5 – 57 s) */
+  visible($("s7"), t > 50.4);
+  if (t > 50.4) {
+    show($("s7title"), t, 50.7, null, { dur: 0.9 });
+    show($("s7cta"), t, 51.8, null, { scale: 0.3, dy: 0 });
+    $("s7cta").firstElementChild.style.boxShadow = `0 0 ${30 + 20 * Math.sin(t * 3)}px rgba(34,197,94,.45)`;
+    show($("s7url"), t, 52.4, null, { dy: 16 });
+    show($("s7legal"), t, 53.0, null, { dy: 10 });
+  }
+  // fondu de fin
+  $("stage").style.filter = `brightness(${1 - prog(t, 56.2, 57)})`;
+}
+
+/* ---------- mise à l'échelle et lecture ---------- */
+
+function fit() {
+  const vp = $("viewport").getBoundingClientRect();
+  const s = Math.min(vp.width / 1920, vp.height / 1080);
+  $("stage").style.transform = `scale(${s}) translate(-50%, -50%)`;
+}
+addEventListener("resize", fit);
+fit();
+
+let t = 0, playing = true, last = performance.now();
+const params = new URLSearchParams(location.search);
+if (params.has("render")) {
+  document.body.classList.add("render");
+  playing = false;
+  fit();
+}
+// exposé pour l'export image par image
+window.__seek = (time) => { t = time; render(t); };
+window.__duration = DURATION;
+
+const fmtTime = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+function tick(now) {
+  if (playing) {
+    t += (now - last) / 1000;
+    if (t >= DURATION) { t = DURATION; playing = false; $("play").textContent = "▶"; }
+  }
+  last = now;
+  render(t);
+  $("scrub").value = t;
+  $("time").textContent = `${fmtTime(t)} / ${fmtTime(DURATION)}`;
+  requestAnimationFrame(tick);
+}
+$("play").onclick = () => {
+  if (t >= DURATION) t = 0;
+  playing = !playing;
+  $("play").textContent = playing ? "❚❚" : "▶";
+};
+$("restart").onclick = () => { t = 0; playing = true; $("play").textContent = "❚❚"; };
+$("scrub").oninput = (e) => { t = Number(e.target.value); };
+addEventListener("keydown", (e) => { if (e.code === "Space") { e.preventDefault(); $("play").click(); } });
+if (!params.has("render")) requestAnimationFrame(tick);
+else render(0);
+</script>
+</body>
+</html>

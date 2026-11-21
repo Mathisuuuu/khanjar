@@ -44,11 +44,30 @@ const nextConfig: NextConfig = {
     // publications de recherche : jusqu'à 5 pièces jointes de 10 Mo
     serverActions: { bodySizeLimit: "52mb" },
   },
-  // « Qui nous sommes » et « Règles » sont fusionnées dans /a-propos
+  // anciennes adresses françaises (liens partagés, e-mails déjà envoyés) → adresses anglaises
   async redirects() {
+    const renamed: [string, string][] = [
+      ["/a-propos", "/about"],
+      ["/admin/propositions", "/admin/proposals"],
+      ["/api/books/fichiers", "/api/books/files"],
+      ["/api/recherches/fichiers", "/api/research/files"],
+      ["/recherches/nouveau", "/research/new"],
+      ["/recherches", "/research"],
+      ["/bienvenue", "/welcome"],
+      ["/compte", "/account"],
+      ["/connexion", "/sign-in"],
+      ["/membres", "/members"],
+      ["/mot-de-passe-oublie", "/forgot-password"],
+      ["/proposer", "/submit"],
+      ["/verification", "/verify"],
+    ];
     return [
-      { source: "/qui-sommes-nous", destination: "/a-propos#qui-sommes-nous", permanent: true },
-      { source: "/regles", destination: "/a-propos#regles", permanent: true },
+      { source: "/qui-sommes-nous", destination: "/about#about-us", permanent: true },
+      { source: "/regles", destination: "/about#rules", permanent: true },
+      ...renamed.flatMap(([from, to]) => [
+        { source: from, destination: to, permanent: true },
+        { source: `${from}/:path*`, destination: `${to}/:path*`, permanent: true },
+      ]),
     ];
   },
   async headers() {

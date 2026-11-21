@@ -1,7 +1,7 @@
 import "server-only";
 import type { Queryable } from "@/lib/db";
-import { sendMail } from "@/lib/mail";
-import { passwordResetEmail } from "./code-email";
+import { sendMail } from "@/lib/email/mailer";
+import { passwordResetEmail } from "@/lib/email/code-email";
 import { checkCode, consumeLinkToken, isLinkTokenValid, issueCode, siteUrl } from "./email-codes";
 
 /**
@@ -15,7 +15,7 @@ const CODE_MINUTES = 15;
 
 export async function sendPasswordResetEmail(user: { id: string; email: string; name: string }): Promise<void> {
   const { code, token } = await issueCode(user.id, "reset", { codeMinutes: CODE_MINUTES, linkHours: LINK_HOURS });
-  const link = `${await siteUrl()}/mot-de-passe-oublie?token=${token}`;
+  const link = `${await siteUrl()}/forgot-password?token=${token}`;
   await sendMail({
     to: user.email,
     ...passwordResetEmail({ name: user.name, code, link, codeMinutes: CODE_MINUTES, linkHours: LINK_HOURS }),

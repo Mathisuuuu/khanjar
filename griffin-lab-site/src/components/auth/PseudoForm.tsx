@@ -1,13 +1,13 @@
 "use client";
 
 import { useActionState } from "react";
-import { choosePseudo, type PseudoFormState } from "@/app/bienvenue/actions";
+import { choosePseudo, type PseudoFormState } from "@/app/welcome/actions";
 import { useMessage, useT } from "@/components/i18n/LocaleProvider";
 import styles from "./AuthPanel.module.css";
 
 type PseudoFormProps = { callbackUrl: string; suggestion: string; submitLabel: string };
 
-/** Champ « pseudo » de la page /bienvenue (premier choix ou changement). */
+/** Champ « pseudo » de la page /welcome (premier choix ou changement). */
 export function PseudoForm({ callbackUrl, suggestion, submitLabel }: PseudoFormProps) {
   const [state, action, pending] = useActionState<PseudoFormState, FormData>(
     choosePseudo.bind(null, callbackUrl),

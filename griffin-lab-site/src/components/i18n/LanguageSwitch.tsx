@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { setLocaleAction } from "@/app/langue/actions";
+import { setLocaleAction } from "@/lib/i18n/actions";
 import { useLocale } from "./LocaleProvider";
 
 /** Bascule FR / EN : affiche la langue vers laquelle on passe. */

@@ -16,9 +16,9 @@ import {
 import { saveStrategy, strategyFileIds } from "@/lib/books/strategies";
 import { getDb } from "@/lib/db";
 import { getProposalRepository } from "@/lib/proposals/repository";
-import { readUploads } from "@/lib/uploads";
-import { consume } from "@/lib/rate-limit";
-import { requireViewer } from "@/lib/viewer";
+import { readUploads } from "@/lib/research/uploads";
+import { consume } from "@/lib/security/rate-limit";
+import { requireViewer } from "@/lib/auth/viewer";
 
 /**
  * Actions des books. La gestion (création, membres, chiffres) est réservée à

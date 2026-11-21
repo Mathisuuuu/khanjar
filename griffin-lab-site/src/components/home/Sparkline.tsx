@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { simulatedSeries } from "@/lib/random";
+import { simulatedSeries } from "@/lib/shared/random";
 
 type SparklineProps = {
   /** Rendement cumulé en % (un point par heure). Sans lui, courbe de secours tirée de `seed` et `drift`. */

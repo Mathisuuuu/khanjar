@@ -1,5 +1,5 @@
 import "server-only";
-import { getViewer } from "@/lib/viewer";
+import { getViewer } from "@/lib/auth/viewer";
 
 /** Auteur d'une proposition, déduit de la session. */
 export type Author = {

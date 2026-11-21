@@ -37,6 +37,8 @@ export type CanvasMember = {
   /** Masqué pour les autres, visible ici pour soi, l'équipe ou un admin. */
   masked: boolean;
   self: boolean;
+  /** Photo de profil Discord ; jamais pour un membre anonyme. */
+  avatar: string | null;
 };
 
 export type CanvasGroup = { id: string; name: string; href: string };

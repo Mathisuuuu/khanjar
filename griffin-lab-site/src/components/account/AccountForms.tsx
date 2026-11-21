@@ -6,8 +6,8 @@ import {
   changePseudoAction,
   deleteOwnAccountAction,
   type AccountFormState,
-} from "@/app/compte/actions";
-import styles from "@/app/compte/compte.module.css";
+} from "@/app/account/actions";
+import styles from "@/app/account/account.module.css";
 import { useMessage, useT } from "@/components/i18n/LocaleProvider";
 import { Button } from "@/components/ui/Button";
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { toggleLikeAction } from "@/app/recherches/actions";
+import { toggleLikeAction } from "@/app/research/actions";
 import { useT } from "@/components/i18n/LocaleProvider";
 import styles from "./Research.module.css";
 
@@ -38,7 +38,7 @@ export function LikeButton({ groupId, postId, count, liked, canLike }: Props) {
 
   if (!canLike) {
     return (
-      <Link href={`/connexion?callbackUrl=/recherches/${groupId}`} className={styles.like} aria-label={t(`${label}. Connecte-toi pour aimer`, `${label}. Sign in to like`)}>
+      <Link href={`/sign-in?callbackUrl=/research/${groupId}`} className={styles.like} aria-label={t(`${label}. Connecte-toi pour aimer`, `${label}. Sign in to like`)}>
         <Heart filled={false} />
         {state.count}
       </Link>

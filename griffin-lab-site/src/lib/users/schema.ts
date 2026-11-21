@@ -28,6 +28,3 @@ export const signUpSchema = z.object({
   email,
   password: z.string().min(8, "8 caractères minimum.").max(200, "200 caractères maximum."),
 });
-
-export type SignInInput = z.infer<typeof signInSchema>;
-export type SignUpInput = z.infer<typeof signUpSchema>;

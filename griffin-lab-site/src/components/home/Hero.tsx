@@ -10,7 +10,7 @@ export async function Hero() {
   return (
     <section className={styles.hero}>
       <div className={`container ${styles.copy}`}>
-        <Link href="/a-propos#regles" className={`glass ${styles.announce}`}>
+        <Link href="/about#rules" className={`glass ${styles.announce}`}>
           <span className={styles.new}>{t("Nouveau", "New")}</span>
           {t("Les règles de contribution sont en ligne", "The contribution rules are live")}
           <Icon name="arrowRight" size={16} />
@@ -23,7 +23,7 @@ export async function Hero() {
           )}
         </p>
         <div className={styles.actions}>
-          <Button href="/proposer" size="lg">
+          <Button href="/submit" size="lg">
             {t("Proposer une stratégie", "Submit a strategy")}
           </Button>
           <Button href="/books" variant="glass" size="lg">

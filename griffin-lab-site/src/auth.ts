@@ -3,8 +3,9 @@ import Credentials from "next-auth/providers/credentials";
 import Discord from "next-auth/providers/discord";
 import Google from "next-auth/providers/google";
 import { isBanned } from "@/lib/admin/repository";
-import { isProviderConfigured } from "@/lib/auth-providers";
-import { clientIp, consume } from "@/lib/rate-limit";
+import { isProviderConfigured } from "@/lib/auth/providers";
+import { clientIp, consume } from "@/lib/security/rate-limit";
+import { saveDiscordLink } from "@/lib/discord/links";
 import { burnPasswordCheck, verifyPassword } from "@/lib/users/password";
 import { getUserRepository } from "@/lib/users/repository";
 import { signInSchema } from "@/lib/users/schema";
@@ -27,6 +28,15 @@ export class EmailNotVerified extends CredentialsSignin {
 }
 
 const FIFTEEN_MINUTES = 15 * 60;
+
+/**
+ * Identifiant stable du compte : pour Discord et Google, l'identifiant du compte chez le
+ * fournisseur. Sans base de comptes, Auth.js donne à `user.id` une valeur tirée au hasard
+ * à chaque connexion : le pseudo, les propositions et un bannissement seraient perdus.
+ */
+function accountId(account: { type: string; providerAccountId: string }, user: { id?: string }): string | undefined {
+  return account.type === "oauth" || account.type === "oidc" ? account.providerAccountId : user.id;
+}
 
 /**
  * L'adresse donnée par un fournisseur OAuth n'est utilisée (invitations aux
@@ -85,21 +95,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers,
   // session de 14 jours, prolongée tant que la personne revient sur le site
   session: { strategy: "jwt", maxAge: 14 * 24 * 60 * 60 },
-  pages: { signIn: "/connexion" },
+  pages: { signIn: "/sign-in" },
   callbacks: {
     // compte banni par un administrateur : connexion refusée, quel que soit le fournisseur
     async signIn({ user, account }) {
       if (!account || !user.id) return true;
-      return !(await isBanned(`${account.provider}:${user.id}`));
+      const id = accountId(account, user);
+      if (!id) return false;
+      return !(await isBanned(`${account.provider}:${id}`));
     },
-    async jwt({ token, account, profile }) {
-      // à la connexion : fournisseur utilisé (affiché sur /compte), heure de connexion, adresse vérifiée ou non
+    async jwt({ token, account, profile, user }) {
+      // à la connexion : fournisseur utilisé (affiché sur /account), heure de connexion, adresse vérifiée ou non
       if (account) {
         token.provider = account.provider;
+        token.sub = accountId(account, user) ?? token.sub;
         token.authAt = Math.floor(Date.now() / 1000);
         token.emailVerified =
           account.provider === "credentials" ||
           oauthEmailVerified(account.provider, profile as Record<string, unknown> | undefined);
+        // connexion Discord : on retient sa photo de profil (affichée dans les books)
+        if (account.provider === "discord" && typeof token.sub === "string") {
+          const avatar = (profile as { avatar?: string | null } | undefined)?.avatar ?? null;
+          await saveDiscordLink(`discord:${token.sub}`, token.sub, avatar).catch((error) =>
+            console.error("Photo Discord non enregistrée :", error),
+          );
+        }
       }
       return token;
     },

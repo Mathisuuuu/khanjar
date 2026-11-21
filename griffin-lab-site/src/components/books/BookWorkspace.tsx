@@ -168,7 +168,7 @@ export function BookWorkspace({ books, selected, team, admin, signedIn, managed,
             <b>{selected.name}</b>
             <span>{t("Connecte-toi pour voir ce book.", "Sign in to see this book.")}</span>
             {!signedIn && (
-              <Button href={`/connexion?callbackUrl=/books/${selected.id}`} size="sm" variant="glass">
+              <Button href={`/sign-in?callbackUrl=/books/${selected.id}`} size="sm" variant="glass">
                 {t("Se connecter", "Sign in")}
               </Button>
             )}

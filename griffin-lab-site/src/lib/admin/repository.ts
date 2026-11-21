@@ -138,6 +138,7 @@ export async function deleteAccount(userKey: string): Promise<void> {
     await tx.query("DELETE FROM post_likes WHERE user_key = $1", [userKey]);
     await tx.query("DELETE FROM user_roles WHERE user_key = $1", [userKey]);
     await tx.query("DELETE FROM profiles WHERE user_key = $1", [userKey]);
+    await tx.query("DELETE FROM discord_links WHERE user_key = $1", [userKey]);
     if (provider === "credentials" && isUuid(id)) await tx.query("DELETE FROM users WHERE id = $1", [id]);
   });
 }

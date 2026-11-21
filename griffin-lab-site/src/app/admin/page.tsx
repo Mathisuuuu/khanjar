@@ -5,7 +5,7 @@ import { RoleSelect } from "@/components/admin/RoleSelect";
 import { ConfirmButton } from "@/components/research/ConfirmButton";
 import { configRole, higherRole, type SiteRole } from "@/lib/admin/roles";
 import { getStats, listAccounts, listAllGroups, listBanned } from "@/lib/admin/repository";
-import { requireAdmin } from "@/lib/viewer";
+import { requireAdmin } from "@/lib/auth/viewer";
 import { banAction, deleteAccountAction, deleteGroupAction, unbanAction } from "./actions";
 import styles from "./admin.module.css";
 
@@ -32,8 +32,8 @@ export default async function AdminPage({ searchParams }: Props) {
 
   const tiles = [
     { label: "Comptes", value: stats.accounts },
-    { label: "Propositions", value: stats.proposals, href: "/admin/propositions?statut=all" },
-    { label: "En attente", value: stats.pending, href: "/admin/propositions?statut=pending" },
+    { label: "Propositions", value: stats.proposals, href: "/admin/proposals?status=all" },
+    { label: "En attente", value: stats.pending, href: "/admin/proposals?status=pending" },
     { label: "Groupes", value: stats.groups },
     { label: "Publications", value: stats.posts },
     { label: "Bannis", value: stats.banned },
@@ -69,7 +69,7 @@ export default async function AdminPage({ searchParams }: Props) {
         <section className={styles.panel} aria-labelledby="mod-title">
           <div className={styles.head}>
             <h2 id="mod-title">Propositions</h2>
-            <Link href="/admin/propositions" className={styles.action}>
+            <Link href="/admin/proposals" className={styles.action}>
               Gérer les propositions →
             </Link>
           </div>
@@ -229,7 +229,7 @@ export default async function AdminPage({ searchParams }: Props) {
               {groups.map((group) => (
                 <li key={group.id}>
                   <span>
-                    <Link href={`/recherches/${group.id}`}>
+                    <Link href={`/research/${group.id}`}>
                       <b>{group.name}</b>
                     </Link>
                     <small>

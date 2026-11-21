@@ -9,7 +9,7 @@ import {
   placeInBookAction,
   removeFromBookAction,
   type AdminResult,
-} from "@/app/admin/propositions/actions";
+} from "@/app/admin/proposals/actions";
 import { StatusPill } from "@/components/proposals/StatusPill";
 import type { AdminProposal, ProposalFilter } from "@/lib/admin/proposals";
 import { typeLabels, type ProposalStatus, type ProposalType } from "@/lib/proposals/types";
@@ -81,12 +81,12 @@ export function ProposalsInbox({ filter, q, market, markets, counts, items, sele
   const href = useCallback(
     (changes: { statut?: ProposalFilter; id?: string | null }) => {
       const params = new URLSearchParams();
-      params.set("statut", changes.statut ?? filter);
+      params.set("status", changes.statut ?? filter);
       if (q) params.set("q", q);
-      if (market) params.set("marche", market);
+      if (market) params.set("market", market);
       const id = changes.id === undefined ? selected?.id : changes.id;
       if (id && !changes.statut) params.set("id", id);
-      return `/admin/propositions?${params}`;
+      return `/admin/proposals?${params}`;
     },
     [filter, q, market, selected?.id],
   );
@@ -138,8 +138,8 @@ export function ProposalsInbox({ filter, q, market, markets, counts, items, sele
               </Link>
             ))}
           </nav>
-          <form className={styles.search} role="search" action="/admin/propositions">
-            <input type="hidden" name="statut" value={filter} />
+          <form className={styles.search} role="search" action="/admin/proposals">
+            <input type="hidden" name="status" value={filter} />
             <input
               ref={searchRef}
               name="q"
@@ -148,7 +148,7 @@ export function ProposalsInbox({ filter, q, market, markets, counts, items, sele
               aria-label="Rechercher une proposition"
             />
             <select
-              name="marche"
+              name="market"
               defaultValue={market}
               aria-label="Filtrer par marché"
               onChange={(e) => e.currentTarget.form?.requestSubmit()}

@@ -1,0 +1,3 @@
+# vidéo exportée (39 Mo, régénérable avec video/render.py)
+video/*.webm
+video/frames/

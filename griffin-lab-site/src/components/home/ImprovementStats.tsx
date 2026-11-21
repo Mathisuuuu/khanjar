@@ -1,5 +1,5 @@
 import { improvementSteps } from "@/content/home";
-import { formatNumber, formatPercent } from "@/lib/format";
+import { formatNumber, formatPercent } from "@/lib/shared/format";
 import { getLocale } from "@/lib/i18n/server";
 import { makeT } from "@/lib/i18n/core";
 import styles from "./ImprovementStats.module.css";

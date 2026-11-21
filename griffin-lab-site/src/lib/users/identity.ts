@@ -1,10 +1,10 @@
 import "server-only";
 import { getDb } from "@/lib/db";
 import { getLocale } from "@/lib/i18n/server";
-import type { Viewer } from "@/lib/viewer";
+import type { Viewer } from "@/lib/auth/viewer";
 
 /**
- * Qui peut voir le nom et le profil d'une personne (réglage sur /compte, voir
+ * Qui peut voir le nom et le profil d'une personne (réglage sur /account, voir
  * visibility-choices.ts). La personne elle-même, les administrateurs et
  * l'équipe voient toujours le vrai nom (l'équipe gère les membres des books).
  */
@@ -18,7 +18,7 @@ export const ANONYMOUS_NAME = "Anonyme";
 export type PublicIdentity = {
   /** Pseudo, ou « Anonyme ». */
   name: string;
-  /** Lien vers le profil (/membres/…), `null` si le profil est masqué pour cette personne. */
+  /** Lien vers le profil (/members/…), `null` si le profil est masqué pour cette personne. */
   href: string | null;
   /** Le compte est masqué pour cette personne. */
   anonymous: boolean;
@@ -28,7 +28,7 @@ export type PublicIdentity = {
 
 type ProfileRow = { user_key: string; pseudo: string; visibility: ProfileVisibility };
 
-export const profileHref = (pseudo: string) => `/membres/${encodeURIComponent(pseudo)}`;
+export const profileHref = (pseudo: string) => `/members/${encodeURIComponent(pseudo)}`;
 
 /** Clés des comptes (parmi `keys`) qui partagent au moins un book avec `viewerKey`. */
 async function bookPeers(viewerKey: string, keys: string[]): Promise<Set<string>> {

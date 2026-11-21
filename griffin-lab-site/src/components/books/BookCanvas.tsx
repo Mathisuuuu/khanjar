@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
-import { formatNumber, formatPercent } from "@/lib/format";
+import { formatNumber, formatPercent } from "@/lib/shared/format";
 import styles from "./Books.module.css";
 import type { BookStats, CanvasGroup, CanvasMember } from "./types";
 
@@ -502,9 +502,27 @@ export function BookCanvas({ name, color, members, groups, links, showResearch, 
                   : { "aria-label": label })}
               >
                 <circle r={MEMBER_RADIUS} stroke={member.anonymous ? undefined : color} />
-                <text y={5} textAnchor="middle" className={styles.initial}>
-                  {member.anonymous ? "?" : member.name.charAt(0).toUpperCase()}
-                </text>
+                {member.avatar ? (
+                  <>
+                    <clipPath id={`avatar-${member.id}`}>
+                      <circle r={MEMBER_RADIUS - 2} />
+                    </clipPath>
+                    <image
+                      href={member.avatar}
+                      x={-(MEMBER_RADIUS - 2)}
+                      y={-(MEMBER_RADIUS - 2)}
+                      width={(MEMBER_RADIUS - 2) * 2}
+                      height={(MEMBER_RADIUS - 2) * 2}
+                      clipPath={`url(#avatar-${member.id})`}
+                      preserveAspectRatio="xMidYMid slice"
+                      style={{ pointerEvents: "none" }}
+                    />
+                  </>
+                ) : (
+                  <text y={5} textAnchor="middle" className={styles.initial}>
+                    {member.anonymous ? "?" : member.name.charAt(0).toUpperCase()}
+                  </text>
+                )}
                 <text y={MEMBER_RADIUS + 18} textAnchor="middle" className={styles.memberLabel}>
                   {short(label)}
                 </text>

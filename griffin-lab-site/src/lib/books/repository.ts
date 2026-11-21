@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { getDb, iso, isUuid } from "@/lib/db";
-import type { Viewer } from "@/lib/viewer";
+import type { Viewer } from "@/lib/auth/viewer";
 
 /**
  * Books : des cercles privés créés par l'équipe Griffin Lab. Chaque book a sa
@@ -97,13 +97,6 @@ export async function listBookMembers(bookId: string): Promise<string[]> {
   return rows.map((row) => row.user_key);
 }
 
-export async function isBookMember(bookId: string, userKey: string): Promise<boolean> {
-  if (!isUuid(bookId)) return false;
-  const db = await getDb();
-  return (await db.query("SELECT 1 FROM book_members WHERE book_id = $1 AND user_key = $2", [bookId, userKey])).length > 0;
-}
-
-/** L'équipe (et les admins) voit tous les books ; les autres, seulement ceux dont ils sont membres. */
 /**
  * Tout compte connecté peut voir un book (cercles, chiffres). Être membre
  * compte pour l'anonymat : un profil « anonyme hors de mes books » n'est

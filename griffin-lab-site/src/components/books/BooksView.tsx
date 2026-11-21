@@ -1,4 +1,5 @@
 import "server-only";
+import { getAvatars } from "@/lib/discord/links";
 import {
   canAccessBook,
   contentAccess,
@@ -16,7 +17,7 @@ import { canRead } from "@/lib/research/access";
 import { getResearchRepository } from "@/lib/research/repository";
 import { resolveIdentities } from "@/lib/users/identity";
 import { getLocale } from "@/lib/i18n/server";
-import { getViewer } from "@/lib/viewer";
+import { getViewer } from "@/lib/auth/viewer";
 import { BookWorkspace } from "./BookWorkspace";
 import type {
   BookContents,
@@ -65,10 +66,11 @@ export async function BooksView({ selectedId }: { selectedId?: string }) {
       selected = { id: book.id, name: book.name, color: book.color, access: false };
     } else {
       const keys = await listBookMembers(book.id);
-      const [identities, contributions, groups] = await Promise.all([
+      const [identities, contributions, groups, avatars] = await Promise.all([
         resolveIdentities(keys, viewer),
         contributionsOf(keys),
         getResearchRepository().listGroups(),
+        getAvatars(keys),
       ]);
 
       const localId = new Map(keys.map((key, index) => [key, `m${index}`]));
@@ -81,6 +83,8 @@ export async function BooksView({ selectedId }: { selectedId?: string }) {
           anonymous: identity.anonymous,
           masked: identity.maskedForOthers,
           self: viewer?.id === key,
+          // un membre anonyme pour cette personne n'est pas reconnaissable par sa photo
+          avatar: identity.anonymous ? null : (avatars.get(key) ?? null),
         };
       });
 
@@ -93,7 +97,7 @@ export async function BooksView({ selectedId }: { selectedId?: string }) {
       const usedGroups: CanvasGroup[] = [...new Set(links.map((l) => l.group))].map((id) => ({
         id,
         name: readable.get(id)!.name,
-        href: `/recherches/${id}`,
+        href: `/research/${id}`,
       }));
 
       // contenu (stratégies, rapports, code, fichiers), filtré ici côté serveur :

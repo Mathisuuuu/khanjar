@@ -3,7 +3,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { PointerHighlight } from "@/components/ui/PointerHighlight";
 import { contributions, type Contribution } from "@/content/home";
 import { getT } from "@/lib/i18n/server";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/shared/cn";
 import styles from "./Concept.module.css";
 
 /**

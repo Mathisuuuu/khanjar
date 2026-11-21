@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Mascot } from "@/components/ui/Mascot";
 import { useLocale, useMessage } from "@/components/i18n/LocaleProvider";
-import { formatShortDate } from "@/lib/format";
+import { formatShortDate } from "@/lib/shared/format";
 import { makeT } from "@/lib/i18n/core";
 import { marketLabel, PROPOSAL_STATUSES, statusLabel, typeLabel, type ProposalStatus, type PublicProposal } from "@/lib/proposals/types";
 import panel from "./Panel.module.css";

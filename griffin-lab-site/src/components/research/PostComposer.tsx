@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useLocale, useMessage, useT } from "@/components/i18n/LocaleProvider";
 import { Button } from "@/components/ui/Button";
-import type { FormState } from "@/app/recherches/actions";
+import type { FormState } from "@/app/research/actions";
 import { ACCEPTED_EXTENSIONS, formatFileSize, MAX_FILES_PER_POST } from "@/lib/research/files";
 import type { Attachment, ResearchPost } from "@/lib/research/types";
 import styles from "./Research.module.css";

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
-import type { AuthFormState, CodeFormState } from "@/app/connexion/actions";
-import { requestPasswordReset, resetPasswordWithLinkAction } from "@/app/mot-de-passe-oublie/actions";
+import type { AuthFormState, CodeFormState } from "@/app/sign-in/actions";
+import { requestPasswordReset, resetPasswordWithLinkAction } from "@/app/forgot-password/actions";
 import { useMessage, useT } from "@/components/i18n/LocaleProvider";
 import styles from "./CodeForm.module.css";
 
@@ -83,7 +83,7 @@ export function ResetLinkForm({ token }: { token: string }) {
       <PasswordFields />
       {state.error && (
         <p className={styles.error} role="alert">
-          {message(state.error)} {state.expired && <Link href="/mot-de-passe-oublie?changer=1">{t("Recommencer", "Start over")}</Link>}
+          {message(state.error)} {state.expired && <Link href="/forgot-password?change=1">{t("Recommencer", "Start over")}</Link>}
         </p>
       )}
       <button type="submit" className={styles.submit} disabled={pending}>

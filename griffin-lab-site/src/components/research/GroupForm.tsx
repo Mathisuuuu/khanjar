@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { Button } from "@/components/ui/Button";
-import type { FormState } from "@/app/recherches/actions";
+import type { FormState } from "@/app/research/actions";
 import type { GroupKind, Visibility } from "@/lib/research/types";
 import { useMessage, useT } from "@/components/i18n/LocaleProvider";
 import type { T } from "@/lib/i18n/core";

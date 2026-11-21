@@ -1,14 +1,14 @@
 import "server-only";
 import { getDb } from "@/lib/db";
 import { listBooksOf } from "@/lib/books/repository";
-import { postsByAuthor } from "@/lib/likes";
+import { postsByAuthor } from "@/lib/research/likes";
 import { getProposalRepository } from "@/lib/proposals/repository";
 import { getResearchRepository } from "@/lib/research/repository";
 import { getVisibility } from "@/lib/users/identity";
 import { getUserRepository } from "@/lib/users/repository";
-import type { Viewer } from "@/lib/viewer";
+import type { Viewer } from "@/lib/auth/viewer";
 
-/** Tout ce que la page /compte affiche sur la personne connectée. */
+/** Tout ce que la page /account affiche sur la personne connectée. */
 export async function getAccountOverview(viewer: Viewer) {
   const [provider, rawId] = [viewer.id.split(":")[0], viewer.id.slice(viewer.id.indexOf(":") + 1)];
   const db = await getDb();
@@ -54,5 +54,3 @@ export async function getAccountOverview(viewer: Viewer) {
     ownedGroups,
   };
 }
-
-export type AccountOverview = Awaited<ReturnType<typeof getAccountOverview>>;

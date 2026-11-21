@@ -290,6 +290,16 @@ const MIGRATIONS: string[] = [
   /* 14 : date du dernier changement de mot de passe ; les sessions ouvertes avant sont refusées */ `
   ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at timestamptz;
   `,
+
+  /* 15 : compte Discord lié (connexion Discord, ou lié depuis /account) : photo de profil.
+     Seule l'empreinte de l'image est gardée ; l'image reste chez Discord. */ `
+  CREATE TABLE IF NOT EXISTS discord_links (
+    user_key   text PRIMARY KEY,
+    discord_id text NOT NULL,
+    avatar     text,
+    updated_at timestamptz NOT NULL DEFAULT now()
+  );
+  `,
 ];
 
 export async function migrate(db: Database): Promise<void> {

@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { useMessage, useT } from "@/components/i18n/LocaleProvider";
-import type { AuthFormState, CodeFormState } from "@/app/connexion/actions";
+import type { AuthFormState, CodeFormState } from "@/app/sign-in/actions";
 import styles from "./CodeForm.module.css";
 
 const LENGTH = 6;

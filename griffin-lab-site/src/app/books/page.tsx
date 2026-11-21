@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { BooksView } from "@/components/books/BooksView";
 import { listBooks, listBooksOf } from "@/lib/books/repository";
-import { getViewer } from "@/lib/viewer";
+import { getViewer } from "@/lib/auth/viewer";
 
 export const metadata: Metadata = { title: "Books", robots: { index: false, follow: false } };
 

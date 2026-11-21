@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { deletePost } from "@/app/recherches/actions";
+import { deletePost } from "@/app/research/actions";
 import { formatFileSize } from "@/lib/research/files";
 import type { Attachment, ResearchPost } from "@/lib/research/types";
 import { ConfirmButton } from "./ConfirmButton";
@@ -95,7 +95,7 @@ export async function PostDocuments({ attachments }: { attachments: Attachment[]
           <li key={file.id}>
             <a
               className={styles.file}
-              href={`/api/recherches/fichiers/${file.id}`}
+              href={`/api/research/files/${file.id}`}
               {...(file.kind === "pdf" ? { target: "_blank", rel: "noopener" } : { download: file.name })}
             >
               <span className={styles.fileKind}>{fileKinds[file.kind]}</span>
@@ -122,7 +122,7 @@ type PostCardProps = {
 /** Aperçu d'une publication dans la page du groupe ; le titre ouvre la publication. */
 export async function PostCard({ post, groupName, author, likes, canLike, editing }: PostCardProps) {
   const t = makeT(await getLocale());
-  const href = `/recherches/${post.groupId}/${post.id}`;
+  const href = `/research/${post.groupId}/${post.id}`;
   return (
     <article className={styles.post}>
       <PostHeader post={post} author={author} kicker={post.category ?? groupName} href={href} />
@@ -134,7 +134,7 @@ export async function PostCard({ post, groupName, author, likes, canLike, editin
         </Link>
         {editing && (
           <span className={styles.editActions}>
-            <Link href={`${href}?edition=1`} className={styles.editLink}>
+            <Link href={`${href}?edit=1`} className={styles.editLink}>
               {t("Modifier", "Edit")}
             </Link>
             <ConfirmButton

@@ -1,7 +1,7 @@
 /**
  * Lecture des PDF dans le navigateur avec pdf.js (chargé à la demande).
  * Sert au lecteur intégré et aux miniatures des cartes. Les fichiers passent
- * par /api/recherches/fichiers/:id, qui vérifie les droits du groupe.
+ * par /api/research/files/:id, qui vérifie les droits du groupe.
  */
 
 export type PdfFile = { id: string; name: string };
@@ -18,7 +18,7 @@ export function loadPdfJs(): Promise<PdfJs> {
   return pdfjs;
 }
 
-export const pdfUrl = (id: string) => `/api/recherches/fichiers/${id}`;
+export const pdfUrl = (id: string) => `/api/research/files/${id}`;
 
 /** Ouvre un PDF ; `close` libère le document et le worker. */
 export async function openPdf(id: string) {

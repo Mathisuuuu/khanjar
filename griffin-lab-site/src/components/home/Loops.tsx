@@ -3,7 +3,7 @@ import { Section } from "@/components/ui/Section";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { CORRELATION_LIMIT, newStrategyExample, type LoopColor } from "@/content/home";
 import { getHomeLoops } from "@/lib/books/home";
-import { formatNumber } from "@/lib/format";
+import { formatNumber } from "@/lib/shared/format";
 import { makeT } from "@/lib/i18n/core";
 import { getLocale } from "@/lib/i18n/server";
 import { ImprovementStats } from "./ImprovementStats";
@@ -83,7 +83,7 @@ export async function Loops() {
           {routes.map((r) => (
             <li key={r.loop.id} className={styles.loopRow}>
               <div
-                className={`glass ${styles.loop} ${r.accepted ? styles.loopTarget : styles.loopClosed}`}
+                className={`${styles.loop} ${r.accepted ? styles.loopTarget : styles.loopClosed}`}
                 style={{ "--c": loopRgb[r.loop.color] } as CSSProperties}
               >
                 <span className={styles.loopId}>{r.loop.id}</span>

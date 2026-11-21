@@ -1,8 +1,8 @@
 import "server-only";
 import type { Queryable } from "@/lib/db";
-import { sendMail } from "@/lib/mail";
+import { sendMail } from "@/lib/email/mailer";
 import { checkCode, consumeLinkToken, issueCode, siteUrl } from "./email-codes";
-import { verificationEmail } from "./code-email";
+import { verificationEmail } from "@/lib/email/code-email";
 
 /**
  * Vérification de l'adresse e-mail des comptes e-mail + mot de passe :
@@ -19,7 +19,7 @@ async function markVerified(tx: Queryable, userId: string) {
 /** Crée un nouveau code et un nouveau lien (les anciens sont annulés) et envoie l'e-mail. */
 export async function sendVerificationEmail(user: { id: string; email: string; name: string }): Promise<void> {
   const { code, token } = await issueCode(user.id, "verify", { codeMinutes: CODE_MINUTES, linkHours: LINK_HOURS });
-  const link = `${await siteUrl()}/verification?token=${token}`;
+  const link = `${await siteUrl()}/verify?token=${token}`;
   await sendMail({
     to: user.email,
     ...verificationEmail({ name: user.name, code, link, codeMinutes: CODE_MINUTES, linkHours: LINK_HOURS }),
@@ -28,7 +28,7 @@ export async function sendVerificationEmail(user: { id: string; email: string; n
 
 export type CodeResult = "ok" | "wrong" | "expired";
 
-/** Vérifie le code saisi sur /verification. */
+/** Vérifie le code saisi sur /verify. */
 export async function confirmEmailCode(email: string, code: string): Promise<CodeResult> {
   return (await checkCode(email, "verify", code, markVerified)).status;
 }

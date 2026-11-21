@@ -40,12 +40,6 @@ export async function getStoredRole(userKey: string): Promise<SiteRole> {
   return row?.role ?? "member";
 }
 
-export async function listStoredRoles(): Promise<Map<string, SiteRole>> {
-  const db = await getDb();
-  const rows = await db.query<{ user_key: string; role: SiteRole }>("SELECT user_key, role FROM user_roles");
-  return new Map(rows.map((r) => [r.user_key, r.role]));
-}
-
 /** « member » efface la ligne. */
 export async function setStoredRole(userKey: string, role: SiteRole, updatedBy: string): Promise<void> {
   const db = await getDb();

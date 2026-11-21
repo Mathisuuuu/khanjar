@@ -5,7 +5,7 @@ import { banAccount, deleteAccount, deleteProposal, unbanAccount } from "@/lib/a
 import { configRole, getStoredRole, setStoredRole, SITE_ROLES, type SiteRole } from "@/lib/admin/roles";
 import { getDb, isUuid } from "@/lib/db";
 import { getResearchRepository } from "@/lib/research/repository";
-import { getViewer } from "@/lib/viewer";
+import { getViewer } from "@/lib/auth/viewer";
 
 /**
  * Actions de l'espace administrateur. Chacune revérifie que la personne est
@@ -37,7 +37,7 @@ async function assertTarget(userKey: string, adminId: string) {
 
 function refresh() {
   revalidatePath("/admin");
-  revalidatePath("/recherches", "layout");
+  revalidatePath("/research", "layout");
 }
 
 export async function banAction(userKey: string, form: FormData) {

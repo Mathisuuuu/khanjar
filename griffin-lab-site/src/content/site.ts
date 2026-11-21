@@ -23,18 +23,18 @@ export type NavLink = { href: string; label: string };
 
 export const mainNav = (t: T): NavLink[] => [
   { href: "/#concept", label: t("Concept", "Concept") },
-  { href: "/recherches", label: t("Recherches", "Research") },
+  { href: "/research", label: t("Recherches", "Research") },
   { href: "/books", label: "Books" },
-  { href: "/a-propos", label: t("À propos", "About") },
+  { href: "/about", label: t("À propos", "About") },
 ];
 
 export const footerNav = (t: T): NavLink[] => [
   { href: "/", label: t("Accueil", "Home") },
-  { href: "/proposer", label: t("Proposer", "Submit") },
-  { href: "/recherches", label: t("Recherches", "Research") },
+  { href: "/submit", label: t("Proposer", "Submit") },
+  { href: "/research", label: t("Recherches", "Research") },
   { href: "/books", label: "Books" },
-  { href: "/a-propos#qui-sommes-nous", label: t("Qui nous sommes", "Who we are") },
-  { href: "/a-propos#regles", label: t("Règles", "Rules") },
+  { href: "/about#about-us", label: t("Qui nous sommes", "Who we are") },
+  { href: "/about#rules", label: t("Règles", "Rules") },
   { href: "/#test", label: t("Script de test", "Test script") },
-  { href: "/connexion", label: t("Connexion", "Sign in") },
+  { href: "/sign-in", label: t("Connexion", "Sign in") },
 ];

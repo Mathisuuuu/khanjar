@@ -7,7 +7,7 @@ import { StatusPill } from "@/components/proposals/StatusPill";
 import { Button } from "@/components/ui/Button";
 import { useLocale, useMessage, useT } from "@/components/i18n/LocaleProvider";
 import { intlLocale } from "@/lib/i18n/core";
-import { formatNumber, formatPercent } from "@/lib/format";
+import { formatNumber, formatPercent } from "@/lib/shared/format";
 import { typeLabel } from "@/lib/proposals/types";
 import { ACCEPTED_EXTENSIONS, formatFileSize } from "@/lib/research/files";
 import styles from "./Books.module.css";
@@ -98,10 +98,10 @@ export function BookContents({ bookId, name, color, description, stats, memberCo
             )}
           </p>
           <div className={styles.contentsActions}>
-            <Button href="/proposer" size="sm">
+            <Button href="/submit" size="sm">
               {t("Proposer une stratégie", "Submit a strategy")}
             </Button>
-            <Button href="/a-propos#regles" size="sm" variant="glass">
+            <Button href="/about#rules" size="sm" variant="glass">
               {t("Les règles", "The rules")}
             </Button>
           </div>
@@ -267,7 +267,7 @@ function FileList({ files }: { files: StrategyFile[] }) {
       {files.map((file) => (
         <li key={file.id}>
           <a
-            href={`/api/books/fichiers/${file.id}`}
+            href={`/api/books/files/${file.id}`}
             {...(file.kind === "pdf" ? { target: "_blank", rel: "noopener" } : { download: file.name })}
           >
             <span className={styles.fileKind}>{fileKinds[file.kind]}</span>

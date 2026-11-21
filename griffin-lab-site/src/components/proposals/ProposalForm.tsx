@@ -263,11 +263,11 @@ export function ProposalForm({ onSubmitted, defaultPseudo }: ProposalFormProps) 
             <span>
               {t(
                 <>
-                  J&apos;ai lu les <Link href="/a-propos#regles">règles de contribution</Link> et je comprends que les
+                  J&apos;ai lu les <Link href="/about#rules">règles de contribution</Link> et je comprends que les
                   résultats du test sont simulés.
                 </>,
                 <>
-                  I have read the <Link href="/a-propos#regles">contribution rules</Link> and understand that the test
+                  I have read the <Link href="/about#rules">contribution rules</Link> and understand that the test
                   results are simulated.
                 </>,
               )}

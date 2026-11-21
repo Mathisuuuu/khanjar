@@ -5,8 +5,6 @@
  */
 export type Locale = "fr" | "en";
 
-export const LOCALES: Locale[] = ["fr", "en"];
-
 /** Cookie qui mémorise la langue choisie avec le bouton FR / EN. */
 export const LOCALE_COOKIE = "lang";
 

@@ -73,7 +73,7 @@ export function Header({ user }: { user: HeaderUser }) {
           </a>
 
           {user && (
-            <Link href="/compte" className={`glass ${styles.round} ${styles.avatar}`} aria-label={t("Mon compte", "My account")} title={t("Mon compte", "My account")}>
+            <Link href="/account" className={`glass ${styles.round} ${styles.avatar}`} aria-label={t("Mon compte", "My account")} title={t("Mon compte", "My account")}>
               {user.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={user.image} alt="" />
@@ -84,7 +84,7 @@ export function Header({ user }: { user: HeaderUser }) {
           )}
 
           {/* connecté : « Proposer » ; déconnecté : « Se connecter » */}
-          <Button href={user ? "/proposer" : "/connexion"} variant="glass" className={styles.cta}>
+          <Button href={user ? "/submit" : "/sign-in"} variant="glass" className={styles.cta}>
             {user ? t("Proposer", "Submit") : t("Se connecter", "Sign in")}
           </Button>
 
@@ -119,11 +119,11 @@ export function Header({ user }: { user: HeaderUser }) {
             ))}
             <li>
               {user ? (
-                <Link href="/compte" aria-current={pathname === "/compte" ? "page" : undefined}>
+                <Link href="/account" aria-current={pathname === "/account" ? "page" : undefined}>
                   {t("Mon compte", "My account")}
                 </Link>
               ) : (
-                <Link href="/connexion">{t("Se connecter", "Sign in")}</Link>
+                <Link href="/sign-in">{t("Se connecter", "Sign in")}</Link>
               )}
             </li>
             <li>

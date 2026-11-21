@@ -23,11 +23,11 @@ export async function FinalCta() {
           )}
         </p>
         <div className={styles.actions}>
-          <Button href="/proposer">
+          <Button href="/submit">
             {t("Proposer ma stratégie", "Submit my strategy")}
             <Icon name="arrowRight" />
           </Button>
-          <Button href="/a-propos#regles" variant="glass">
+          <Button href="/about#rules" variant="glass">
             {t("Lire les règles", "Read the rules")}
           </Button>
         </div>

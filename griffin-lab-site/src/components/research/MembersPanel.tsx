@@ -2,7 +2,7 @@
 
 import { useActionState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
-import { addMember, removeMember, updateMemberRole } from "@/app/recherches/actions";
+import { addMember, removeMember, updateMemberRole } from "@/app/research/actions";
 import { useMessage, useT } from "@/components/i18n/LocaleProvider";
 import { roleLabels as roleLabelsFr, roleLabelsEn, type Member, type MemberRole } from "@/lib/research/types";
 import styles from "./Research.module.css";

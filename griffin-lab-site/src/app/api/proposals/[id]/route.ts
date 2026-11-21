@@ -1,4 +1,6 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { announceProposalStatus } from "@/lib/discord/announce";
+import { readJson } from "@/lib/security/read-json";
 import { isModeratorRequest } from "@/lib/proposals/auth";
 import { getProposalRepository } from "@/lib/proposals/repository";
 import { fieldErrors, moderationSchema } from "@/lib/proposals/schema";
@@ -12,12 +14,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Jeton de modération manquant ou invalide." }, { status: 401 });
   }
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
-  }
+  const body = await readJson(request); // 128 Ko au plus
+  if (body === undefined) return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
 
   const parsed = moderationSchema.safeParse(body);
   if (!parsed.success) {
@@ -25,9 +23,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 
   const { id } = await params;
-  const proposal = await getProposalRepository().moderate(id, parsed.data);
+  const repository = getProposalRepository();
+  const before = (await repository.list()).find((p) => p.id === id);
+  const proposal = await repository.moderate(id, parsed.data);
   if (!proposal) {
     return NextResponse.json({ error: "Proposition introuvable." }, { status: 404 });
   }
+  // annonce anonyme sur Discord, seulement si le statut change vraiment
+  if (before?.status !== proposal.status) after(() => announceProposalStatus(proposal.status));
   return NextResponse.json({ proposal: toPublic(proposal) });
 }

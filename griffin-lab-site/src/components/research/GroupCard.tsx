@@ -28,7 +28,7 @@ export async function GroupCard({ group, role, reserveFan }: GroupCardProps) {
           {group.pdfs.length > 0 && <PdfFan files={group.pdfs} groupName={group.name} />}
         </div>
       )}
-      <Link href={`/recherches/${group.id}`} className={styles.card}>
+      <Link href={`/research/${group.id}`} className={styles.card}>
         <div className={styles.badges}>
           {group.kind === "official" && <span className={`${styles.badge} ${styles.official}`}>Griffin Lab</span>}
           {group.visibility === "private" && <span className={`${styles.badge} ${styles.private}`}>{t("Privé", "Private")}</span>}
