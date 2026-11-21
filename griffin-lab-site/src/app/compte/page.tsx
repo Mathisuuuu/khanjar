@@ -74,7 +74,9 @@ export default async function ComptePage() {
               {isBrand && <BrandIcon name={provider as BrandName} size={13} />}
               {providerLabels[provider] ?? provider}
             </span>
-            {viewer.isAdmin && <span className={`${styles.badge} ${styles.badgeAdmin}`}>Administrateur</span>}
+            {viewer.isAdmin && (
+              <span className={`${styles.badge} ${styles.badgeAdmin}`}>{viewer.isOwner ? "Super admin" : "Administrateur"}</span>
+            )}
             {viewer.isTeam && !viewer.isAdmin && <span className={styles.badge}>Équipe Griffin Lab</span>}
             <span className={`${styles.badge} ${unlocked ? styles.badgeOk : ""}`}>
               {unlocked ? "Accès au bot débloqué" : "Accès au bot verrouillé"}

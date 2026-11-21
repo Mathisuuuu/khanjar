@@ -97,11 +97,11 @@ export async function setRoleAction(userKey: string, role: SiteRole): Promise<{ 
     email = row?.email ?? null;
     verified = !!row?.email_verified_at;
   }
-  if (configRole(provider, email) === "admin") return { ok: false, message: "Administrateur fixé par la configuration du serveur." };
+  if (configRole(provider, email) === "admin") return { ok: false, message: "Super admin : fixé par la configuration du serveur." };
 
   const current = await getStoredRole(userKey);
   if ((role === "admin" || current === "admin") && !admin.isOwner) {
-    return { ok: false, message: "Seul un administrateur principal peut nommer ou retirer un admin." };
+    return { ok: false, message: "Seul un super admin peut nommer ou retirer un admin." };
   }
   if (role === "admin" && (provider !== "credentials" || !verified)) {
     return { ok: false, message: "Le rôle admin est réservé aux comptes e-mail confirmés." };

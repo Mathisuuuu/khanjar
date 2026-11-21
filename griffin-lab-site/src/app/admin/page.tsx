@@ -42,7 +42,7 @@ export default async function AdminPage({ searchParams }: Props) {
   return (
     <>
       <PageHeader crumb="Administration" title="Administration">
-        Gère les comptes, les groupes de recherche et les propositions. Les suppressions sont définitives.
+        Gère les comptes, les groupes de recherche et les propositions{admin.isOwner ? " — tu es super admin : tu choisis qui devient admin" : ""}. Les suppressions sont définitives.
       </PageHeader>
 
       <div className={`container ${styles.page}`}>
@@ -119,9 +119,9 @@ export default async function AdminPage({ searchParams }: Props) {
                     const locked = self
                       ? "C'est ton compte."
                       : fixed === "admin"
-                        ? "Administrateur fixé par la configuration du serveur."
+                        ? "Super admin : fixé par la configuration du serveur, peut nommer et retirer les admins."
                         : role === "admin" && !admin.isOwner
-                          ? "Seul un administrateur principal peut retirer un admin."
+                          ? "Seul un super admin peut retirer un admin."
                           : undefined;
                     return (
                       <tr key={account.userKey} className={account.banned ? styles.bannedRow : undefined}>
@@ -138,6 +138,7 @@ export default async function AdminPage({ searchParams }: Props) {
                             role={role}
                             allowed={allowed}
                             locked={locked}
+                            label={fixed === "admin" ? "Super admin" : undefined}
                           />
                           {fixed === "team" && role === "team" && <small>fixé par la configuration</small>}
                         </td>
@@ -185,7 +186,7 @@ export default async function AdminPage({ searchParams }: Props) {
           )}
           <p className={styles.note}>
             Rôle : « Équipe » peut créer des recherches officielles et gérer les books ; « Admin » a accès à cet espace.
-            Le rôle admin se donne seulement à un compte e-mail confirmé. Bannir bloque la connexion et coupe les sessions ouvertes, sans rien effacer. Supprimer efface le compte et
+            Le rôle admin se donne seulement à un compte e-mail confirmé, et seul un super admin peut nommer ou retirer un admin. Bannir bloque la connexion et coupe les sessions ouvertes, sans rien effacer. Supprimer efface le compte et
             tout ce qu&apos;il a publié : un compte Discord ou GitHub supprimé peut revenir, bannis-le pour l&apos;en
             empêcher.
           </p>

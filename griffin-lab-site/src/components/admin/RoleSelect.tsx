@@ -16,10 +16,12 @@ type Props = {
   allowed: SiteRole[];
   /** raison affichée quand le rôle ne peut pas être changé */
   locked?: string;
+  /** libellé affiché à la place du rôle quand il est verrouillé (ex. « Super admin ») */
+  label?: string;
 };
 
 /** Choix du rôle d'un compte dans /admin : enregistré dès qu'on change la valeur. */
-export function RoleSelect({ userKey, pseudo, role, allowed, locked }: Props) {
+export function RoleSelect({ userKey, pseudo, role, allowed, locked, label }: Props) {
   const [value, setValue] = useState(role);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -27,7 +29,7 @@ export function RoleSelect({ userKey, pseudo, role, allowed, locked }: Props) {
   if (locked) {
     return (
       <span className={styles.fixed} data-role={role} title={locked}>
-        {LABELS[role]}
+        {label ?? LABELS[role]}
       </span>
     );
   }

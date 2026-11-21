@@ -21,7 +21,9 @@ export const metadata: Metadata = {
 const checkExplanations = [
   "Que l'effet tient sur plusieurs régimes de marché.",
   "Que la stratégie marche sur des données qu'elle n'a pas vues.",
-  "Que la perte maximale reste maîtrisée.",
+  "Que les résultats ne viennent pas d'un réglage sur mesure du passé : validation glissante (walk-forward) et Sharpe corrigé du nombre d'essais.",
+  "Que le signal prédit vraiment : corrélation entre le signal et les rendements qui suivent.",
+  "Que la pire perte depuis un plus haut reste inférieure au rendement de l'année.",
   "Que le résultat ne dépend pas de l'ordre des trades.",
   "La corrélation avec chaque book. La stratégie rejoint un book avec lequel elle est peu corrélée.",
 ];
@@ -120,9 +122,10 @@ export default function AboutPage() {
               stratégie est jugée sur des faits, jamais sur une intuition :
             </p>
             <ul>
-              <li>un backtest long, sur plusieurs régimes de marché ;</li>
-              <li>un test hors échantillon, sur des données que la stratégie n&apos;a jamais vues ;</li>
-              <li>un contrôle du risque (drawdown maximal) et un stress statistique (Monte Carlo) ;</li>
+              <li>un backtest sur 15 ans, sur plusieurs régimes de marché ;</li>
+              <li>un test hors échantillon sur 5 ans, sur des données que la stratégie n&apos;a jamais vues ;</li>
+              <li>un contrôle anti-surapprentissage et un calcul d&apos;IC (coefficient de corrélation entre le signal et les rendements futurs) ;</li>
+              <li>un contrôle du risque (drawdown maximal inférieur au rendement annuel) et un stress statistique (Monte Carlo) ;</li>
               <li>une mesure de corrélation, pour qu&apos;elle rejoigne le book où elle apporte vraiment quelque chose.</li>
             </ul>
             <p>
@@ -182,7 +185,7 @@ export default function AboutPage() {
             <p className={styles.number}>ARTICLE 2</p>
             <h2>Le script de test</h2>
             <p>
-              Toutes les propositions passent les mêmes cinq contrôles. Les quatre premiers décident si la stratégie
+              Toutes les propositions passent les mêmes sept contrôles. Les six premiers décident si la stratégie
               est validée ; le dernier choisit le book qui l&apos;accueille. Elle reçoit ensuite un score sur 100.
             </p>
             <div className={styles.tableWrap}>

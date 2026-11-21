@@ -39,7 +39,7 @@ export function ProposalWorkspace({ defaultPseudo }: { defaultPseudo: string }) 
         <ProposalQueue proposals={proposals} loading={loading} error={error} />
         <ol className={styles.steps}>
           <li>Ta proposition entre dans la file avec le statut « En file ».</li>
-          <li>Elle passe les cinq contrôles du script de test : statut « En test ».</li>
+          <li>Elle passe les sept contrôles du script de test : statut « En test ».</li>
           <li>
             Validée : elle entre dans un book et tu débloques 100 % du bot. Rejetée : tu reçois la raison et tu peux
             la renvoyer.

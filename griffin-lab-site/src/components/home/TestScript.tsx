@@ -71,8 +71,8 @@ export function TestScript() {
 
   return (
     <Section id="test">
-      <SectionHeading kicker="03 · Le script de test" title="Cinq contrôles quantitatifs. Aucun passe-droit.">
-        Chaque stratégie est évaluée par le même pipeline : robustesse, hors échantillon, risque, stress statistique
+      <SectionHeading kicker="03 · Le script de test" title="Sept contrôles quantitatifs. Aucun passe-droit.">
+        Chaque stratégie est évaluée par le même pipeline : robustesse, hors échantillon, anti-surapprentissage, pouvoir prédictif (IC), risque, stress statistique
         et apport réel au portefeuille.
       </SectionHeading>
 

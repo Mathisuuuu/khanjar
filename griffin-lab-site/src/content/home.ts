@@ -99,7 +99,7 @@ export const strategyStats: StrategyStat[] = [
     label: "Refusées",
     thisWeek: 9,
     factLabel: "Motif le plus fréquent",
-    factValue: "Drawdown > 10 %",
+    factValue: "Drawdown > rendement annuel",
     total: 56,
   },
 ];
@@ -164,11 +164,13 @@ export type Check = {
   threshold: string;
 };
 
-/** Les cinq contrôles du script de test (repris dans la page Règles). */
+/** Les sept contrôles du script de test (repris dans la page Règles). */
 export const checks: Check[] = [
-  { name: "Backtest", threshold: "7 ans · 2019–2025" },
-  { name: "Hors échantillon", threshold: "2024–2025" },
-  { name: "Drawdown max", threshold: "< 10 %" },
+  { name: "Backtest", threshold: "15 ans · 2011–2025" },
+  { name: "Hors échantillon", threshold: "5 ans · 2021–2025" },
+  { name: "Anti-surapprentissage", threshold: "walk-forward · Sharpe déflaté" },
+  { name: "IC (coefficient de corrélation)", threshold: "IC > 0,05" },
+  { name: "Drawdown max", threshold: "< rendement annuel" },
   { name: "Monte Carlo", threshold: "1 000 tirages" },
   { name: "Placement dans un book", threshold: "ρ < 0,3" },
 ];
@@ -184,17 +186,21 @@ export type TerminalLine = {
 /** Faux test joué en boucle dans le terminal de la section « Script de test ». */
 export const terminalScript: TerminalLine[] = [
   { kind: "command", text: "griffin test strategy_rsi_ny.py" },
-  { kind: "output", text: "→ chargement des données NQ 5 min · 2019–2025" },
-  { kind: "output", text: "[1/5] backtest 7 ans ........ 1 284 trades" },
+  { kind: "output", text: "→ chargement des données NQ 5 min · 2011–2025" },
+  { kind: "output", text: "[1/7] backtest 15 ans ....... 2 716 trades" },
   { kind: "success", text: "      ✓ robustesse historique", validates: 0 },
-  { kind: "output", text: "[2/5] hors échantillon 2024–2025 ... PF 1,41" },
+  { kind: "output", text: "[2/7] hors échantillon 5 ans (2021–2025) ... PF 1,38" },
   { kind: "success", text: "      ✓ tient sur données jamais vues", validates: 1 },
-  { kind: "output", text: "[3/5] drawdown max ......... 6,2 % (seuil 10 %)" },
-  { kind: "success", text: "      ✓ perte maximale maîtrisée", validates: 2 },
-  { kind: "output", text: "[4/5] monte carlo 1 000 tirages ... 94 % positifs" },
-  { kind: "success", text: "      ✓ résultat indépendant de l'ordre des trades", validates: 3 },
-  { kind: "output", text: "[5/5] corrélation : Book A 0,42 · Book B 0,12 · Book C 0,31" },
-  { kind: "success", text: "      ✓ placée dans le Book B (ρ < 0,3)", validates: 4 },
+  { kind: "output", text: "[3/7] anti-surapprentissage ... walk-forward 9/10 · DSR 0,97" },
+  { kind: "success", text: "      ✓ pas de sur-optimisation", validates: 2 },
+  { kind: "output", text: "[4/7] IC signal / rendement futur ... 0,08 (seuil 0,05)" },
+  { kind: "success", text: "      ✓ le signal prédit vraiment", validates: 3 },
+  { kind: "output", text: "[5/7] drawdown max 6,2 % < rendement annuel 14,8 %" },
+  { kind: "success", text: "      ✓ perte maximale maîtrisée", validates: 4 },
+  { kind: "output", text: "[6/7] monte carlo 1 000 tirages ... 94 % positifs" },
+  { kind: "success", text: "      ✓ résultat indépendant de l'ordre des trades", validates: 5 },
+  { kind: "output", text: "[7/7] corrélation : Book A 0,42 · Book B 0,12 · Book C 0,31" },
+  { kind: "success", text: "      ✓ placée dans le Book B (ρ < 0,3)", validates: 6 },
   { kind: "result", text: "score 86/100 · VALIDÉE · le bot s'améliore" },
 ];
 
