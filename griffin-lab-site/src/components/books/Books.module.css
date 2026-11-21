@@ -318,6 +318,8 @@
 
 .managed li.managedRow {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: stretch;
   gap: 6px;
   align-items: stretch;
   padding: 9px 10px;
@@ -371,7 +373,7 @@
   border-radius: 6px;
 }
 
-.switchTrack {
+.viewTrack {
   position: relative;
   flex: none;
   width: 30px;
@@ -381,7 +383,7 @@
   transition: background 0.15s;
 }
 
-.switchThumb {
+.viewThumb {
   position: absolute;
   top: 2px;
   left: 2px;
@@ -389,15 +391,16 @@
   height: 13px;
   background: #fff;
   border-radius: 50%;
-  transition: transform 0.15s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  transition: left 0.15s;
 }
 
-.viewSwitch[data-on] .switchTrack {
+.viewSwitch[data-on] .viewTrack {
   background: var(--accent);
 }
 
-.viewSwitch[data-on] .switchThumb {
-  transform: translateX(13px);
+.viewSwitch[data-on] .viewThumb {
+  left: 15px;
 }
 
 .contentsNotice {
@@ -867,11 +870,18 @@
 
 .contentsStats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
 
+@media (max-width: 400px) {
+  .contentsStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .contentsStats div {
+  min-width: 0;
   padding: 10px 12px;
   background: var(--card);
   border: 1px solid var(--border);
@@ -879,8 +889,11 @@
 }
 
 .contentsStats dt {
+  overflow: hidden;
   font-size: 11.5px;
   color: var(--fg-3);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .contentsStats dd {

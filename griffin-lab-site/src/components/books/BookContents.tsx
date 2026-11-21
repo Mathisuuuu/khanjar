@@ -67,7 +67,7 @@ export function BookContents({ bookId, name, color, description, stats, memberCo
         {stats && (
           <>
             <div>
-              <dt>Rendement 30 j</dt>
+              <dt>Perf. 30 j</dt>
               <dd className={stats.monthReturn >= 0 ? styles.up : styles.down}>{pct(stats.monthReturn)}</dd>
             </div>
             <div>
@@ -75,7 +75,7 @@ export function BookContents({ bookId, name, color, description, stats, memberCo
               <dd>{stats.sharpe.toLocaleString("fr-FR", { minimumFractionDigits: 2 })}</dd>
             </div>
             <div>
-              <dt>Drawdown max</dt>
+              <dt>Drawdown</dt>
               <dd>{pct(stats.maxDrawdown)}</dd>
             </div>
           </>

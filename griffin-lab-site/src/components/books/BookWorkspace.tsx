@@ -29,7 +29,6 @@ type Props = {
 };
 
 const RESEARCH_KEY = "griffin-lab:books-recherches";
-const SIDEBAR_KEY = "griffin-lab:books-colonne";
 
 const STAT_FIELDS = [
   { name: "monthReturn", label: "Rendement visé sur 30 j (%)", hint: "22,2" },
@@ -70,25 +69,17 @@ function LockIcon() {
 
 /** Espace Books : colonne rétractable à gauche (liste, options, gestion) et canevas du book choisi. */
 export function BookWorkspace({ books, selected, team, admin, signedIn, managed, editable }: Props) {
-  const [open, setOpen] = useState(true);
+  // les deux panneaux (colonne de gauche, contenu du book) démarrent fermés
+  const [open, setOpen] = useState(false);
   const [showResearch, setShowResearch] = useState(false);
-  // le contenu s'ouvre à chaque book choisi
-  const [contentsOpen, setContentsOpen] = useState(true);
-  useEffect(() => setContentsOpen(true), [selected?.id]);
+  const [contentsOpen, setContentsOpen] = useState(false);
+  useEffect(() => setContentsOpen(false), [selected?.id]);
 
-  // préférences mémorisées dans ce navigateur ; sur mobile, la colonne démarre fermée
   useEffect(() => {
     setShowResearch(readFlag(RESEARCH_KEY) ?? false);
-    const saved = readFlag(SIDEBAR_KEY);
-    setOpen(window.matchMedia("(max-width: 767px)").matches ? false : (saved ?? true));
   }, []);
 
-  const toggleSidebar = () => {
-    setOpen((value) => {
-      writeFlag(SIDEBAR_KEY, !value);
-      return !value;
-    });
-  };
+  const toggleSidebar = () => setOpen((value) => !value);
 
   return (
     <div className={`${styles.workspace} ${open ? styles.open : styles.closed}`}>
@@ -364,10 +355,10 @@ function ManagedRow({ bookId, member, admin }: { bookId: string; member: Managed
             disabled={pending}
             onClick={toggle}
           >
-            <span className={styles.switchTrack} aria-hidden="true">
-              <span className={styles.switchThumb} />
+            <span className={styles.viewTrack} aria-hidden="true">
+              <span className={styles.viewThumb} />
             </span>
-            {canView ? "Voit les stratégies" : "Ne voit pas"}
+            {canView ? "Accès donné" : "Pas d'accès"}
           </button>
         )}
         <button
@@ -416,6 +407,11 @@ function ManageBook({
         </Button>
       </form>
 
+      {admin && members.length > 0 && (
+        <p className={styles.sideNote}>
+          Interrupteur : accès aux stratégies des autres membres de ce book. Fermé par défaut.
+        </p>
+      )}
       <ul className={styles.managed} aria-busy={busy}>
         {members.map((member) => (
           <ManagedRow key={member.userKey} bookId={bookId} member={member} admin={admin} />
