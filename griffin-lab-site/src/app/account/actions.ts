@@ -10,7 +10,9 @@ import { hashPassword, verifyPassword } from "@/lib/users/password";
 import { setPseudo } from "@/lib/users/profiles";
 import { getUserRepository } from "@/lib/users/repository";
 import { pseudoSchema, signUpSchema } from "@/lib/users/schema";
-import { PROFILE_VISIBILITIES, setVisibility, type ProfileVisibility } from "@/lib/users/identity";
+import { PROFILE_VISIBILITIES, profileHref, setVisibility, type ProfileVisibility } from "@/lib/users/identity";
+import { claimPost, getCertificate, releasePost, setCertificatePublic } from "@/lib/certificates/settings";
+import { postCertificate } from "@/lib/discord/certificate";
 import { requireViewer } from "@/lib/auth/viewer";
 
 export type VisibilityState = { ok?: boolean; message?: string };
@@ -43,7 +45,7 @@ export async function changePseudoAction(_prev: AccountFormState, form: FormData
 /** Changement de mot de passe (comptes e-mail) : l'ancien est demandé. */
 export async function changePasswordAction(_prev: AccountFormState, form: FormData): Promise<AccountFormState> {
   const viewer = await requireViewer("/account");
-  if (!viewer.id.startsWith("credentials:")) return { message: "Ton compte n'a pas de mot de passe sur Griffin Lab." };
+  if (!viewer.id.startsWith("credentials:")) return { message: "Ton compte n'a pas de mot de passe sur Fleija." };
   if (!(await consume(`password-change:${viewer.id}`, 5, 15 * 60))) return { message: "Trop de tentatives. Réessaie plus tard." };
 
   const repository = getUserRepository();
@@ -83,6 +85,38 @@ export async function deleteOwnAccountAction(_prev: AccountFormState, form: Form
   await deleteAccount(viewer.id);
   await signOut({ redirectTo: "/?compte=supprime" });
   return {};
+}
+
+/* ---------- Certificats ---------- */
+
+export type CertificateState = { ok?: boolean; message?: string };
+
+/** Affiche ou masque un de ses certificats sur son profil public. */
+export async function setCertificatePublicAction(id: string, visible: boolean): Promise<CertificateState> {
+  const viewer = await requireViewer("/account");
+  if (!(await consume(`certificate-public:${viewer.id}`, 60, 60 * 60))) return { message: "Trop de changements. Réessaie plus tard." };
+  if (!(await setCertificatePublic(viewer.id, id, visible))) return { message: "Certificat introuvable." };
+  revalidatePath("/account");
+  revalidatePath(profileHref(viewer.name));
+  return { ok: true, message: visible ? "Certificat affiché sur ton profil public." : "Certificat retiré de ton profil public." };
+}
+
+/** Publie un de ses certificats dans #certificates sur Discord (une seule fois), avec son pseudo. */
+export async function postCertificateAction(id: string): Promise<CertificateState> {
+  const viewer = await requireViewer("/account");
+  if (!(await consume(`certificate-post:${viewer.id}`, 5, 60 * 60))) return { message: "Trop de tentatives. Réessaie plus tard." };
+  const certificate = await getCertificate(id);
+  if (!certificate || certificate.authorId !== viewer.id) return { message: "Certificat introuvable." };
+  if (!(await claimPost(viewer.id, id))) return { message: "Ce certificat a déjà été publié dans #certificates." };
+  try {
+    await postCertificate(certificate, viewer.name);
+  } catch (error) {
+    await releasePost(viewer.id, id);
+    console.error("Certificat non publié dans #certificates :", error instanceof Error ? error.message : error);
+    return { message: "Publication impossible sur Discord pour le moment. Réessaie plus tard." };
+  }
+  revalidatePath("/account");
+  return { ok: true, message: "Certificat publié dans #certificates." };
 }
 
 /** Délie le compte Discord (la photo de profil n'est plus affichée). */

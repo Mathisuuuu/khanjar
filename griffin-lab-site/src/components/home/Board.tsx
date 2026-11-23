@@ -63,7 +63,8 @@ export async function Board() {
         <span className={`${styles.col} ${styles.hideMd}`}>{t("Rendement · semaine", "Return · week")}</span>
         <span className={`${styles.col} ${styles.hideMd}`}>Sharpe</span>
         <span className={`${styles.col} ${styles.hideMd}`}>DD max</span>
-        <span className={`${styles.col} ${styles.end}`}>{t("30 J", "30 D")}</span>
+        <span className={`${styles.col} ${styles.end}`}>{t("1 J", "1 D")}</span>
+        <span className={`${styles.col} ${styles.end}`}>All time</span>
       </div>
 
       {loops.map((loop) => (
@@ -93,7 +94,8 @@ export async function Board() {
             Sharpe {formatNumber(loop.sharpe, 2, locale)}
           </span>
           <span className={`${styles.muted} ${styles.hideMd}`}>{pct(loop.maxDrawdown)}</span>
-          <span className={styles.month}>{pct(loop.monthReturn)}</span>
+          <span className={`${styles.month} ${loop.dayReturn < 0 ? styles.negative : ""}`}>{pct(loop.dayReturn)}</span>
+          <span className={styles.allTime}>{loop.allTime === null ? "—" : pct(loop.allTime)}</span>
         </div>
       ))}
 

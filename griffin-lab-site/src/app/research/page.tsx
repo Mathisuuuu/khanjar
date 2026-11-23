@@ -14,8 +14,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("Recherches", "Research"),
     description: t(
-      "Les recherches de l'équipe Griffin Lab et celles partagées par la communauté.",
-      "Research from the Griffin Lab team and research shared by the community.",
+      "Les recherches de l'équipe Fleija et celles partagées par la communauté.",
+      "Research from the Fleija team and research shared by the community.",
     ),
   };
 }
@@ -57,7 +57,7 @@ export default async function ResearchPage() {
         <section className={styles.block} aria-labelledby="official-title">
           <div className={styles.blockHead}>
             <div>
-              <h2 id="official-title">{t("Recherches Griffin Lab", "Griffin Lab research")}</h2>
+              <h2 id="official-title">{t("Recherches Fleija", "Fleija research")}</h2>
               <p>{t("Publiées par l'équipe.", "Published by the team.")}</p>
             </div>
           </div>

@@ -12,8 +12,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("Qui nous sommes et règles", "About us and rules"),
     description: t(
-      "L'équipe derrière Griffin Lab, puis les règles de contribution : format, script de test, statuts et accès.",
-      "The team behind Griffin Lab, then the contribution rules: format, test script, statuses and access.",
+      "L'équipe derrière Fleija, puis les règles de contribution : format, script de test, statuts et accès.",
+      "The team behind Fleija, then the contribution rules: format, test script, statuses and access.",
     ),
   };
 }
@@ -24,13 +24,8 @@ export async function generateMetadata(): Promise<Metadata> {
  * Les anciennes adresses /qui-sommes-nous et /regles redirigent ici (next.config.ts).
  */
 
-function Pending({ children }: { children: string }) {
-  return <span className={styles.pending}>{children}</span>;
-}
-
 export default async function AboutPage() {
   const t = await getT();
-  const tbd = t("À DÉFINIR", "TO BE DEFINED");
 
   const parts = [
     {
@@ -51,8 +46,7 @@ export default async function AboutPage() {
         { id: "format", label: t("Format d'envoi", "Submission format") },
         { id: "test", label: t("Script de test", "Test script") },
         { id: "statuts", label: t("Statuts", "Statuses") },
-        { id: "acces", label: t("Accès 100 %", "100% access") },
-        { id: "propriete", label: t("Propriété", "Ownership") },
+        { id: "acces", label: t("Accès au book", "Book access") },
         { id: "risques", label: t("Risques", "Risks") },
       ],
     },
@@ -93,12 +87,12 @@ export default async function AboutPage() {
             <p>
               {t(
                 <>
-                  Griffin Lab est notre réponse : un projet collaboratif où chacun propose ses idées, où toutes passent
+                  Fleija est notre réponse : un projet collaboratif où chacun propose ses idées, où toutes passent
                   le même test rigoureux, et où les meilleures rejoignent un bot commun. <b>Tout est gratuit.</b> Nous
                   pensons que l&apos;entraide et le partage sont la clé de la réussite de chacun.
                 </>,
                 <>
-                  Griffin Lab is our answer: a collaborative project where everyone submits their ideas, all of them go
+                  Fleija is our answer: a collaborative project where everyone submits their ideas, all of them go
                   through the same rigorous test, and the best ones join a shared bot. <b>Everything is free.</b> We
                   believe that helping each other and sharing are the key to everyone&apos;s success.
                 </>,
@@ -183,8 +177,8 @@ export default async function AboutPage() {
             <h2>{t("La communauté", "The community")}</h2>
             <p>
               {t(
-                "Griffin Lab se construit avec celles et ceux qui y participent. Tu peux proposer une idée, un script ou un papier de recherche, publier dans les groupes de recherche, ou simplement discuter des stratégies des autres. Une contribution validée te donne accès au bot entier, gratuitement.",
-                "Griffin Lab is built with the people who take part. You can submit an idea, a script or a research paper, post in the research groups, or simply discuss other people's strategies. A validated contribution gives you access to the whole bot, for free.",
+                "Fleija se construit avec celles et ceux qui y participent. Tu peux proposer une idée, un script ou un papier de recherche, publier dans les groupes de recherche, ou simplement discuter des stratégies des autres. Une contribution validée te donne accès à 100 % du book où elle entre, gratuitement.",
+                "Fleija is built with the people who take part. You can submit an idea, a script or a research paper, post in the research groups, or simply discuss other people's strategies. A validated contribution gives you access to 100% of the book it joins, for free.",
               )}
             </p>
           </article>
@@ -310,15 +304,11 @@ export default async function AboutPage() {
               </li>
               <li>
                 {t(
-                  "Si elle est trop corrélée à tous les books existants : création d'un nouveau book ou mise en attente",
-                  "If it is too correlated with every existing book: a new book is created or it is put on hold",
-                )}{" "}
-                <Pending>{tbd}</Pending>
+                  "Si elle est trop corrélée à tous les books existants : création d'un nouveau book ou mise en attente.",
+                  "If it is too correlated with every existing book: a new book is created or it is put on hold.",
+                )}
               </li>
             </ul>
-            <p className={styles.small}>
-              {t("Seuils provisoires", "Provisional thresholds")} <Pending>{t("À CONFIRMER", "TO BE CONFIRMED")}</Pending>
-            </p>
           </article>
 
           <article className={styles.rule} id="statuts">
@@ -350,36 +340,23 @@ export default async function AboutPage() {
 
           <article className={styles.rule} id="acces">
             <p className={styles.number}>ARTICLE 4</p>
-            <h2>{t("L'accès à 100 % du bot", "Access to 100% of the bot")}</h2>
+            <h2>{t("L'accès à 100 % du book", "Access to 100% of the book")}</h2>
             <p>
               {t(
-                "L'auteur d'une stratégie validée obtient l'accès complet au bot : toutes les stratégies, les signaux en temps réel, l'exécution automatique et chaque amélioration future.",
-                "The author of a validated strategy gets full access to the bot: every strategy, real-time signals, automatic execution and every future improvement.",
+                "L'auteur d'une stratégie validée obtient l'accès complet au book dans lequel elle entre : toutes les stratégies de ce book, ses signaux en temps réel, l'exécution automatique et chaque amélioration future du book.",
+                "The author of a validated strategy gets full access to the book it joins: every strategy in that book, its real-time signals, automatic execution and every future improvement to the book.",
               )}
             </p>
             <p>
               {t(
-                "Durée de l'accès (à vie, liée à la performance ou renouvelable)",
-                "Length of access (lifetime, tied to performance or renewable)",
-              )}{" "}
-              <Pending>{tbd}</Pending>
-            </p>
-          </article>
-
-          <article className={styles.rule} id="propriete">
-            <p className={styles.number}>ARTICLE 5</p>
-            <h2>{t("Propriété des stratégies", "Strategy ownership")}</h2>
-            <p>
-              {t(
-                "Ce que devient une stratégie après son intégration sera écrit ici : qui la possède, si elle peut être retirée, et si son auteur peut la partager ailleurs.",
-                "What happens to a strategy after it is added will be written here: who owns it, whether it can be withdrawn, and whether its author can share it elsewhere.",
-              )}{" "}
-              <Pending>{tbd}</Pending>
+                "L'accès ne s'étend pas aux autres books : les stratégies d'un book sont choisies pour être peu corrélées entre elles, et les cumuler avec celles d'autres books recréerait de la corrélation.",
+                "Access does not extend to the other books: the strategies in a book are chosen to be weakly correlated with each other, and stacking them with other books' strategies would bring correlation back.",
+              )}
             </p>
           </article>
 
           <article className={styles.rule} id="risques">
-            <p className={styles.number}>ARTICLE 6</p>
+            <p className={styles.number}>ARTICLE 5</p>
             <h2>{t("Risques et cadre", "Risks and framework")}</h2>
             <ul>
               <li>
@@ -393,13 +370,6 @@ export default async function AboutPage() {
                   "Le trading comporte un risque de perte en capital. Rien sur ce site n'est un conseil en investissement.",
                   "Trading involves a risk of capital loss. Nothing on this site is investment advice.",
                 )}
-              </li>
-              <li>
-                {t(
-                  "Le cadre réglementaire des signaux et de l'exécution automatique est en cours de vérification.",
-                  "The regulatory framework for signals and automatic execution is being reviewed.",
-                )}{" "}
-                <Pending>{t("EN COURS", "IN PROGRESS")}</Pending>
               </li>
             </ul>
           </article>

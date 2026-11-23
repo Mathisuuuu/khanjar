@@ -350,6 +350,100 @@
   min-width: 0;
 }
 
+.listEnd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.certificate {
+  font-size: 12.5px;
+  color: var(--fg-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.certificate:hover {
+  color: var(--fg);
+}
+
+/* Mes certificats */
+.certificates {
+  display: grid;
+  gap: 14px;
+  list-style: none;
+}
+
+.certificates > li {
+  display: grid;
+  grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.certificateImage {
+  display: block;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.certificateImage img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1500 / 1060;
+  background: #08080a;
+}
+
+.certificateBody {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.certificateBody > b {
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.certificateBody > small {
+  font-size: 12.5px;
+  color: var(--fg-3);
+}
+
+.certificateToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--fg-2);
+  cursor: pointer;
+}
+
+.certificateToggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-2);
+}
+
+.certificateActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .certificates > li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .listMain b {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -404,7 +498,7 @@
   color: var(--fg-3);
 }
 
-/* Accès au bot */
+/* Accès au book */
 .access {
   display: grid;
   gap: 6px;
@@ -703,4 +797,34 @@
   .discordLink {
     flex-wrap: wrap;
   }
+
+  /* texte à côté de l'icône, bouton en dessous */
+  .discordText {
+    flex-basis: calc(100% - 62px);
+  }
+
+  .discordLink > .discordButton,
+  .discordLink > form {
+    margin-left: 62px;
+  }
+}
+
+/* Mes certificats : envoi en message privé sur Discord */
+.certificateInvite {
+  margin-bottom: 18px;
+}
+
+.certificateDm {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  color: var(--fg-3);
+}
+
+.certificateDm svg {
+  flex: none;
+  margin-top: 2px;
+  color: #5865f2;
 }

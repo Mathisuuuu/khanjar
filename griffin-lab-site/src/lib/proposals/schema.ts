@@ -25,7 +25,7 @@ export const newProposalSchema = z
       .optional()
       .default("")
       .refine((value) => value === "" || /^https?:\/\//i.test(value), "Le lien doit commencer par http(s)://."),
-    acceptRules: z.literal(true, { errorMap: () => ({ message: "Accepte les règles de contribution." }) }),
+    acceptRules: z.literal(true, { error: "Accepte les règles de contribution." }),
   })
   .superRefine((data, ctx) => {
     if (data.type === "script" && !data.code) {

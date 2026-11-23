@@ -18,7 +18,7 @@ export type Viewer = {
   name: string;
   /** `false` tant qu'un compte Discord ou Google n'a pas choisi son pseudo (page /welcome). */
   hasPseudo: boolean;
-  /** Membre de l'équipe Griffin Lab : peut créer des recherches officielles. */
+  /** Membre de l'équipe Fleija : peut créer des recherches officielles. */
   isTeam: boolean;
   /** Administrateur : espace /admin, modération, tous les droits sur les recherches. */
   isAdmin: boolean;

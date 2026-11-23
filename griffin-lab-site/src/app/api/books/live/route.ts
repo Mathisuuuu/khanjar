@@ -14,7 +14,8 @@ type LiveBook = {
   strategies: number;
   sharpe: number;
   maxDrawdown: number;
-  monthReturn: number;
+  dayReturn: number;
+  allTime: number | null;
   weekReturn: number | null;
 };
 let cache: { at: number; data: LiveBook[] } | null = null;
@@ -24,13 +25,14 @@ export async function GET() {
     const loops = await getHomeLoops();
     cache = {
       at: Date.now(),
-      data: loops.map(({ id, name, strategies, sharpe, maxDrawdown, monthReturn, weekReturn }) => ({
+      data: loops.map(({ id, name, strategies, sharpe, maxDrawdown, dayReturn, allTime, weekReturn }) => ({
         letter: id,
         name,
         strategies,
         sharpe,
         maxDrawdown,
-        monthReturn,
+        dayReturn,
+        allTime,
         weekReturn: weekReturn ?? null,
       })),
     };

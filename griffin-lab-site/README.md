@@ -1,6 +1,6 @@
-# Griffin Lab — site web
+# Fleija — site web
 
-Site de **Griffin Lab**, le bot de trading algorithmique construit par sa communauté : on propose une idée, un script ou un papier SSRN ; si la stratégie passe le script de test, elle entre dans un book du bot et son auteur débloque 100 % du bot.
+Site de **Fleija**, le bot de trading algorithmique construit par sa communauté : on propose une idée, un script ou un papier SSRN ; si la stratégie passe le script de test, elle entre dans un book du bot et son auteur débloque 100 % de ce book (pas des autres : cumuler les books recréerait de la corrélation).
 
 ## Stack
 
@@ -44,7 +44,7 @@ En local, sans `DATABASE_URL`, le site utilise un PostgreSQL embarqué ([PGlite]
 | `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | connexion Google. |
 | `NEXT_PUBLIC_DISCORD_URL` | lien d'invitation du rond Discord dans l'en-tête et sur `/account`. |
 | `DISCORD_BOT_TOKEN` | jeton du bot Discord : annonces dans #research et #strategy-ideas, mise à jour des photos de profil. Facultatif. |
-| `SMTP_URL` / `MAIL_FROM` | envoi des e-mails de confirmation d'inscription (`smtps://utilisateur:motdepasse@serveur:465`, expéditeur `Griffin Lab <no-reply@ton-domaine>`). Sans eux, en production, l'inscription par e-mail est fermée ; en développement, l'e-mail s'affiche dans la console. |
+| `SMTP_URL` / `MAIL_FROM` | envoi des e-mails de confirmation d'inscription (`smtps://utilisateur:motdepasse@serveur:465`, expéditeur `Fleija <no-reply@ton-domaine>`). Sans eux, en production, l'inscription par e-mail est fermée ; en développement, l'e-mail s'affiche dans la console. |
 | `AUTH_URL` | adresse publique du site (`https://…`) : liens des e-mails, retour de la liaison Discord. |
 | `RESEARCH_TEAM_EMAILS` | e-mails (séparés par des virgules) des membres de l'équipe (le rôle Équipe peut aussi être donné depuis `/admin`). |
 | `ADMIN_EMAILS` | e-mails (séparés par des virgules) des administrateurs. Seuls les comptes **e-mail + mot de passe** (adresse confirmée) peuvent être administrateurs, jamais un compte Discord ou Google. |
@@ -145,7 +145,7 @@ La connexion passe par [Auth.js](https://authjs.dev), configuré dans [`src/auth
 - **E-mail + mot de passe** : inscription et connexion sur `/sign-in`. Les mots de passe sont hachés avec scrypt ([`src/lib/users/password.ts`](src/lib/users/password.ts)) et stockés dans la table `users` ([`src/lib/users/repository.ts`](src/lib/users/repository.ts)).
 - **Vérification de l'adresse** : à l'inscription (et seulement à ce moment-là), un e-mail contient un lien vers `/verify` ; un bouton y confirme l'adresse (lien valable 24 h, à usage unique, seule son empreinte est en base). Tant que l'adresse n'est pas confirmée, la connexion est refusée et propose « Renvoyer l'e-mail de confirmation ». Code : [`src/lib/users/verification.ts`](src/lib/users/verification.ts), envoi : [`src/lib/email/mailer.ts`](src/lib/email/mailer.ts).
 - **Pseudo** : unique (sans tenir compte des majuscules), 3 à 24 caractères, table `profiles`. Choisi à l'inscription par e-mail ; après une première connexion Discord ou Google, la personne passe par `/welcome` pour le choisir. On peut en changer depuis `/account`. Proposer, créer un groupe ou publier exige un pseudo.
-- **Discord, Google** : un bouton n'est actif que si ses deux variables sont définies. Chez chaque fournisseur, déclare l'URL de retour `https://<ton-domaine>/api/auth/callback/<discord|google>` (en local : `http://localhost:3000/api/auth/callback/discord`, etc.).
+- **Discord, Google** : un bouton n'est actif que si ses deux variables sont définies. Chez chaque fournisseur, déclare l'URL de retour `https://<ton-domaine>/api/auth/callback/<discord|google>` (en local : `http://localhost:3000/api/auth/callback/discord`, etc.). En production, les clés Google s'installent avec [`scripts/set-google-oauth.ps1`](scripts/set-google-oauth.ps1) (saisie masquée, envoi par ssh, redémarrage du site). L'écran de consentement Google renvoie vers la page [`/privacy`](src/app/privacy/page.tsx).
 - L'en-tête lit la session côté serveur (dans `layout.tsx`). Déconnecté, « Se connecter » mène à `/sign-in` ; connecté, l'avatar (vers `/account`) apparaît et « Proposer » mène directement au formulaire.
 - `/submit` exige un compte : sans session, redirection vers la connexion, puis retour au formulaire. Seuls les chemins internes sont acceptés comme destination (`src/lib/auth/safe-redirect.ts`).
 
@@ -178,7 +178,7 @@ Le code des stratégies et l'identifiant de l'auteur ne sont jamais renvoyés pa
 
 `/research` réunit deux types de papiers de recherche :
 
-- **Recherches Griffin Lab** : créées par l'équipe. Les rôles Équipe, Admin et le super admin peuvent lire et publier dans **tous** ces papiers, quel que soit leur propriétaire.
+- **Recherches Fleija** : créées par l'équipe. Les rôles Équipe, Admin et le super admin peuvent lire et publier dans **tous** ces papiers, quel que soit leur propriétaire.
 - **Communauté** : tout compte connecté peut créer un papier (« Créer un papier de recherche ») et y partager ses recherches.
 
 Un groupe fonctionne comme un blog : des publications (titre, texte, lien) avec jusqu'à 5 pièces jointes de 10 Mo (PDF, scripts `.py` `.pine` `.r` `.m` `.jl` `.js` `.ts` `.txt` `.md`, notebooks `.ipynb`, données `.csv` `.json` `.xlsx` `.parquet`).
@@ -207,14 +207,14 @@ Le stockage (`ResearchRepository`, [`src/lib/research/repository.ts`](src/lib/re
 
 ## Books
 
-`/books` (lien « Books » dans la navigation) : des cercles privés créés par l'équipe Griffin Lab (`RESEARCH_TEAM_EMAILS` et `ADMIN_EMAILS`).
+`/books` (lien « Books » dans la navigation) : des cercles privés créés par l'équipe Fleija (`RESEARCH_TEAM_EMAILS` et `ADMIN_EMAILS`).
 
 - **Colonne de gauche, rétractable** : la liste des books (rond de la couleur du book, cadenas pour un visiteur non connecté), l'interrupteur « Afficher les recherches » et, pour l'équipe, « Nouveau book » et « Gérer ce book » (nom, description, couleur, ajout d'un membre par son pseudo, retrait, suppression).
 - **Canevas** : chaque book a le sien, séparé des autres. Le book est un rond de sa couleur au centre, ses membres sont reliés autour. Molette, pincement ou boutons + / − pour zoomer, glisser pour se déplacer, ⛶ (ou la touche 0) pour recentrer. Avec « Afficher les recherches », chaque membre est relié aux groupes de recherche où il a publié (seulement ceux que la personne qui regarde peut lire).
 - **Accès** : tout compte connecté voit tous les books (canevas, membres, chiffres) ; un visiteur lit « Connecte-toi pour voir ce book. ». Être membre d'un book compte pour l'anonymat : un profil « Anonyme hors de mes books » n'est nommé que pour les membres d'un book qu'il partage, les autres voient « Anonyme ». La photo de profil Discord suit la même règle : elle n'est jamais envoyée à qui ne peut pas voir le pseudo.
 - Un clic sur une personne ouvre son profil `/members/<pseudo>` : les recherches auxquelles elle a contribué, les likes reçus et les books dont elle est membre.
 
-**Simulation des books** ([`src/lib/books/simulation.ts`](src/lib/books/simulation.ts)) : chaque book qui a des chiffres est simulé comme un vrai portefeuille, avec une valeur par heure dans la table `book_ticks` (base 100, rendement horaire aléatoire autour d'une tendance qui vise le « rendement visé sur 30 j » du book, rappel vers la cible). Pas de tâche planifiée : à chaque lecture, les heures manquantes sont générées (30 jours d'historique la première fois). Le « Mois » affiché est le rendement sur 30 jours glissants ; la courbe « Rendement · semaine » montre les 7 derniers jours, verte au-dessus de 0 % et rouge en perte. Books A, B, C visent 22,2 %, 15,3 % et 11,4 %. L'accueil est rendu à chaque visite (il lit la base), donc les chiffres changent dès qu'une nouvelle heure est générée.
+**Simulation des books** ([`src/lib/books/simulation.ts`](src/lib/books/simulation.ts)) : chaque book qui a des chiffres est simulé comme un vrai portefeuille, avec une valeur par heure dans la table `book_ticks` (base 100, rendement horaire aléatoire autour d'une tendance qui vise le « rendement moyen visé par jour » du book, +0,8 %, avec un rappel vers cette moyenne sur le mois). La volatilité dépend du nombre de stratégies (écart type d'une journée : 1,6 % pour 6 stratégies, × √(6 / n) sinon) : les jours de gain sont plus nombreux que les jours de perte (environ 7 sur 10 pour 6 stratégies, 6 sur 10 pour 2). Pas de tâche planifiée : à chaque lecture, les heures manquantes sont générées (30 jours d'historique la première fois). « 1 J » est le rendement de la dernière journée complète (minuit à minuit UTC), donc un nouveau chiffre chaque jour ; « All time » est le rendement depuis le lancement, cumulé chaque jour avec cette journée et enregistré en base (`all_time_return`, modifiable sur /books). La courbe « Rendement · semaine » montre les 7 derniers jours, verte au-dessus de 0 % et rouge en perte. L'accueil est rendu à chaque visite (il lit la base), donc les chiffres changent dès qu'une nouvelle heure est générée.
 
 **Anonymat** (sur `/account`) : *Public* (pseudo et profil visibles par tous), *Anonyme hors de mes books* (visibles seulement par les personnes qui partagent un book avec toi) ou *Anonyme pour tout le monde*. Une personne masquée apparaît comme « Anonyme », sans lien, dans les canevas, sur les publications et dans la liste des groupes ; son profil renvoie 404. Elle-même, l'équipe et les administrateurs voient toujours son pseudo (avec la mention « masqué »). Code : [`src/lib/users/identity.ts`](src/lib/users/identity.ts), [`src/lib/books/repository.ts`](src/lib/books/repository.ts), [`src/components/books`](src/components/books).
 
@@ -222,4 +222,8 @@ Le stockage (`ResearchRepository`, [`src/lib/research/repository.ts`](src/lib/re
 
 ## Discord
 
-Le site envoie lui-même, avec `DISCORD_BOT_TOKEN`, des messages anonymes au serveur Discord : nouvelle recherche publique dans #research, statut d'une proposition (en file, acceptée, refusée) et compteur dans #strategy-ideas ([`src/lib/discord/announce.ts`](src/lib/discord/announce.ts)). Le bot permanent (accueil, rendements quotidiens) et les outils de construction du serveur sont dans le dossier [`discord/`](../discord) à la racine du dépôt.
+Le site envoie lui-même, avec `DISCORD_BOT_TOKEN`, des messages anonymes au serveur Discord : nouvelle recherche publique dans #research, statut d'une proposition (en file, acceptée, refusée) et compteur dans #strategy-ideas ([`src/lib/discord/announce.ts`](src/lib/discord/announce.ts)). 
+
+**Certificat** : quand un administrateur passe une proposition en « validée », l'auteur reçoit en message privé Discord son certificat (image PNG refaite à chaque fois : pseudo, score, date de validation, QR code du site), s'il a un compte Discord et accepte les messages privés ([`src/lib/discord/certificate.ts`](src/lib/discord/certificate.ts)). Le certificat se télécharge aussi depuis `/account` (`/api/certificates/<id>`, réservé à l'auteur, à l'équipe et aux administrateurs). Le rendu est dans [`src/lib/certificates/certificate.tsx`](src/lib/certificates/certificate.tsx) (next/og, polices lues chez Google Fonts, QR code par [`src/lib/shared/qr.ts`](src/lib/shared/qr.ts)).
+
+Le bot permanent (accueil, rendements quotidiens) et les outils de construction du serveur sont dans le dossier [`discord/`](../discord) à la racine du dépôt.

@@ -22,7 +22,7 @@ import { requireViewer } from "@/lib/auth/viewer";
 
 /**
  * Actions des books. La gestion (création, membres, chiffres) est réservée à
- * l'équipe Griffin Lab et aux admins ; chaque membre peut décrire sa propre
+ * l'équipe Fleija et aux admins ; chaque membre peut décrire sa propre
  * stratégie. L'interface masque ces formulaires aux autres, mais seule la
  * vérification ici fait foi.
  */
@@ -43,7 +43,7 @@ const text = (form: FormData, key: string) => String(form.get(key) ?? "");
 
 async function requireTeam(returnTo: string) {
   const viewer = await requireViewer(returnTo);
-  if (!viewer.isTeam && !viewer.isAdmin) throw new Error("Réservé à l'équipe Griffin Lab.");
+  if (!viewer.isTeam && !viewer.isAdmin) throw new Error("Réservé à l'équipe Fleija.");
   return viewer;
 }
 
@@ -84,8 +84,10 @@ const statsSchema = z.object({
   strategies: decimal(0, 999).refine((v) => v === "" || Number.isInteger(Number(v)), "Nombre entier."),
   sharpe: decimal(-20, 20),
   maxDrawdown: decimal(-100, 0),
-  monthReturn: decimal(-100, 1000),
+  dailyReturn: decimal(-100, 100),
 });
+// facultatif : rendement depuis le lancement
+const allTimeSchema = decimal(-100, 1_000_000);
 
 export async function updateBookAction(bookId: string, _prev: BookFormState, form: FormData): Promise<BookFormState> {
   await requireTeam(`/books/${bookId}`);
@@ -96,13 +98,19 @@ export async function updateBookAction(bookId: string, _prev: BookFormState, for
     strategies: text(form, "strategies"),
     sharpe: text(form, "sharpe"),
     maxDrawdown: text(form, "maxDrawdown"),
-    monthReturn: text(form, "monthReturn"),
+    dailyReturn: text(form, "dailyReturn"),
+    allTime: text(form, "allTime"),
   };
   const parsed = bookSchema.safeParse(values);
   const parsedStats = statsSchema.safeParse(values);
-  if (!parsed.success || !parsedStats.success) {
+  const parsedAllTime = allTimeSchema.safeParse(values.allTime);
+  if (!parsed.success || !parsedStats.success || !parsedAllTime.success) {
     return {
-      fieldErrors: { ...(parsed.success ? {} : errorsOf(parsed.error)), ...(parsedStats.success ? {} : errorsOf(parsedStats.error)) },
+      fieldErrors: {
+        ...(parsed.success ? {} : errorsOf(parsed.error)),
+        ...(parsedStats.success ? {} : errorsOf(parsedStats.error)),
+        ...(parsedAllTime.success ? {} : { allTime: parsedAllTime.error.issues[0]?.message ?? "Valeur invalide." }),
+      },
       values,
     };
   }
@@ -116,7 +124,9 @@ export async function updateBookAction(bookId: string, _prev: BookFormState, for
         strategies: Number(parsedStats.data.strategies),
         sharpe: Number(parsedStats.data.sharpe),
         maxDrawdown: Number(parsedStats.data.maxDrawdown),
-        monthReturn: Number(parsedStats.data.monthReturn),
+        dailyReturn: Number(parsedStats.data.dailyReturn),
+        allTime: parsedAllTime.data === "" ? null : Number(parsedAllTime.data),
+        allTimeAt: null,
       }
     : null;
 

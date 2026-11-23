@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
-import { announceProposalStatus } from "@/lib/discord/announce";
+import { proposalChanged } from "@/lib/discord/proposal-events";
 import { deleteProposal } from "@/lib/admin/repository";
 import { addBookMember, getBook, removeBookMember } from "@/lib/books/repository";
 import { strategyFromProposal } from "@/lib/books/strategies";
@@ -62,8 +62,8 @@ export async function moderateAction(
   const before = await findProposal(id);
   const proposal = await getProposalRepository().moderate(id, parsed.data);
   if (!proposal) return { ok: false, message: "Proposition introuvable." };
-  // annonce anonyme sur Discord, seulement si le statut change vraiment
-  if (before?.status !== proposal.status) after(() => announceProposalStatus(proposal.status));
+  // Discord (compteur, verdict, message privé à l'auteur), seulement si le statut change vraiment
+  if (before?.status !== proposal.status) after(() => proposalChanged(proposal, before?.status ?? "pending"));
   refresh();
   return { ok: true, message: statusMessages[proposal.status] };
 }

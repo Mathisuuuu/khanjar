@@ -30,11 +30,13 @@ type Props = {
   editable: EditableBook | null;
 };
 
-const RESEARCH_KEY = "griffin-lab:books-recherches";
+// v2 : cochée par défaut (les anciens choix « décoché » ne comptent plus)
+const RESEARCH_KEY = "griffin-lab:books-recherches-v2";
 
 const STAT_FIELDS = (t: T) =>
   [
-    { name: "monthReturn", label: t("Rendement visé sur 30 j (%)", "Target 30-day return (%)"), hint: t("22,2", "22.2") },
+    { name: "dailyReturn", label: t("Rendement moyen visé par jour (%)", "Target average daily return (%)"), hint: t("0,8", "0.8") },
+    { name: "allTime", label: t("All time (%)", "All time (%)"), hint: t("412,6", "412.6") },
     { name: "sharpe", label: "Sharpe", hint: t("1,84", "1.84") },
     { name: "maxDrawdown", label: t("Drawdown max (%)", "Max drawdown (%)"), hint: t("-8,1", "-8.1") },
     { name: "strategies", label: t("Stratégies", "Strategies"), hint: "6" },
@@ -76,12 +78,12 @@ export function BookWorkspace({ books, selected, team, admin, signedIn, managed,
   const t = useT();
   const locale = useLocale();
   const [open, setOpen] = useState(false);
-  const [showResearch, setShowResearch] = useState(false);
+  const [showResearch, setShowResearch] = useState(true);
   const [contentsOpen, setContentsOpen] = useState(false);
   useEffect(() => setContentsOpen(false), [selected?.id]);
 
   useEffect(() => {
-    setShowResearch(readFlag(RESEARCH_KEY) ?? false);
+    setShowResearch(readFlag(RESEARCH_KEY) ?? true);
   }, []);
 
   const toggleSidebar = () => setOpen((value) => !value);
@@ -113,7 +115,7 @@ export function BookWorkspace({ books, selected, team, admin, signedIn, managed,
                   href={`/books/${book.id}`}
                   className={styles.bookItem}
                   aria-current={selected?.id === book.id ? "page" : undefined}
-                  title={`${book.name}${book.monthReturn !== null ? ` · ${formatReturn(book.monthReturn, locale)} ${t("ce mois", "this month")}` : ""}${book.locked ? t(" (connexion requise)", " (sign-in required)") : book.member ? t(" · tu en fais partie", " · you're a member") : ""}`}
+                  title={`${book.name}${book.dayReturn !== null ? ` · ${formatReturn(book.dayReturn, locale)} ${t("sur 1 jour", "over 1 day")}` : ""}${book.locked ? t(" (connexion requise)", " (sign-in required)") : book.member ? t(" · tu en fais partie", " · you're a member") : ""}`}
                 >
                   <span className={styles.dot} style={{ background: book.color }} aria-hidden="true" />
                   {open && <span className={styles.bookName}>{book.name}</span>}

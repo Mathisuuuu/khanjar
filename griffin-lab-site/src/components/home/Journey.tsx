@@ -3,7 +3,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { getT } from "@/lib/i18n/server";
 import styles from "./Journey.module.css";
 
-/** Schéma du parcours d'une proposition, du dépôt à l'accès complet. */
+/** Schéma du parcours d'une proposition, du dépôt à l'accès au book. */
 export async function Journey() {
   const t = await getT();
   return (
@@ -25,8 +25,8 @@ export async function Journey() {
         <svg viewBox="0 16 960 254" role="img" aria-labelledby="journey-title">
           <title id="journey-title">
             {t(
-              "Proposer, puis script de test, puis décision. Si validée : la stratégie entre dans un book peu corrélé, le bot s'améliore, et l'auteur obtient l'accès à 100 % du bot. Si rejetée : la raison est donnée, l'auteur peut l'améliorer et la renvoyer.",
-              "Submit, then test script, then decision. If validated: the strategy joins a weakly correlated book, the bot improves, and the author gets access to 100% of the bot. If rejected: the reason is given, and the author can improve it and resubmit.",
+              "Proposer, puis script de test, puis décision. Si validée : la stratégie entre dans un book peu corrélé, le bot s'améliore, et l'auteur obtient l'accès à 100 % de ce book. Si rejetée : la raison est donnée, l'auteur peut l'améliorer et la renvoyer.",
+              "Submit, then test script, then decision. If validated: the strategy joins a weakly correlated book, the bot improves, and the author gets access to 100% of that book. If rejected: the reason is given, and the author can improve it and resubmit.",
             )}
           </title>
           <defs>
@@ -62,7 +62,7 @@ export async function Journey() {
             <text x="827" y="79" fill="#F7F8F8" fontSize="15" fontWeight="600">{t("Entre dans un book", "Joins a book")}</text>
             <line className={styles.flowing} x1="827" y1="110" x2="827" y2="186" stroke="#22C55E" strokeWidth="1.5" markerEnd="url(#journey-arrow-ok)" />
             <rect x="704" y="190" width="246" height="72" rx="12" fill="rgba(34,197,94,.12)" stroke="#22C55E" strokeWidth="2" />
-            <text x="827" y="231" fill="#4ADE80" fontSize="16" fontWeight="700">{t("Accès à 100 % du bot", "Access to 100% of the bot")}</text>
+            <text x="827" y="231" fill="#4ADE80" fontSize="16" fontWeight="700">{t("Accès à 100 % du book", "100% access to the book")}</text>
 
             {/* Non */}
             <line x1="535" y1="126" x2="535" y2="186" stroke="#EF4444" strokeWidth="1.5" markerEnd="url(#journey-arrow-ko)" />

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Construit le serveur Discord de Griffin Lab (en anglais) : rôles, catégories,
+ * Construit le serveur Discord de Fleija (en anglais) : rôles, catégories,
  * salons, permissions, messages d'accueil et de règles épinglés.
  *
  * Le jeton du bot est lu dans la variable d'environnement DISCORD_BOT_TOKEN,
@@ -16,14 +16,14 @@
  *   node discord/tools/setup.mjs            # applique
  *
  * Options :
- *   --site <url>   adresse du site citée dans les messages (défaut : https://57.129.191.2)
+ *   --site <url>   adresse du site citée dans les messages (défaut : https://fleija.live)
  *
  * Relançable sans doublon : rôles et salons sont retrouvés par leur nom, leurs
  * réglages sont remis à jour ; les messages épinglés par le bot sont modifiés
  * au lieu d'être postés de nouveau. Rien d'existant n'est supprimé.
  */
 
-import { createApi, loadToken } from "../lib/discord-api.mjs";
+import { channelKey, createApi, loadToken } from "../lib/discord-api.mjs";
 
 /* ---------- Arguments ---------- */
 
@@ -34,13 +34,13 @@ const option = (name) => {
 };
 let guildId = option("--guild");
 const preview = args.includes("--apercu") || args.includes("--dry-run");
-const site = (option("--site") ?? "https://57.129.191.2").replace(/\/$/, "");
+const site = (option("--site") ?? "https://fleija.live").replace(/\/$/, "");
 
 if (guildId && !/^\d{17,20}$/.test(guildId)) {
   console.error("Identifiant de serveur invalide : --guild 123456789012345678");
   process.exit(1);
 }
-const api = createApi(loadToken(), "griffin-lab-setup");
+const api = createApi(loadToken(), "fleija-setup");
 
 /* ---------- Permissions Discord ---------- */
 
@@ -59,14 +59,20 @@ const P = {
   SPEAK: 1n << 21n,
   MANAGE_NICKNAMES: 1n << 27n,
   MANAGE_THREADS: 1n << 34n,
+  USE_APPLICATION_COMMANDS: 1n << 31n,
   CREATE_PUBLIC_THREADS: 1n << 35n,
+  CREATE_PRIVATE_THREADS: 1n << 36n,
   SEND_MESSAGES_IN_THREADS: 1n << 38n,
+  USE_EXTERNAL_APPS: 1n << 50n,
   MODERATE_MEMBERS: 1n << 40n,
 };
 const bits = (...names) => names.reduce((sum, n) => sum | P[n], 0n);
 
 const READ = bits("VIEW_CHANNEL", "READ_MESSAGE_HISTORY");
 const WRITE = bits("SEND_MESSAGES", "SEND_MESSAGES_IN_THREADS", "CREATE_PUBLIC_THREADS", "ADD_REACTIONS");
+// salon en lecture seule : aucune façon d'y écrire (message, fil public ou privé, application)
+const READ_ONLY_DENY =
+  (WRITE & ~bits("ADD_REACTIONS")) | bits("CREATE_PRIVATE_THREADS", "USE_APPLICATION_COMMANDS", "USE_EXTERNAL_APPS");
 const VOICE = bits("VIEW_CHANNEL", "CONNECT", "SPEAK");
 
 /* ---------- Structure du serveur ---------- */
@@ -98,41 +104,41 @@ const ROLES = [
 
 /**
  * Droits par salon. `everyone` : ce que voit un membre ; `staff` : Team et Admin.
- * read-only = tout le monde lit, seul le staff écrit ; private = staff + rôles listés.
+ * open = les membres écrivent ; read-only = tout le monde lit, seuls le staff et le
+ * bot écrivent ; private = staff + rôles listés.
  */
 const STRUCTURE = [
   {
     category: "📌 WELCOME",
     access: "read-only",
     channels: [
-      { name: "welcome", topic: "Start here: what Griffin Lab is and how it works." },
-      { name: "announcements", topic: "News: validated strategies, new books, site updates." },
+      { name: "👋welcome", topic: "Start here: what Fleija is and how it works." },
+      { name: "🚨announcements", topic: "News: validated strategies, new books, site updates." },
+      { name: "📱website", topic: "The Fleija website: links and updates." },
     ],
   },
   {
     category: "💬 COMMUNITY",
     access: "open",
     channels: [
-      { name: "general", topic: "Everything Griffin Lab." },
-      { name: "strategy-ideas", topic: "Discuss an idea before submitting it on the site." },
-      { name: "code-help", topic: "Pine Script, Python, backtesting: ask and help." },
-    ],
-  },
-  {
-    category: "🧪 THE LAB",
-    access: "open",
-    channels: [
-      { name: "submissions", topic: "New strategy submissions from the site.", access: "read-only" },
-      { name: "test-results", topic: "Test script verdicts: validated, rejected, book placement.", access: "read-only" },
-      { name: "research", topic: "Papers, studies and research worth sharing." },
+      { name: "🗨️general", topic: "Everything Fleija." },
+      { name: "💵strategy-ideas", topic: "Discuss an idea before submitting it on the site." },
+      { name: "❓questions", topic: "Pine Script, Python, backtesting: ask and help." },
     ],
   },
   {
     category: "📚 BOOKS",
     access: "read-only",
     channels: [
-      // public, en lecture seule : le bot d'accueil y poste chaque jour les rendements sur 30 jours
-      { name: "books-performance", topic: "Daily 30-day returns of every book. Not financial advice.", access: "read-only" },
+      // le site y tient le compteur des propositions et n'y annonce que les verdicts (validée ou refusée)
+      { name: "📊strategy-counter", topic: "Live strategy counter and verdicts: validated or rejected strategies only.", access: "read-only" },
+      // le bot y poste les certificats que leurs auteurs choisissent de partager depuis le site
+      { name: "🎓certificates", topic: "Fleija certificates shared by members whose strategy was validated.", access: "read-only" },
+      { name: "📁test-results", topic: "Test script verdicts: validated, rejected, book placement.", access: "read-only" },
+      // le site y annonce les nouvelles recherches ; on en discute dans #general
+      { name: "🔎research", topic: "New research published on the Fleija website." },
+      // public, en lecture seule : le bot y poste chaque jour le rendement de la veille et le « all time »
+      { name: "📝books-performance", topic: "Daily 1-day and all-time returns of every book. Not financial advice.", access: "read-only" },
     ],
   },
   {
@@ -140,7 +146,7 @@ const STRUCTURE = [
     access: "private",
     roles: [],
     channels: [
-      { name: "team", topic: "Griffin Lab team." },
+      { name: "team", topic: "Fleija team." },
       { name: "moderation", topic: "Moderation reports and decisions." },
     ],
   },
@@ -152,21 +158,23 @@ const GREEN = 0x22c55e;
 
 const WELCOME = {
   channel: "welcome",
+  // anciens titres : le message déjà posté sous ce titre est modifié au lieu d'être reposté
+  previousTitles: ["Welcome to Griffin Lab"],
   embeds: [
     {
-      title: "Welcome to Griffin Lab",
+      title: "Welcome to Fleija",
       color: GREEN,
       description:
-        "Griffin Lab is a trading bot built by its community.\n\n" +
+        "Fleija is a trading bot built by its community.\n\n" +
         "Submit a strategy idea on the site: it goes through the same test script as every other one. " +
-        "If it's validated, it joins one of the bot's **books** and the whole bot gets better. " +
+        "If it's validated, it joins one of the bot's **books**, the bot gets better and you get **full access to that book**. " +
         "**Everything is free.**",
       fields: [
         {
           name: "Start here",
           value:
-            "1. Read <#rules>\n" +
-            "2. Introduce yourself in <#introductions>\n" +
+            "1. Read the community rules below\n" +
+            "2. Say hi in <#general>\n" +
             "3. Discuss your idea in <#strategy-ideas>\n" +
             `4. Submit it on the site: ${site}/submit`,
         },
@@ -226,7 +234,8 @@ const MESSAGES = [WELCOME, RULES];
 /* ---------- Construction ---------- */
 
 const log = (symbol, text) => console.log(`${symbol} ${text}`);
-const isSame = (a, b) => a.toLowerCase() === b.toLowerCase();
+// emojis et majuscules ignorés : un salon renommé à la main est retrouvé
+const isSame = (a, b) => channelKey(a) === channelKey(b);
 
 async function main() {
   const me = await api("GET", "/users/@me");
@@ -257,7 +266,9 @@ async function main() {
     const granted = isAdmin ? role.permissions : role.permissions & botPerms;
     const lacking = Object.entries(P).filter(([, b]) => role.permissions & b & ~granted).map(([n]) => n);
     if (lacking.length) missing.push(`${role.name} : ${lacking.join(", ")}`);
-    const body = { name: role.name, color: role.color, hoist: role.hoist, mentionable: false, permissions: granted.toString() };
+    // un droit coché à la main sur un rôle existant n'est jamais retiré
+    const permissions = found ? BigInt(found.permissions) | granted : granted;
+    const body = { name: role.name, color: role.color, hoist: role.hoist, mentionable: false, permissions: permissions.toString() };
     if (found) {
       roleIds[role.key] = found.id;
       if (!preview) await api("PATCH", `/guilds/${guildId}/roles/${found.id}`, body);
@@ -270,6 +281,14 @@ async function main() {
       roleIds[role.key] = created.id;
       log("+", `rôle ${role.name} (créé)`);
     }
+  }
+
+  // @everyone ne doit pas pouvoir mentionner @everyone / @here (spam de notifications)
+  const everyoneRole = existingRoles.find((r) => r.id === guildId);
+  if (BigInt(everyoneRole.permissions) & P.MENTION_EVERYONE) {
+    const permissions = (BigInt(everyoneRole.permissions) & ~P.MENTION_EVERYONE).toString();
+    if (!preview) await api("PATCH", `/guilds/${guildId}/roles/${guildId}`, { permissions });
+    log(preview ? "+" : "✓", "@everyone : mention @everyone retirée");
   }
 
   /* Permissions d'un salon */
@@ -290,9 +309,10 @@ async function main() {
       ];
     }
     if (access === "read-only") {
-      const botAllow = READ | bits("SEND_MESSAGES", "EMBED_LINKS", "ATTACH_FILES", "MANAGE_MESSAGES");
+      // Discord refuse qu'un bot retire à @everyone un droit qu'il perdrait lui-même : il les garde
+      const botAllow = READ | READ_ONLY_DENY | bits("EMBED_LINKS", "ATTACH_FILES", "MANAGE_MESSAGES");
       return [
-        role(everyone, READ | bits("ADD_REACTIONS"), WRITE & ~bits("ADD_REACTIONS")),
+        role(everyone, READ | bits("ADD_REACTIONS"), READ_ONLY_DENY),
         { id: me.id, type: 1, allow: botAllow.toString(), deny: "0" },
         ...staff.map((id) => role(id, staffAllow)),
       ];
@@ -304,7 +324,8 @@ async function main() {
   let channels = await api("GET", `/guilds/${guildId}/channels`);
   const channelIds = {};
   const upsert = async (spec, type, parentId) => {
-    const found = channels.find((c) => c.type === type && isSame(c.name, spec.name) && (type === 4 || c.parent_id === parentId));
+    // retrouvé par son nom, où qu'il soit : un salon renommé ou déplacé à la main garde son nom et sa place
+    const found = channels.find((c) => c.type === type && isSame(c.name, spec.name));
     const body = {
       name: spec.name,
       type,
@@ -314,7 +335,10 @@ async function main() {
     };
     const label = type === 4 ? `catégorie ${spec.name}` : type === 2 ? `  🔊 ${spec.name}` : `  #${spec.name}`;
     if (found) {
-      if (!preview) await api("PATCH", `/channels/${found.id}`, body);
+      // nom, place et sujet choisis à la main sont gardés ; seules les permissions sont remises
+      const { name: _name, parent_id: _parent, topic: _topic, ...update } = body;
+      if (type === 0 && !found.topic) update.topic = spec.topic ?? "";
+      if (!preview) await api("PATCH", `/channels/${found.id}`, update);
       log("✓", `${label} (existant, mis à jour)`);
       return found.id;
     }
@@ -338,7 +362,7 @@ async function main() {
         channel.voice ? 2 : 0,
         categoryId,
       );
-      if (!channel.voice) channelIds[channel.name] = id;
+      if (!channel.voice) channelIds[channelKey(channel.name)] = id;
     }
   }
 
@@ -353,7 +377,7 @@ async function main() {
 
   console.log("");
   for (const message of MESSAGES) {
-    const channelId = channelIds[message.channel];
+    const channelId = channelIds[channelKey(message.channel)];
     const embeds = withMentions(message.embeds);
     const title = `message « ${message.embeds[0].title} » dans #${message.channel}`;
     if (channelId.startsWith("<")) {
@@ -362,7 +386,10 @@ async function main() {
     }
     // message déjà posté par le bot (parmi les 100 derniers) : modifié au lieu d'être reposté
     const recent = await api("GET", `/channels/${channelId}/messages?limit=100`);
-    const mine = recent.find((m) => m.author?.id === me.id && m.embeds?.[0]?.title === message.embeds[0].title);
+    const titles = [message.embeds[0].title, ...(message.previousTitles ?? [])];
+    const mine =
+      recent.find((m) => m.author?.id === me.id && m.embeds?.[0]?.title === titles[0]) ??
+      recent.find((m) => m.author?.id === me.id && titles.includes(m.embeds?.[0]?.title));
     if (preview) {
       log(mine ? "✓" : "+", `${title} (${mine ? "déjà posté, sera mis à jour" : "à poster et épingler"})`);
       continue;

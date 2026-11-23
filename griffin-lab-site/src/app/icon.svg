@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -2 16 16" shape-rendering="crispEdges">
+  <!-- Icône fixe de Fleija (Safari, aperçus) : l'avatar Minitel, écran éteint. L'animation : components/layout/AnimatedFavicon.tsx -->
+  <rect x="2" y="-1" width="3" height="1" fill="#9399a3"/>
+  <rect x="3" y="-2" width="1" height="1" fill="#e6e8ec"/>
+  <rect x="1" y="0" width="14" height="1" fill="#e6e8ec"/>
+  <rect x="0" y="1" width="16" height="13" fill="#c3c7ce"/>
+  <rect x="0" y="1" width="1" height="12" fill="#e6e8ec"/>
+  <rect x="15" y="1" width="1" height="13" fill="#9399a3"/>
+  <rect x="0" y="13" width="16" height="1" fill="#9399a3"/>
+  <rect x="1" y="1" width="14" height="10" fill="#7b818b"/>
+  <rect x="2" y="2" width="12" height="8" fill="#0c1d14"/>
+  <rect x="2" y="2" width="1" height="1" fill="#7b818b"/>
+  <rect x="13" y="2" width="1" height="1" fill="#7b818b"/>
+  <rect x="2" y="9" width="1" height="1" fill="#7b818b"/>
+  <rect x="13" y="9" width="1" height="1" fill="#7b818b"/>
+  <rect x="3" y="11" width="1" height="1" fill="#5d626b"/>
+  <rect x="5" y="11" width="1" height="1" fill="#5d626b"/>
+  <rect x="7" y="11" width="1" height="1" fill="#5d626b"/>
+  <rect x="12" y="11" width="1" height="1" fill="#ef4444"/>
+</svg>

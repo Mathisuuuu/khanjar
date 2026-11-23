@@ -44,8 +44,8 @@ export async function Concept() {
         title={t("Un bot qui ne dépend pas d'un seul trader.", "A bot that doesn't depend on a single trader.")}
       >
         {t(
-          "Griffin Lab s'enrichit des meilleures idées de sa communauté, toutes passées au même filtre automatique. Tu peux contribuer de trois façons, seules ou combinées.",
-          "Griffin Lab grows with the best ideas from its community, all run through the same automatic filter. You can contribute in three ways, alone or combined.",
+          "Fleija s'enrichit des meilleures idées de sa communauté, toutes passées au même filtre automatique. Tu peux contribuer de trois façons, seules ou combinées.",
+          "Fleija grows with the best ideas from its community, all run through the same automatic filter. You can contribute in three ways, alone or combined.",
         )}
       </SectionHeading>
 

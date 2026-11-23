@@ -3,8 +3,18 @@ import type { AttachmentKind } from "@/lib/research/types";
 
 /** Données envoyées au navigateur pour la page Books (jamais d'identifiant interne de compte, sauf pour l'équipe). */
 
-/** `monthReturn` et `weekReturn` : chiffres en direct de la simulation horaire (lib/books/simulation.ts). */
-export type BookStats = { strategies: number; sharpe: number; maxDrawdown: number; monthReturn: number; weekReturn?: number };
+/**
+ * `dayReturn` (dernière journée complète), `allTime` et `weekReturn` : chiffres en direct
+ * de la simulation horaire (lib/books/simulation.ts).
+ */
+export type BookStats = {
+  strategies: number;
+  sharpe: number;
+  maxDrawdown: number;
+  dayReturn: number;
+  allTime: number | null;
+  weekReturn?: number;
+};
 
 export type BookListItem = {
   id: string;
@@ -14,7 +24,7 @@ export type BookListItem = {
   locked: boolean;
   /** La personne connectée est membre de ce book. */
   member: boolean;
-  monthReturn: number | null;
+  dayReturn: number | null;
 };
 
 /** Champs modifiables par l'équipe (les chiffres sont des chaînes pour le formulaire). */
@@ -25,7 +35,8 @@ export type EditableBook = {
   strategies: string;
   sharpe: string;
   maxDrawdown: string;
-  monthReturn: string;
+  dailyReturn: string;
+  allTime: string;
 };
 
 export type CanvasMember = {

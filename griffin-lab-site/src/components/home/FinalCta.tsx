@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
-import { Mascot } from "@/components/ui/Mascot";
+import { Minitel } from "@/components/ui/Minitel";
 import { getT } from "@/lib/i18n/server";
 import styles from "./FinalCta.module.css";
 
@@ -10,11 +10,13 @@ export async function FinalCta() {
     <section className={styles.final}>
       <div className={styles.glow} aria-hidden="true" />
       <div className="container">
-        <Mascot width={84} className={styles.mascot} />
+        <div className={styles.avatar}>
+          <Minitel width={96} auto />
+        </div>
         <h2 className={styles.title}>
           {t("Propose. Valide.", "Submit. Validate.")}
           <br />
-          <span>{t("Débloque le bot.", "Unlock the bot.")}</span>
+          <span>{t("Débloque un book.", "Unlock a book.")}</span>
         </h2>
         <p className={styles.lead}>
           {t(

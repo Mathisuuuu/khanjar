@@ -3,6 +3,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { DeleteAccountForm, PasswordForm, PseudoForm } from "@/components/account/AccountForms";
+import { Certificates } from "@/components/account/Certificates";
+import { CertificateDm } from "@/components/account/CertificateDm";
+import { listCertificates } from "@/lib/certificates/settings";
 import { VisibilityForm } from "@/components/auth/VisibilityForm";
 import { StatusPill } from "@/components/proposals/StatusPill";
 import { BrandIcon, type BrandName } from "@/components/ui/BrandIcon";
@@ -27,7 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * Gestion du compte (bouton rond de l'en-tête) : profil et anonymat, connexion et
- * mot de passe, activité, accès au bot, export des données et suppression.
+ * mot de passe, activité, accès au book, export des données et suppression.
  */
 export default async function AccountPage({ searchParams }: { searchParams: Promise<{ password?: string; discord?: string }> }) {
   const [session, viewer, locale, message] = await Promise.all([auth(), getViewer(), getLocale(), getMessage()]);
@@ -48,7 +51,8 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
     { id: "profil", label: t("Profil", "Profile") },
     { id: "securite", label: t("Connexion et sécurité", "Sign-in and security") },
     { id: "activite", label: t("Mon activité", "My activity") },
-    { id: "acces", label: t("Accès au bot", "Bot access") },
+    { id: "acces", label: t("Accès au book", "Book access") },
+    { id: "certificats", label: t("Mes certificats", "My certificates") },
     { id: "donnees", label: t("Mes données", "My data") },
     { id: "suppression", label: t("Supprimer le compte", "Delete account") },
   ];
@@ -56,7 +60,11 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const dateFormat = new Intl.DateTimeFormat(intlLocale(locale), { day: "numeric", month: "long", year: "numeric" });
   const formatDate = (value: string | Date | null) => (value ? dateFormat.format(new Date(value)) : null);
 
-  const [data, discordLink] = await Promise.all([getAccountOverview(viewer), getDiscordLink(viewer.id)]);
+  const [data, discordLink, certificates] = await Promise.all([
+    getAccountOverview(viewer),
+    getDiscordLink(viewer.id),
+    listCertificates(viewer.id),
+  ]);
   const isDiscordAccount = viewer.id.startsWith("discord:");
   const discordNotices: Record<string, [string, string, boolean]> = {
     linked: ["Compte Discord lié : ta photo de profil s'affiche dans les books.", "Discord account linked: your profile picture now shows in the books.", true],
@@ -102,10 +110,10 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
               </span>
             )}
             {viewer.isTeam && !viewer.isAdmin && (
-              <span className={styles.badge}>{t("Équipe Griffin Lab", "Griffin Lab team")}</span>
+              <span className={styles.badge}>{t("Équipe Fleija", "Fleija team")}</span>
             )}
             <span className={`${styles.badge} ${unlocked ? styles.badgeOk : ""}`}>
-              {unlocked ? t("Accès au bot débloqué", "Bot access unlocked") : t("Accès au bot verrouillé", "Bot access locked")}
+              {unlocked ? t("Accès au book débloqué", "Book access unlocked") : t("Accès au book verrouillé", "Book access locked")}
             </span>
           </div>
         </div>
@@ -272,7 +280,14 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                         {p.status === "rejected" && p.reason ? ` · ${message(p.reason)}` : ""}
                       </small>
                     </span>
-                    <StatusPill status={p.status} />
+                    <span className={styles.listEnd}>
+                      {p.status === "validated" && (
+                        <a className={styles.certificate} href={`/api/certificates/${p.id}`} target="_blank" rel="noopener">
+                          {t("Certificat", "Certificate")}
+                        </a>
+                      )}
+                      <StatusPill status={p.status} />
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -346,16 +361,16 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             </div>
           </section>
 
-          {/* Accès au bot */}
+          {/* Accès au book */}
           <section className={styles.section} id="acces">
-            <h2>{t("Accès au bot", "Bot access")}</h2>
+            <h2>{t("Accès au book", "Book access")}</h2>
             {unlocked ? (
               <div className={`${styles.access} ${styles.accessOk}`}>
                 <b>{t("Débloqué", "Unlocked")}</b>
                 <p>
                   {t(
-                    `${validated} stratégie${validated > 1 ? "s validées" : " validée"} : tu as accès à l'ensemble du bot.`,
-                    `${validated} validated strateg${validated > 1 ? "ies" : "y"}: you have access to the whole bot.`,
+                    `${validated} stratégie${validated > 1 ? "s validées" : " validée"} : tu as accès à 100 % du book où elle est entrée.`,
+                    `${validated} validated strateg${validated > 1 ? "ies" : "y"}: you have access to 100% of the book ${validated > 1 ? "they joined" : "it joined"}.`,
                   )}
                 </p>
               </div>
@@ -364,8 +379,8 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                 <b>{t("Verrouillé", "Locked")}</b>
                 <p>
                   {t(
-                    "Une stratégie validée par le script de test débloque l'accès complet.",
-                    "A strategy validated by the test script unlocks full access.",
+                    "Une stratégie validée par le script de test débloque l'accès complet au book où elle entre.",
+                    "A strategy validated by the test script unlocks full access to the book it joins.",
                   )}
                   {pendingCount > 0 &&
                     t(
@@ -397,13 +412,44 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
             </a>
           </section>
 
+          {/* Certificats */}
+          <section className={styles.section} id="certificats">
+            <h2>{t("Mes certificats", "My certificates")}</h2>
+            <p className={styles.sectionLead}>
+              {t(
+                "Chaque stratégie validée te donne un certificat Fleija, refait avec ton pseudo, ton score et la date de validation. Télécharge-le, affiche-le sur ton profil public ou publie-le dans #certificates sur Discord.",
+                "Each validated strategy earns you a Fleija certificate, made with your username, your score and the validation date. Download it, show it on your public profile or share it in #certificates on Discord.",
+              )}
+            </p>
+            {/* le bot envoie chaque nouveau certificat en message privé : il lui faut le compte Discord */}
+            <CertificateDm linked={isDiscordAccount || Boolean(discordLink)} canLink={linkConfigured()} t={t} />
+            {certificates.length ? (
+              <Certificates
+                items={certificates.map((c) => ({
+                  id: c.id,
+                  title: c.title,
+                  score: c.score,
+                  validated: formatDate(c.validatedAt) ?? "",
+                  version: `${viewer.name}-${c.score}-${c.validatedAt}`,
+                  public: c.public,
+                  posted: formatDate(c.postedAt),
+                }))}
+              />
+            ) : (
+              <p className={styles.empty}>
+                {t("Aucun certificat pour l'instant : une stratégie validée t'en donne un.", "No certificate yet: a validated strategy earns you one.")}{" "}
+                <Link href="/submit">{t("Proposer une stratégie", "Submit a strategy")}</Link>
+              </p>
+            )}
+          </section>
+
           {/* Mes données */}
           <section className={styles.section} id="donnees">
             <h2>{t("Mes données", "My data")}</h2>
             <p className={styles.sectionLead}>
               {t(
-                `Télécharge tout ce que Griffin Lab garde sur ton compte : profil, propositions, publications, books et likes donnés (${data.likesGiven}). Fichier JSON.`,
-                `Download everything Griffin Lab keeps about your account: profile, submissions, posts, books and likes given (${data.likesGiven}). JSON file.`,
+                `Télécharge tout ce que Fleija garde sur ton compte : profil, propositions, publications, books et likes donnés (${data.likesGiven}). Fichier JSON.`,
+                `Download everything Fleija keeps about your account: profile, submissions, posts, books and likes given (${data.likesGiven}). JSON file.`,
               )}
             </p>
             <a href="/account/export" className={styles.download} download>

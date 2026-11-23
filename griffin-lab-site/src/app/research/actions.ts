@@ -52,7 +52,7 @@ export async function createGroup(_prev: FormState, form: FormData): Promise<For
     return { message: "Trop de groupes créés d'un coup. Réessaie dans une heure.", values };
   }
 
-  // seule l'équipe peut publier dans « Recherches Griffin Lab »
+  // seule l'équipe peut publier dans « Recherches Fleija »
   const kind = values.kind === "official" && viewer.isTeam ? "official" : "community";
   const group = await getResearchRepository().createGroup({
     ...parsed.data,

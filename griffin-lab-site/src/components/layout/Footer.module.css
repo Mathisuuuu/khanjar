@@ -26,10 +26,6 @@
   color: var(--fg);
 }
 
-.dot {
-  color: var(--accent);
-}
-
 .nav {
   display: flex;
   flex-wrap: wrap;

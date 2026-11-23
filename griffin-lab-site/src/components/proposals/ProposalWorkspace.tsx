@@ -54,8 +54,8 @@ export function ProposalWorkspace({ defaultPseudo }: { defaultPseudo: string }) 
           </li>
           <li>
             {t(
-              "Validée : elle entre dans un book et tu débloques 100 % du bot. Rejetée : tu reçois la raison et tu peux la renvoyer.",
-              "Validated: it joins a book and you unlock 100% of the bot. Rejected: you get the reason and can resubmit it.",
+              "Validée : elle entre dans un book et tu débloques 100 % de ce book. Rejetée : tu reçois la raison et tu peux la renvoyer.",
+              "Validated: it joins a book and you unlock 100% of that book. Rejected: you get the reason and can resubmit it.",
             )}
           </li>
         </ol>

@@ -233,7 +233,7 @@ export default async function AdminPage({ searchParams }: Props) {
                       <b>{group.name}</b>
                     </Link>
                     <small>
-                      {group.kind === "official" ? "Griffin Lab" : "Communauté"} ·{" "}
+                      {group.kind === "official" ? "Fleija" : "Communauté"} ·{" "}
                       {group.visibility === "private" ? "privé" : "public"} · {group.ownerName} · {group.posts}{" "}
                       publication{group.posts > 1 ? "s" : ""}
                     </small>

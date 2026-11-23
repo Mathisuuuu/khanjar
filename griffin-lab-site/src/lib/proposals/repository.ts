@@ -108,7 +108,11 @@ class PostgresProposalRepository implements ProposalRepository {
     if (!isUuid(id)) return null;
     const db = await getDb();
     const [row] = await db.query<ProposalRow>(
-      `UPDATE proposals SET status = $2, score = $3, reason = $4, updated_at = now()
+      // validated_at : posée au passage en « validée », gardée tant qu'elle le reste (date du certificat)
+      `UPDATE proposals SET status = $2, score = $3, reason = $4, updated_at = now(),
+         validated_at = CASE WHEN $2::text <> 'validated' THEN NULL
+                             WHEN status = 'validated' AND validated_at IS NOT NULL THEN validated_at
+                             ELSE now() END
        WHERE id = $1 RETURNING *`,
       [id, input.status, input.score ?? null, input.reason || null],
     );

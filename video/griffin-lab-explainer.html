@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Griffin Lab en vidéo</title>
+<title>Fleija en vidéo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Newsreader:ital,wght@1,500&display=swap" rel="stylesheet">
@@ -88,16 +88,6 @@ body.render #controls { display: none; }
   <div class="layer" id="s1">
     <div class="abs center" style="top: 330px">
       <div class="logo" id="logo">
-        <svg id="mascot" viewBox="0 0 16 21" width="112" height="147" shape-rendering="crispEdges">
-          <rect x="4" y="0" width="8" height="2" fill="#3B2A1E"/><rect x="3" y="1" width="1" height="3" fill="#3B2A1E"/>
-          <rect x="4" y="2" width="8" height="6" fill="#F2C29B"/><rect x="3" y="4" width="1" height="3" fill="#F2C29B"/><rect x="12" y="3" width="1" height="4" fill="#F2C29B"/>
-          <rect x="6" y="4" width="1" height="2" fill="#0F172A"/><rect x="10" y="4" width="1" height="2" fill="#0F172A"/><rect x="7" y="7" width="3" height="1" fill="#C98E6A"/>
-          <rect x="3" y="8" width="10" height="6" fill="#F8FAFC"/><rect x="3" y="8" width="10" height="1" fill="#E2E8F0"/>
-          <rect x="1" y="9" width="2" height="4" fill="#F8FAFC"/><rect x="1" y="13" width="2" height="1" fill="#F2C29B"/>
-          <g id="arm"><rect x="13" y="6" width="2" height="4" fill="#F8FAFC"/><rect x="13" y="5" width="2" height="1" fill="#F2C29B"/></g>
-          <rect x="4" y="14" width="8" height="3" fill="#16A34A"/><rect x="4" y="17" width="3" height="2" fill="#16A34A"/><rect x="9" y="17" width="3" height="2" fill="#16A34A"/>
-          <rect x="3" y="19" width="4" height="2" fill="#64748B"/><rect x="9" y="19" width="4" height="2" fill="#64748B"/>
-        </svg>
         <span id="wordmark"></span>
       </div>
     </div>
@@ -164,9 +154,9 @@ body.render #controls { display: none; }
 
   <!-- 7. Appel à l'action -->
   <div class="layer" id="s7">
-    <div class="abs center h1" id="s7title" style="top: 330px">Propose l'idée.<br><span class="serif" style="color: var(--green)">Débloque le bot.</span></div>
+    <div class="abs center h1" id="s7title" style="top: 330px">Propose l'idée.<br><span class="serif" style="color: var(--green)">Débloque un book.</span></div>
     <div class="abs center" id="s7cta" style="top: 610px"><span class="pill" style="font-size: 34px; padding: 22px 44px; background: var(--green); color: #04130a; border-color: transparent">Proposer une stratégie →</span></div>
-    <div class="abs center muted" id="s7url" style="top: 730px; font-family: var(--mono); font-size: 28px">57.129.191.2/submit</div>
+    <div class="abs center muted" id="s7url" style="top: 730px; font-family: var(--mono); font-size: 28px">fleija.live/submit</div>
     <div class="abs center muted" id="s7legal" style="top: 990px; font-size: 20px">Rien dans cette vidéo n'est un conseil financier. Le trading comporte un risque de perte en capital.</div>
   </div>
 
@@ -201,8 +191,8 @@ const visible = (el, on) => (el.style.display = on ? "" : "none");
 
 /* ---------- construction du contenu ---------- */
 
-// 1. mot « GRIFFIN·LAB » lettre par lettre
-"GRIFFIN·LAB".split("").forEach((c) => {
+// 1. mot « FLEIJA » lettre par lettre
+"FLEIJA".split("").forEach((c) => {
   const s = document.createElement("span");
   s.className = "ch" + (c === "·" ? " dot" : "");
   s.textContent = c;
@@ -348,12 +338,6 @@ function render(t) {
   /* 1 · logo (0 – 5,5 s) */
   visible($("s1"), t < 6.2);
   if (t < 6.2) {
-    const m = $("mascot");
-    const mi = back(prog(t, 0.2, 0.9));
-    m.style.transform = `translateY(${(1 - mi) * 80}px) scale(${lerp(0.4, 1, mi)})`;
-    m.style.opacity = prog(t, 0.2, 0.5);
-    $("arm").style.transform = `rotate(${Math.sin(t * 9) * 14 * prog(t, 1, 1.3) * (1 - prog(t, 3, 3.3))}deg)`;
-    $("arm").style.transformOrigin = "14px 10px";
     [...$("wordmark").children].forEach((ch, i) => {
       const x = easeOut(prog(t, 0.6 + i * 0.06, 1.2 + i * 0.06));
       ch.style.opacity = x;

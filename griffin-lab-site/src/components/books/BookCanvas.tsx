@@ -410,7 +410,7 @@ export function BookCanvas({ name, color, members, groups, links, showResearch, 
   const at = (id: string) => nodes.current.get(id);
   const book = at(BOOK_ID);
   const bookScreen = book ? { x: book.x * view.k + view.x, y: (book.y - BOOK_RADIUS) * view.k + view.y } : null;
-  const statsLabel = stats ? t(`, rendement du mois ${percent(stats.monthReturn)}`, `, monthly return ${percent(stats.monthReturn)}`) : "";
+  const statsLabel = stats ? t(`, rendement sur 1 jour ${percent(stats.dayReturn)}`, `, 1-day return ${percent(stats.dayReturn)}`) : "";
 
   return (
     <div className={styles.canvasWrap} ref={wrapRef}>
@@ -564,16 +564,21 @@ export function BookCanvas({ name, color, members, groups, links, showResearch, 
         </g>
       </svg>
 
-      {/* infobulle au survol du book : rendement du mois et chiffres clés */}
+      {/* infobulle au survol du book : rendement du jour, all time et chiffres clés */}
       {hoverBook && bookScreen && (
         <div className={styles.tooltip} style={{ left: bookScreen.x, top: bookScreen.y }} role="tooltip">
           <b>{name}</b>
           {stats ? (
             <>
               <span className={styles.tooltipMain}>
-                {t("Rendement du mois", "Monthly return")}{" "}
-                <em className={stats.monthReturn >= 0 ? styles.up : styles.down}>{percent(stats.monthReturn)}</em>
+                {t("Rendement 1 J", "1-day return")}{" "}
+                <em className={stats.dayReturn >= 0 ? styles.up : styles.down}>{percent(stats.dayReturn)}</em>
               </span>
+              {stats.allTime !== null && (
+                <span>
+                  All time <em className={stats.allTime >= 0 ? styles.up : styles.down}>{percent(stats.allTime)}</em>
+                </span>
+              )}
               {stats.weekReturn !== undefined && (
                 <span>
                   {t("Sur 7 jours", "Over 7 days")}{" "}

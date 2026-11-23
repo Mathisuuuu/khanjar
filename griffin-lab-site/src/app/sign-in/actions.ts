@@ -44,7 +44,7 @@ async function rememberPendingEmail(email: string) {
   });
 }
 
-function firstErrors(issues: { path: (string | number)[]; message: string }[]): AuthFormState["fieldErrors"] {
+function firstErrors(issues: { path: PropertyKey[]; message: string }[]): AuthFormState["fieldErrors"] {
   const errors: AuthFormState["fieldErrors"] = {};
   for (const issue of issues) {
     const key = issue.path[0] as keyof NonNullable<AuthFormState["fieldErrors"]>;
@@ -74,7 +74,7 @@ export async function signInWithEmail(_prev: AuthFormState, formData: FormData):
       redirect("/verify?pending=1");
     }
     if (error instanceof AuthError && error.type === "AccessDenied") {
-      return { values, error: "Ce compte a été suspendu par l'équipe Griffin Lab." };
+      return { values, error: "Ce compte a été suspendu par l'équipe Fleija." };
     }
     if (error instanceof AuthError) return { values, error: "E-mail ou mot de passe incorrect." };
     throw error;

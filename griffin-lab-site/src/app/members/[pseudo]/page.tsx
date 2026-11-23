@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { listBooksOf } from "@/lib/books/repository";
+import { listCertificates } from "@/lib/certificates/settings";
 import { postsByAuthor } from "@/lib/research/likes";
 import { canRead } from "@/lib/research/access";
 import { getResearchRepository } from "@/lib/research/repository";
@@ -46,11 +47,13 @@ export default async function MemberPage({ params }: Props) {
   const dateFormat = new Intl.DateTimeFormat(intlLocale(locale), { day: "numeric", month: "long", year: "numeric" });
   const choices = locale === "en" ? visibilityChoicesEn : visibilityChoices;
 
-  const [books, posts, groups, visibility] = await Promise.all([
+  const [books, posts, groups, visibility, certificates] = await Promise.all([
     listBooksOf(profile.userKey),
     postsByAuthor(profile.userKey),
     getResearchRepository().listGroups(),
     self ? getVisibility(profile.userKey) : Promise.resolve(null),
+    // seulement ceux que la personne a choisi d'afficher (le profil est déjà visible ici)
+    listCertificates(profile.userKey, true),
   ]);
 
   // uniquement ce que la personne qui consulte a le droit de lire
@@ -106,6 +109,35 @@ export default async function MemberPage({ params }: Props) {
             <dd>{books.length}</dd>
           </div>
         </dl>
+
+        {certificates.length > 0 && (
+          <section className={styles.panel} aria-labelledby="certificates-title">
+            <h2 id="certificates-title">{t("Certificats", "Certificates")}</h2>
+            <ul className={styles.certificates}>
+              {certificates.map((c) => {
+                const src = `/api/certificates/${c.id}?v=${encodeURIComponent(`${profile.pseudo}-${c.score}-${c.validatedAt}`)}`;
+                return (
+                  <li key={c.id}>
+                    <a href={src} target="_blank" rel="noopener">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- image générée par l'API */}
+                      <img
+                        src={src}
+                        alt={t(`Certificat Fleija de ${profile.pseudo}`, `${profile.pseudo}'s Fleija certificate`)}
+                        width={1500}
+                        height={1060}
+                        loading="lazy"
+                      />
+                    </a>
+                    <span>
+                      {t(`Validée le ${dateFormat.format(new Date(c.validatedAt))}`, `Validated on ${dateFormat.format(new Date(c.validatedAt))}`)}
+                      {c.score !== null ? ` · ${c.score}/100` : ""}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
 
         <div className={styles.columns}>
           <section className={styles.panel} aria-labelledby="contrib-title">

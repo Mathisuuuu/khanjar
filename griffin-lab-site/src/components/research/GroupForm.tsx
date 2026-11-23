@@ -11,7 +11,7 @@ import styles from "./Research.module.css";
 type GroupFormProps = {
   action: (prev: FormState, form: FormData) => Promise<FormState>;
   initial?: { name: string; description: string; visibility: Visibility };
-  /** Affiche le choix « Griffin Lab / Communauté » (membres de l'équipe uniquement). */
+  /** Affiche le choix « Fleija / Communauté » (membres de l'équipe uniquement). */
   canChooseKind?: boolean;
   submitLabel: string;
 };
@@ -22,7 +22,7 @@ const visibilityOptions = (t: T): { value: Visibility; label: string; help: stri
 ];
 
 const kindOptions = (t: T): { value: GroupKind; label: string; help: string }[] => [
-  { value: "official", label: "Griffin Lab", help: t("Recherche officielle de l'équipe.", "Official team research.") },
+  { value: "official", label: "Fleija", help: t("Recherche officielle de l'équipe.", "Official team research.") },
   { value: "community", label: t("Communauté", "Community"), help: t("Recherche personnelle partagée.", "Shared personal research.") },
 ];
 

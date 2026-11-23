@@ -1,5 +1,5 @@
 import { after, NextResponse } from "next/server";
-import { announceProposalStatus } from "@/lib/discord/announce";
+import { proposalChanged } from "@/lib/discord/proposal-events";
 import { isAdminRequest, isModeratorRequest } from "@/lib/proposals/auth";
 import { getCurrentAuthor } from "@/lib/proposals/author";
 import { getProposalRepository } from "@/lib/proposals/repository";
@@ -50,6 +50,6 @@ export async function POST(request: Request) {
   }
 
   const proposal = await getProposalRepository().create(parsed.data, author);
-  after(() => announceProposalStatus("pending")); // annonce anonyme sur Discord, après la réponse
+  after(() => proposalChanged(proposal, null)); // compteur Discord et message privé à l'auteur, après la réponse
   return NextResponse.json({ proposal: toPublic(proposal) }, { status: 201 });
 }

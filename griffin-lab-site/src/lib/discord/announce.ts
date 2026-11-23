@@ -5,7 +5,7 @@ import type { ProposalStatus } from "@/lib/proposals/types";
 import type { ResearchGroup, ResearchPost } from "@/lib/research/types";
 
 /**
- * Annonces sur le serveur Discord de Griffin Lab, envoyées par le bot.
+ * Annonces sur le serveur Discord de Fleija, envoyées par le bot.
  * Sans DISCORD_BOT_TOKEN (développement), rien n'est envoyé. Une erreur Discord
  * ne fait jamais échouer l'action du site : elle est seulement journalisée.
  */
@@ -13,7 +13,9 @@ import type { ResearchGroup, ResearchPost } from "@/lib/research/types";
 const API = "https://discord.com/api/v10";
 const channelCache = new Map<string, { id: string; at: number }>();
 
-const siteUrl = () => (process.env.AUTH_URL ?? "https://57.129.191.2").replace(/\/$/, "");
+const siteUrl = () => (process.env.AUTH_URL ?? "https://fleija.live").replace(/\/$/, "");
+/** Nom d'un salon sans emoji ni majuscules : « 🔎research » → « research ». */
+const channelKey = (name: string) => name.toLowerCase().replace(/[^\p{L}\p{N}-]/gu, "");
 const cut = (text: string, max: number) => (text.length > max ? `${text.slice(0, max - 1)}…` : text);
 
 /**
@@ -39,7 +41,7 @@ async function discord(method: string, path: string, body?: unknown) {
     headers: {
       Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
       "Content-Type": "application/json",
-      "User-Agent": "DiscordBot (griffin-lab-site, 1.0)",
+      "User-Agent": "DiscordBot (fleija-site, 1.0)",
     },
     body: body ? JSON.stringify(body) : undefined,
     signal: AbortSignal.timeout(5000),
@@ -49,13 +51,13 @@ async function discord(method: string, path: string, body?: unknown) {
 }
 
 /** Identifiant d'un salon textuel du serveur, retrouvé par son nom (gardé une heure). */
-async function channelId(name: string): Promise<string | null> {
+export async function channelId(name: string): Promise<string | null> {
   const cached = channelCache.get(name);
   if (cached && Date.now() - cached.at < 3600_000) return cached.id;
   const guilds = (await discord("GET", "/users/@me/guilds")) as { id: string }[];
   for (const guild of guilds) {
     const channels = (await discord("GET", `/guilds/${guild.id}/channels`)) as { id: string; name: string; type: number }[];
-    const found = channels.find((c) => c.type === 0 && c.name === name);
+    const found = channels.find((c) => c.type === 0 && channelKey(c.name) === channelKey(name));
     if (found) {
       channelCache.set(name, { id: found.id, at: Date.now() });
       return found.id;
@@ -66,12 +68,11 @@ async function channelId(name: string): Promise<string | null> {
 
 /* ---------- Propositions de stratégies ---------- */
 
-const STRATEGY_CHANNEL = "strategy-ideas";
+/** Salon du compteur et des verdicts (seulement les propositions validées ou refusées). */
+const RESULTS_CHANNEL = "strategy-counter";
 const COUNTER_TITLE = "📊 Strategy counter";
 
-const statusEvents: Record<ProposalStatus, { text: string; color: number }> = {
-  pending: { text: "🟡 A new strategy joined the queue.", color: 0xf5b524 },
-  testing: { text: "🔵 A strategy is now going through the test script.", color: 0x38bdf8 },
+const verdicts: Partial<Record<ProposalStatus, { text: string; color: number }>> = {
   validated: { text: "🟢 A strategy passed every check and was **validated**.", color: 0x22c55e },
   rejected: { text: "🔴 A strategy did not pass the checks and was **rejected**.", color: 0xef4444 },
 };
@@ -86,29 +87,32 @@ function counterFields(counts: StrategyCounts) {
 }
 
 /**
- * Annonce anonyme dans #strategy-ideas : une stratégie entre en file, passe en
- * test, est validée ou refusée. Ni titre, ni auteur, ni motif. Le message
- * « Strategy counter » du salon est ensuite remis à jour.
+ * #strategy-counter : annonce anonyme quand une stratégie est validée ou refusée
+ * (ni titre, ni auteur, ni motif), puis mise à jour du message « Strategy
+ * counter » à chaque changement de statut. L'entrée en file et le passage en
+ * test ne sont annoncés qu'à l'auteur, en message privé.
  */
 export async function announceProposalStatus(status: ProposalStatus): Promise<void> {
   if (!process.env.DISCORD_BOT_TOKEN) return;
   try {
-    // contre le spam de propositions (même avec plusieurs comptes) : 30 annonces par heure au plus
+    // contre le spam de propositions (même avec plusieurs comptes) : 30 mises à jour par heure au plus
     if (!(await consume("discord:proposals", 30, 3600))) return;
-    const id = await channelId(STRATEGY_CHANNEL);
+    const id = await channelId(RESULTS_CHANNEL);
     if (!id) return;
     const counts = await getStrategyCounts();
-    const event = statusEvents[status];
-    await discord("POST", `/channels/${id}/messages`, {
-      embeds: [{ description: event.text, color: event.color, fields: counterFields(counts), timestamp: new Date().toISOString() }],
-      allowed_mentions: { parse: [] },
-    });
+    const verdict = verdicts[status];
+    if (verdict) {
+      await discord("POST", `/channels/${id}/messages`, {
+        embeds: [{ description: verdict.text, color: verdict.color, fields: counterFields(counts), timestamp: new Date().toISOString() }],
+        allowed_mentions: { parse: [] },
+      });
+    }
 
     // compteur permanent : le message du bot est modifié au lieu d'être reposté
     const counter = {
       title: COUNTER_TITLE,
       color: 0x22c55e,
-      description: `Live status of every strategy submitted on Griffin Lab.\nSubmit yours: ${siteUrl()}/submit`,
+      description: `Live status of every strategy submitted on Fleija.\nSubmit yours: ${siteUrl()}/submit`,
       fields: counterFields(counts),
       footer: { text: "Updated" },
       timestamp: new Date().toISOString(),
@@ -138,7 +142,7 @@ export async function announceResearch(group: ResearchGroup, post: ResearchPost)
     const url = `${siteUrl()}/research/${group.id}/${post.id}`;
     const intro = post.summary || post.body;
     await discord("POST", `/channels/${id}/messages`, {
-      content: "📄 **New research on Griffin Lab**",
+      content: "📄 **New research on Fleija**",
       embeds: [
         {
           title: plain(post.title, 200),
@@ -150,7 +154,7 @@ export async function announceResearch(group: ResearchGroup, post: ResearchPost)
             { name: "By", value: plain(post.authorName, 60) || "—", inline: true },
             ...(post.category ? [{ name: "Topic", value: plain(post.category, 60) || "—", inline: true }] : []),
           ],
-          footer: { text: post.attachments.length ? `${post.attachments.length} attachment(s)` : "Griffin Lab research" },
+          footer: { text: post.attachments.length ? `${post.attachments.length} attachment(s)` : "Fleija research" },
           timestamp: post.createdAt,
         },
       ],

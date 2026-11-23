@@ -2,7 +2,7 @@ import { getAccountOverview } from "@/lib/account/overview";
 import { consume } from "@/lib/security/rate-limit";
 import { getViewer } from "@/lib/auth/viewer";
 
-/** « Télécharger mes données » : tout ce que Griffin Lab garde sur le compte, en JSON. */
+/** « Télécharger mes données » : tout ce que Fleija garde sur le compte, en JSON. */
 export async function GET() {
   const viewer = await getViewer();
   if (!viewer) return new Response("Connexion requise.", { status: 401 });
@@ -27,7 +27,7 @@ export async function GET() {
   return new Response(JSON.stringify(body, null, 2), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Content-Disposition": `attachment; filename="griffin-lab-mes-donnees.json"`,
+      "Content-Disposition": `attachment; filename="fleija-mes-donnees.json"`,
       "Cache-Control": "no-store",
     },
   });

@@ -69,9 +69,15 @@ export function BookContents({ bookId, name, color, description, stats, memberCo
         {stats && (
           <>
             <div>
-              <dt>{t("Perf. 30 j", "30-day perf.")}</dt>
-              <dd className={stats.monthReturn >= 0 ? styles.up : styles.down}>{pct(stats.monthReturn)}</dd>
+              <dt>{t("Perf. 1 j", "1-day perf.")}</dt>
+              <dd className={stats.dayReturn >= 0 ? styles.up : styles.down}>{pct(stats.dayReturn)}</dd>
             </div>
+            {stats.allTime !== null && (
+              <div>
+                <dt>All time</dt>
+                <dd className={stats.allTime >= 0 ? styles.up : styles.down}>{pct(stats.allTime)}</dd>
+              </div>
+            )}
             <div>
               <dt>Sharpe</dt>
               <dd>{formatNumber(stats.sharpe, 2, locale)}</dd>

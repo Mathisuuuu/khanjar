@@ -2,7 +2,7 @@
   "name": "griffin-lab-site",
   "version": "1.0.0",
   "private": true,
-  "description": "Site de Griffin Lab, le bot de trading algorithmique construit par sa communautÃ©.",
+  "description": "Site de Fleija, le bot de trading algorithmique construit par sa communautÃ©.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -22,7 +22,7 @@
     "react-dom": "^19.3.1",
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.7.1",
-    "zod": "^3.25.76"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.17",
@@ -41,6 +41,9 @@
   "overrides": {
     "next-auth": {
       "nodemailer": "$nodemailer"
+    },
+    "next": {
+      "postcss": "^8.5.33"
     }
   }
 }

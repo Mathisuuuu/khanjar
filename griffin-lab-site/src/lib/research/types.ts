@@ -1,7 +1,7 @@
 /**
  * Modèle des espaces de recherche.
  * Un groupe rassemble des publications (façon blog) avec pièces jointes.
- * - `official` : recherches de l'équipe Griffin Lab ; `community` : partagées par les membres.
+ * - `official` : recherches de l'équipe Fleija ; `community` : partagées par les membres.
  * - `public` : lisible par tous ; `private` : propriétaire et membres invités uniquement.
  */
 
@@ -61,10 +61,10 @@ export type ResearchPost = {
 /** Contenu modifiable d'une publication. */
 export type PostContent = Pick<ResearchPost, "title" | "category" | "summary" | "body" | "link">;
 
-export const kindLabels: Record<GroupKind, string> = { official: "Griffin Lab", community: "Communauté" };
+export const kindLabels: Record<GroupKind, string> = { official: "Fleija", community: "Communauté" };
 export const visibilityLabels: Record<Visibility, string> = { public: "Public", private: "Privé" };
 export const roleLabels: Record<MemberRole, string> = { editor: "Peut publier", viewer: "Lecture seule" };
 
-export const kindLabelsEn: Record<GroupKind, string> = { official: "Griffin Lab", community: "Community" };
+export const kindLabelsEn: Record<GroupKind, string> = { official: "Fleija", community: "Community" };
 export const visibilityLabelsEn: Record<Visibility, string> = { public: "Public", private: "Private" };
 export const roleLabelsEn: Record<MemberRole, string> = { editor: "Can post", viewer: "Read only" };

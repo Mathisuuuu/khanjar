@@ -300,6 +300,32 @@ const MIGRATIONS: string[] = [
     updated_at timestamptz NOT NULL DEFAULT now()
   );
   `,
+
+  /* 16 : books affichés au jour le jour. daily_return = rendement moyen visé par jour
+     (le chiffre « 1 J » affiché est celui de la dernière journée complète) ;
+     all_time_return = rendement depuis le lancement à la date all_time_at, cumulé ensuite
+     chaque jour avec la simulation. L'historique simulé est régénéré avec ces réglages. */ `
+  ALTER TABLE books RENAME COLUMN month_return TO daily_return;
+  ALTER TABLE books ADD COLUMN all_time_return numeric(12, 2);
+  ALTER TABLE books ADD COLUMN all_time_at timestamptz;
+  UPDATE books SET daily_return = 0.8 WHERE daily_return IS NOT NULL;
+  UPDATE books SET
+    all_time_return = CASE letter WHEN 'A' THEN 412.6 WHEN 'B' THEN 318.4 ELSE 187.9 END,
+    all_time_at = date_trunc('day', now(), 'UTC')
+  WHERE letter IN ('A', 'B', 'C');
+  DELETE FROM book_ticks;
+  `,
+
+  /* 17 : certificats des stratégies validées. validated_at = date de la
+     validation (gardée si l'admin retouche le score ensuite) ;
+     certificate_public = affiché sur le profil public ;
+     certificate_posted_at = publié par son auteur dans #general sur Discord. */
+  `
+  ALTER TABLE proposals ADD COLUMN validated_at timestamptz;
+  ALTER TABLE proposals ADD COLUMN certificate_public boolean NOT NULL DEFAULT false;
+  ALTER TABLE proposals ADD COLUMN certificate_posted_at timestamptz;
+  UPDATE proposals SET validated_at = updated_at WHERE status = 'validated';
+  `,
 ];
 
 export async function migrate(db: Database): Promise<void> {

@@ -10,8 +10,8 @@ import {
   type AuthFormState,
 } from "@/app/sign-in/actions";
 import { useMessage, useT } from "@/components/i18n/LocaleProvider";
-import { Mascot } from "@/components/ui/Mascot";
 import { BrandIcon } from "@/components/ui/BrandIcon";
+import { Minitel } from "@/components/ui/Minitel";
 import type { OAuthProviderId } from "@/lib/auth/providers";
 import styles from "./AuthPanel.module.css";
 
@@ -40,7 +40,7 @@ export function AuthPanel({ providers, callbackUrl, verified = false, reset = fa
   return (
     <div className={styles.card}>
       <div className={styles.top}>
-        <Mascot width={34} />
+        <Minitel width={40} auto />
         <h1>{mode === "signin" ? t("Content de te revoir", "Welcome back") : t("Crée ton compte", "Create your account")}</h1>
         <p>
           {proposing

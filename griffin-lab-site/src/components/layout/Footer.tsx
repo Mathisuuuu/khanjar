@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getT } from "@/lib/i18n/server";
-import { Mascot } from "@/components/ui/Mascot";
+import { Minitel } from "@/components/ui/Minitel";
 import { footerNav } from "@/content/site";
 import styles from "./Footer.module.css";
 
@@ -11,8 +11,8 @@ export async function Footer() {
       <div className={`container ${styles.inner}`}>
         <div className={styles.top}>
           <span className={styles.logo}>
-            <Mascot width={14} />
-            GRIFFIN<span className={styles.dot}>·</span>LAB
+            <Minitel width={16} inline />
+            FLEIJA
           </span>
           <nav aria-label={t("Pied de page", "Footer")} className={styles.nav}>
             {footerNav(t).map((link) => (

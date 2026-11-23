@@ -4,7 +4,7 @@ import { getDb, iso, isUuid } from "@/lib/db";
 import type { Viewer } from "@/lib/auth/viewer";
 
 /**
- * Books : des cercles privés créés par l'équipe Griffin Lab. Chaque book a sa
+ * Books : des cercles privés créés par l'équipe Fleija. Chaque book a sa
  * couleur et ses membres ; seuls ses membres (et l'équipe) voient son canevas.
  */
 
@@ -21,7 +21,19 @@ export type Book = {
   stats: BookStats | null;
 };
 
-export type BookStats = { strategies: number; sharpe: number; maxDrawdown: number; monthReturn: number };
+/**
+ * Chiffres réglés par l'équipe. `dailyReturn` : rendement moyen visé par jour (%) ;
+ * `allTime` : rendement depuis le lancement (%) à la date `allTimeAt`, cumulé
+ * ensuite chaque jour par la simulation (lib/books/simulation.ts).
+ */
+export type BookStats = {
+  strategies: number;
+  sharpe: number;
+  maxDrawdown: number;
+  dailyReturn: number;
+  allTime: number | null;
+  allTimeAt: string | null;
+};
 
 type BookRow = {
   id: string;
@@ -34,7 +46,9 @@ type BookRow = {
   strategies: number | null;
   sharpe: string | number | null;
   max_drawdown: string | number | null;
-  month_return: string | number | null;
+  daily_return: string | number | null;
+  all_time_return: string | number | null;
+  all_time_at: Date | null;
 };
 
 const toBook = (row: BookRow): Book => ({
@@ -47,18 +61,20 @@ const toBook = (row: BookRow): Book => ({
   letter: row.letter,
   // les quatre chiffres vont ensemble : sans l'un d'eux, pas de statistiques
   stats:
-    row.strategies === null || row.sharpe === null || row.max_drawdown === null || row.month_return === null
+    row.strategies === null || row.sharpe === null || row.max_drawdown === null || row.daily_return === null
       ? null
       : {
           strategies: Number(row.strategies),
           sharpe: Number(row.sharpe),
           maxDrawdown: Number(row.max_drawdown),
-          monthReturn: Number(row.month_return),
+          dailyReturn: Number(row.daily_return),
+          allTime: row.all_time_return === null ? null : Number(row.all_time_return),
+          allTimeAt: row.all_time_at ? iso(row.all_time_at) : null,
         },
 });
 
 const BOOK_SELECT = `SELECT b.id, b.name, b.description, b.color, b.created_at,
-  b.letter, b.strategies, b.sharpe, b.max_drawdown, b.month_return,
+  b.letter, b.strategies, b.sharpe, b.max_drawdown, b.daily_return, b.all_time_return, b.all_time_at,
   (SELECT count(*)::int FROM book_members m WHERE m.book_id = b.id) AS members
   FROM books b`;
 
@@ -170,7 +186,10 @@ export async function updateBook(
   const db = await getDb();
   await db.query(
     `UPDATE books SET name = $2, description = $3, color = $4,
-       strategies = $5, sharpe = $6, max_drawdown = $7, month_return = $8
+       strategies = $5, sharpe = $6, max_drawdown = $7, daily_return = $8,
+       -- un « all time » modifié repart d'aujourd'hui ; inchangé, il garde sa date
+       all_time_at = CASE WHEN all_time_return IS DISTINCT FROM $9 THEN date_trunc('day', now(), 'UTC') ELSE all_time_at END,
+       all_time_return = $9
      WHERE id = $1`,
     [
       id,
@@ -180,7 +199,8 @@ export async function updateBook(
       input.stats?.strategies ?? null,
       input.stats?.sharpe ?? null,
       input.stats?.maxDrawdown ?? null,
-      input.stats?.monthReturn ?? null,
+      input.stats?.dailyReturn ?? null,
+      input.stats?.allTime ?? null,
     ],
   );
 }
@@ -222,4 +242,15 @@ export async function contributionsOf(userKeys: string[]): Promise<{ userKey: st
     [userKeys],
   );
   return rows.map((row) => ({ userKey: row.author_id, groupId: row.group_id }));
+}
+
+/** Cumule le « all time » jusqu'à `at` (début de journée, UTC) : appelé une fois par jour par la simulation. */
+export async function rollAllTime(bookId: string, allTime: number, at: string): Promise<void> {
+  if (!isUuid(bookId)) return;
+  const db = await getDb();
+  await db.query("UPDATE books SET all_time_return = $2, all_time_at = $3 WHERE id = $1 AND all_time_at < $3", [
+    bookId,
+    Math.round(allTime * 100) / 100,
+    at,
+  ]);
 }

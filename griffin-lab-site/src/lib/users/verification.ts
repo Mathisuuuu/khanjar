@@ -1,6 +1,7 @@
 import "server-only";
 import type { Queryable } from "@/lib/db";
 import { sendMail } from "@/lib/email/mailer";
+import { getLocale } from "@/lib/i18n/server";
 import { checkCode, consumeLinkToken, issueCode, siteUrl } from "./email-codes";
 import { verificationEmail } from "@/lib/email/code-email";
 
@@ -22,7 +23,7 @@ export async function sendVerificationEmail(user: { id: string; email: string; n
   const link = `${await siteUrl()}/verify?token=${token}`;
   await sendMail({
     to: user.email,
-    ...verificationEmail({ name: user.name, code, link, codeMinutes: CODE_MINUTES, linkHours: LINK_HOURS }),
+    ...verificationEmail({ name: user.name, code, link, codeMinutes: CODE_MINUTES, linkHours: LINK_HOURS }, await getLocale()),
   });
 }
 

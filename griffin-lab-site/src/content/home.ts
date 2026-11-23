@@ -14,7 +14,8 @@ export type Loop = {
   strategies: number;
   sharpe: number;
   maxDrawdown: number; // en %, négatif
-  monthReturn: number; // en %
+  dayReturn: number; // en %, dernière journée complète
+  allTime: number | null; // en %, depuis le lancement
   color: LoopColor;
   /** Paramètres de la courbe hebdomadaire de secours (si la base ne répond pas). */
   series: { seed: number; drift: number };
@@ -30,8 +31,9 @@ export const loops: Loop[] = [
     name: "Book A",
     strategies: 6,
     sharpe: 1.84,
-    maxDrawdown: -8.1,
-    monthReturn: 7.4,
+    maxDrawdown: -13,
+    dayReturn: 0.9,
+    allTime: 412.6,
     color: "cyan",
     series: { seed: 11, drift: 0.0011 },
   },
@@ -40,8 +42,9 @@ export const loops: Loop[] = [
     name: "Book B",
     strategies: 5,
     sharpe: 1.41,
-    maxDrawdown: -6.7,
-    monthReturn: 5.1,
+    maxDrawdown: -15.7,
+    dayReturn: 1.2,
+    allTime: 318.4,
     color: "violet",
     series: { seed: 29, drift: 0.0008 },
   },
@@ -50,8 +53,9 @@ export const loops: Loop[] = [
     name: "Book C",
     strategies: 3,
     sharpe: 1.22,
-    maxDrawdown: -5.4,
-    monthReturn: 3.8,
+    maxDrawdown: -21.1,
+    dayReturn: -0.4,
+    allTime: 187.9,
     color: "amber",
     series: { seed: 47, drift: 0.0006 },
   },
@@ -265,7 +269,7 @@ export type TerminalLine = {
 
 /** Faux test joué en boucle dans le terminal de la section « Script de test ». */
 export const terminalScript = (t: T): TerminalLine[] => [
-  { kind: "command", text: "griffin test strategy_rsi_ny.py" },
+  { kind: "command", text: "fleija test strategy_rsi_ny.py" },
   { kind: "output", text: t("→ chargement des données NQ 5 min · 2011–2025", "→ loading NQ 5-min data · 2011–2025") },
   { kind: "output", text: t("[1/7] backtest 15 ans ....... 2 716 trades", "[1/7] backtest 15 years ..... 2,716 trades") },
   { kind: "success", text: t("      ✓ robustesse historique", "      ✓ historical robustness"), validates: 0 },

@@ -144,7 +144,7 @@ export function ProposalForm({ onSubmitted, defaultPseudo }: ProposalFormProps) 
     <form className={panel.panel} onSubmit={handleSubmit} noValidate>
       <div className={panel.head}>
         <h2>{t("Nouvelle proposition", "New submission")}</h2>
-        <span className={panel.command}>$ griffin submit</span>
+        <span className={panel.command}>$ fleija submit</span>
       </div>
 
       <div className={panel.body}>

@@ -17,7 +17,7 @@ import { deletePost, updatePost } from "../../actions";
 
 type Props = {
   params: Promise<{ id: string; postId: string }>;
-  searchParams: Promise<{ edition?: string }>;
+  searchParams: Promise<{ edit?: string }>;
 };
 
 async function load(id: string, postId: string) {
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 /** Une publication en entier ; « Éditer » ouvre le formulaire de modification. */
 export default async function PostPage({ params, searchParams }: Props) {
-  const [{ id, postId }, { edition }] = await Promise.all([params, searchParams]);
+  const [{ id, postId }, { edit: edition }] = await Promise.all([params, searchParams]);
   const found = await load(id, postId);
   if (!found) notFound();
   const { group, post, viewer } = found;

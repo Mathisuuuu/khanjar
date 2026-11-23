@@ -15,11 +15,11 @@ export async function Hero() {
           {t("Les règles de contribution sont en ligne", "The contribution rules are live")}
           <Icon name="arrowRight" size={16} />
         </Link>
-        <h1 className={styles.title}>{t("Propose l'idée. Débloque le bot.", "Submit the idea. Unlock the bot.")}</h1>
+        <h1 className={styles.title}>{t("Propose l'idée. Débloque un book.", "Submit the idea. Unlock a book.")}</h1>
         <p className={styles.lead}>
           {t(
-            "Griffin Lab est un bot de trading construit par sa communauté. Ta stratégie passe le même test que toutes les autres ; si elle est validée, elle entre dans le book et tu améliores tes gains et baisses tes pertes gratuitement.",
-            "Griffin Lab is a trading bot built by its community. Your strategy goes through the same test as every other one; if it is validated, it joins the book and you increase your gains and reduce your losses for free.",
+            "Fleija est un bot de trading construit par sa communauté. Ta stratégie passe le même test que toutes les autres ; si elle est validée, elle entre dans le book et tu améliores tes gains et baisses tes pertes gratuitement.",
+            "Fleija is a trading bot built by its community. Your strategy goes through the same test as every other one; if it is validated, it joins the book and you increase your gains and reduce your losses for free.",
           )}
         </p>
         <div className={styles.actions}>

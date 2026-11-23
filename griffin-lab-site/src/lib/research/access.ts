@@ -12,7 +12,7 @@ import type { ResearchGroup } from "./types";
  * | viewer        | oui  | non                 | non                                      |
  * | autre         | si public | non            | non                                      |
  *
- * Groupes officiels (« Recherches Griffin Lab ») : l'équipe, les admins et le
+ * Groupes officiels (« Recherches Fleija ») : l'équipe, les admins et le
  * super admin peuvent tous les lire et y publier, quel qu'en soit le propriétaire.
  */
 

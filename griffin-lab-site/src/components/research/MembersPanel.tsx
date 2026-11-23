@@ -80,7 +80,7 @@ export function MembersPanel({ groupId, members }: MembersPanelProps) {
               key={state.ok ? state.message : "member-email"}
               defaultValue={state.ok ? "" : state.values?.email}
               aria-invalid={!!errors.email}
-              placeholder={t("adresse du compte Griffin Lab", "Griffin Lab account email")}
+              placeholder={t("adresse du compte Fleija", "Fleija account email")}
             />
             {errors.email && <span className={styles.error}>{message(errors.email)}</span>}
           </div>

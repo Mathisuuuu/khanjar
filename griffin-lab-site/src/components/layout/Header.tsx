@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BrandIcon } from "@/components/ui/BrandIcon";
 import { Button } from "@/components/ui/Button";
-import { Mascot } from "@/components/ui/Mascot";
+import { Minitel } from "@/components/ui/Minitel";
 import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { mainNav, site } from "@/content/site";
@@ -40,9 +40,9 @@ export function Header({ user }: { user: HeaderUser }) {
   return (
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ""}`}>
       <div className={`container ${styles.inner}`}>
-        <Link href="/" className={styles.logo} aria-label={t("Griffin Lab, accueil", "Griffin Lab, home")}>
-          <Mascot width={18} />
-          GRIFFIN<span className={styles.dot}>·</span>LAB
+        <Link href="/" className={styles.logo} aria-label={t("Fleija, accueil", "Fleija, home")}>
+          <Minitel width={22} auto inline />
+          FLEIJA
         </Link>
 
         <nav aria-label={t("Navigation principale", "Main navigation")} className={styles.nav}>
@@ -66,7 +66,7 @@ export function Header({ user }: { user: HeaderUser }) {
             target="_blank"
             rel="noopener noreferrer"
             className={`glass ${styles.round} ${styles.discord}`}
-            aria-label={t("Rejoindre le Discord Griffin Lab", "Join the Griffin Lab Discord")}
+            aria-label={t("Rejoindre le Discord Fleija", "Join the Fleija Discord")}
             title={t("Rejoindre le Discord", "Join the Discord")}
           >
             <BrandIcon name="discord" size={20} />

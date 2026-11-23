@@ -1,6 +1,7 @@
 import "server-only";
 import type { Queryable } from "@/lib/db";
 import { sendMail } from "@/lib/email/mailer";
+import { getLocale } from "@/lib/i18n/server";
 import { passwordResetEmail } from "@/lib/email/code-email";
 import { checkCode, consumeLinkToken, isLinkTokenValid, issueCode, siteUrl } from "./email-codes";
 
@@ -18,7 +19,7 @@ export async function sendPasswordResetEmail(user: { id: string; email: string; 
   const link = `${await siteUrl()}/forgot-password?token=${token}`;
   await sendMail({
     to: user.email,
-    ...passwordResetEmail({ name: user.name, code, link, codeMinutes: CODE_MINUTES, linkHours: LINK_HOURS }),
+    ...passwordResetEmail({ name: user.name, code, link, codeMinutes: CODE_MINUTES, linkHours: LINK_HOURS }, await getLocale()),
   });
 }
 

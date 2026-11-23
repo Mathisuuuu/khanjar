@@ -30,7 +30,7 @@ export async function GroupCard({ group, role, reserveFan }: GroupCardProps) {
       )}
       <Link href={`/research/${group.id}`} className={styles.card}>
         <div className={styles.badges}>
-          {group.kind === "official" && <span className={`${styles.badge} ${styles.official}`}>Griffin Lab</span>}
+          {group.kind === "official" && <span className={`${styles.badge} ${styles.official}`}>Fleija</span>}
           {group.visibility === "private" && <span className={`${styles.badge} ${styles.private}`}>{t("Privé", "Private")}</span>}
           {role && <span className={`${styles.badge} ${styles.role}`}>{roleBadges[role]}</span>}
         </div>

@@ -5,7 +5,7 @@ import { createTransport, type Transporter } from "nodemailer";
  * Envoi d'e-mails par SMTP (Brevo, OVH, Mailjet, Gmail… : tous fournissent
  * des identifiants SMTP).
  * - SMTP_URL : smtps://utilisateur:motdepasse@serveur:465 (ou smtp://…:587)
- * - MAIL_FROM : expéditeur, ex. « Griffin Lab <no-reply@ton-domaine> »
+ * - MAIL_FROM : expéditeur, ex. « Fleija <no-reply@ton-domaine> »
  * En développement sans SMTP_URL, l'e-mail est affiché dans la console.
  */
 

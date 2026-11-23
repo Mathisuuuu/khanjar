@@ -1,5 +1,5 @@
 /**
- * Outils communs au bot et aux scripts Discord de Griffin Lab : jeton, appels à
+ * Outils communs au bot et aux scripts Discord de Fleija : jeton, appels à
  * l'API Discord (avec reprise sur limitation de débit) et adresses du site.
  *
  * Aucune dépendance : seulement Node 22 (fetch, WebSocket).
@@ -10,7 +10,7 @@ import { existsSync, readFileSync } from "node:fs";
 export const API = "https://discord.com/api/v10";
 
 /** Adresse publique du site (citée dans les messages). */
-export const SITE_URL = (process.env.AUTH_URL ?? "https://57.129.191.2").replace(/\/$/, "");
+export const SITE_URL = (process.env.AUTH_URL ?? "https://fleija.live").replace(/\/$/, "");
 /** Adresse interne du site (même machine), pour lire ses chiffres. */
 export const SITE_API = (process.env.SITE_INTERNAL_URL ?? "http://127.0.0.1:3000").replace(/\/$/, "");
 
@@ -34,7 +34,7 @@ export function loadToken() {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** Renvoie `api(method, path, body)` pour appeler l'API Discord avec ce jeton. */
-export function createApi(token, agent = "griffin-lab") {
+export function createApi(token, agent = "fleija") {
   return async function api(method, path, body) {
     for (let attempt = 0; attempt < 5; attempt++) {
       const res = await fetch(`${API}${path}`, {
@@ -66,8 +66,14 @@ export function createApi(token, agent = "griffin-lab") {
   };
 }
 
-/** Salon texte nommé `name` dans une liste de salons. */
-export const textChannel = (channels, name) => channels.find((c) => c.type === 0 && c.name === name);
+/**
+ * Nom d'un salon sans emoji, espaces ni majuscules : « 🗨️general » → « general ».
+ * Les salons peuvent ainsi être décorés à la main sans casser le bot.
+ */
+export const channelKey = (name) => name.toLowerCase().replace(/[^\p{L}\p{N}-]/gu, "");
+
+/** Salon texte nommé `name` (emojis et majuscules ignorés) dans une liste de salons. */
+export const textChannel = (channels, name) => channels.find((c) => c.type === 0 && channelKey(c.name) === channelKey(name));
 
 /** Lit une route JSON du site (adresse interne). */
 export async function fetchSite(path) {

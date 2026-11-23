@@ -54,7 +54,7 @@ addMessages({
   "Mot de passe actuel incorrect.": "Current password is incorrect.",
   "Mot de passe changé.": "Password changed.",
   "E-mail ou mot de passe incorrect.": "Incorrect email or password.",
-  "Ce compte a été suspendu par l'équipe Griffin Lab.": "This account has been suspended by the Griffin Lab team.",
+  "Ce compte a été suspendu par l'équipe Fleija.": "This account has been suspended by the Fleija team.",
   "Les inscriptions par e-mail ouvrent bientôt. En attendant, utilise Discord ou Google.":
     "Email sign-ups open soon. Until then, use Discord or Google.",
   "Compte créé, mais l'e-mail de confirmation n'est pas parti. Réessaie avec « Renvoyer l'e-mail ».":
@@ -62,7 +62,7 @@ addMessages({
   "L'e-mail n'est pas parti. Réessaie plus tard.": "The email wasn't sent. Try again later.",
   "L'envoi d'e-mails n'est pas encore disponible.": "Sending emails isn't available yet.",
   "Un compte existe déjà avec cet e-mail.": "An account already exists with this email.",
-  "Ton compte n'a pas de mot de passe sur Griffin Lab.": "Your account has no password on Griffin Lab.",
+  "Ton compte n'a pas de mot de passe sur Fleija.": "Your account has no password on Fleija.",
   "Les deux mots de passe ne sont pas identiques.": "The two passwords don't match.",
   "Les deux nouveaux mots de passe ne sont pas identiques.": "The two new passwords don't match.",
   "Choisis un mot de passe différent de l'actuel.": "Choose a password different from the current one.",
@@ -126,6 +126,13 @@ addMessages({
   "Trop d'ajouts d'un coup.": "Too many additions at once.",
   "Trop de books créés d'un coup.": "Too many books created at once.",
   "Renseigne les quatre chiffres, ou aucun.": "Fill in all four figures, or none.",
-  "Réservé à l'équipe Griffin Lab.": "Reserved for the Griffin Lab team.",
+  "Réservé à l'équipe Fleija.": "Reserved for the Fleija team.",
   "Réservé aux administrateurs.": "Reserved for administrators.",
+  // certificats
+  "Certificat introuvable.": "Certificate not found.",
+  "Certificat affiché sur ton profil public.": "Certificate shown on your public profile.",
+  "Certificat retiré de ton profil public.": "Certificate removed from your public profile.",
+  "Certificat publié dans #certificates.": "Certificate shared in #certificates.",
+  "Ce certificat a déjà été publié dans #certificates.": "This certificate has already been shared in #certificates.",
+  "Publication impossible sur Discord pour le moment. Réessaie plus tard.": "Could not post on Discord right now. Try again later.",
 });

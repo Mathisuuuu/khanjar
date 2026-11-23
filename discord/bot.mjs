@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Bot d'accueil du serveur Discord de Griffin Lab : à chaque arrivée, il donne
- * le rôle « Member » et souhaite la bienvenue dans #general (en anglais).
+ * Bot d'accueil du serveur Discord de Fleija : à chaque arrivée, il donne
+ * le rôle « Member » et souhaite la bienvenue dans #welcome (en anglais).
  *
  * Tourne en continu sur le VPS (service systemd griffin-discord). Aucune
  * dépendance : la passerelle Discord est jointe avec le WebSocket de Node 22.
  * Le jeton est lu dans DISCORD_BOT_TOKEN (fichier /etc/griffin-discord.env).
- * Chaque jour à 8 h UTC, il poste aussi les rendements 30 jours des books dans
+ * Chaque jour à 8 h UTC, il poste aussi le rendement de la veille (1 J) et le « all time » des books dans
  * #books-performance (`node bot.mjs --rendements-maintenant` pour le faire tout de suite).
  *
  * Il faut activer « Server Members Intent » dans le portail développeur
@@ -18,10 +18,10 @@ import { createApi, fetchSite, loadToken, SITE_URL, textChannel } from "./lib/di
 const GATEWAY = "wss://gateway.discord.gg/?v=10&encoding=json";
 const INTENTS = (1 << 0) | (1 << 1); // GUILDS, GUILD_MEMBERS
 const MEMBER_ROLE = "Member";
-const GREET_CHANNEL = "general";
+const GREET_CHANNEL = "welcome";
 
 const token = loadToken();
-const api = createApi(token, "griffin-lab-bot");
+const api = createApi(token, "fleija-bot");
 const log = (...args) => console.log(new Date().toISOString(), ...args);
 
 const byName = (list, name) => list.find((x) => x.name.toLowerCase() === name.toLowerCase());
@@ -36,21 +36,21 @@ async function welcome(guildId, member) {
     await api("PUT", `/guilds/${guildId}/members/${user.id}/roles/${role.id}`).catch((e) => log("rôle non donné :", e.message));
   }
 
-  const general = textChannel(channels, GREET_CHANNEL);
-  if (!general) return log(`#${GREET_CHANNEL} introuvable`);
+  const greet = textChannel(channels, GREET_CHANNEL);
+  if (!greet) return log(`#${GREET_CHANNEL} introuvable`);
   const link = (name) => {
     const c = textChannel(channels, name);
     return c ? `<#${c.id}>` : `#${name}`;
   };
-  await api("POST", `/channels/${general.id}/messages`, {
-    content: `Hey <@${user.id}>, welcome to **Griffin Lab**! 👋`,
+  await api("POST", `/channels/${greet.id}/messages`, {
+    content: `Hey <@${user.id}>, welcome to **Fleija**! 👋`,
     embeds: [
       {
         color: 0x3b82f6,
         description:
           `Glad to have you here. To get started:\n` +
-          `• Read the rules in ${link("welcome")}\n` +
-          `• Say hi right here\n` +
+          `• Read the rules pinned in this channel\n` +
+          `• Say hi in ${link("general")}\n` +
           `• Got a strategy idea? Talk about it in ${link("strategy-ideas")}`,
       },
     ],
@@ -80,17 +80,18 @@ async function postBookReturns() {
 
     const books = await fetchSite("/api/books/live");
     if (!Array.isArray(books) || books.length === 0) throw new Error("aucun book renvoyé par le site");
-    const best = books.reduce((a, b) => (b.monthReturn > a.monthReturn ? b : a));
+    const best = books.reduce((a, b) => (b.dayReturn > a.dayReturn ? b : a));
     await api("POST", `/channels/${channel.id}/messages`, {
       embeds: [
         {
           title: `📈 Book returns · ${today}`,
           color: 0x22c55e,
-          description: "Rolling 30-day returns of each Griffin Lab book.",
+          description: "Yesterday's return (00:00 to 00:00 UTC) and all-time return of each Fleija book.",
           fields: books.map((b) => ({
             name: `${BOOK_COLORS[b.letter] ?? "⚪"} ${b.name}${b === best ? "  🏆" : ""}`,
             value:
-              `**30 days: ${pct(b.monthReturn)}**\n` +
+              `**1 day: ${pct(b.dayReturn)}**\n` +
+              (b.allTime != null ? `All time: ${pct(b.allTime)}\n` : "") +
               (b.weekReturn != null ? `7 days: ${pct(b.weekReturn)}\n` : "") +
               `Sharpe ${b.sharpe.toFixed(2)} · Max DD ${b.maxDrawdown.toFixed(1)} %\n` +
               `${b.strategies} strategies`,
@@ -145,7 +146,7 @@ function connect() {
           acked = false;
           send(1, seq);
         }, d.heartbeat_interval);
-        send(2, { token, intents: INTENTS, properties: { os: "linux", browser: "griffin-lab", device: "griffin-lab" } });
+        send(2, { token, intents: INTENTS, properties: { os: "linux", browser: "fleija", device: "fleija" } });
         break;
       case 11:
         acked = true;

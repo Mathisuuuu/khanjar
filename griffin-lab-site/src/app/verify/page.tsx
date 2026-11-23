@@ -52,7 +52,7 @@ export default async function VerifyPage({ searchParams }: Props) {
           </div>
           <div className={styles.head}>
             <h1>{t("Dernière étape", "Last step")}</h1>
-            <p>{t("Confirme ton adresse et ton compte Griffin Lab est activé.", "Confirm your email and your Griffin Lab account is activated.")}</p>
+            <p>{t("Confirme ton adresse et ton compte Fleija est activé.", "Confirm your email and your Fleija account is activated.")}</p>
           </div>
           <form action={confirmEmail.bind(null, token)} className={styles.single}>
             <button type="submit" className={styles.primary}>

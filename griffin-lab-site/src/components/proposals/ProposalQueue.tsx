@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mascot } from "@/components/ui/Mascot";
+import { Minitel } from "@/components/ui/Minitel";
 import { useLocale, useMessage } from "@/components/i18n/LocaleProvider";
 import { formatShortDate } from "@/lib/shared/format";
 import { makeT } from "@/lib/i18n/core";
@@ -45,7 +45,7 @@ export function ProposalQueue({ proposals, loading, error }: ProposalQueueProps)
 
       {visible.length === 0 ? (
         <div className={panel.empty}>
-          <Mascot width={34} />
+          <Minitel width={40} auto />
           <b>{emptyTitle({ loading, error, total: proposals.length, t })}</b>
           <span>
             {error

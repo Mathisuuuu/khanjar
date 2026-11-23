@@ -41,8 +41,11 @@ export async function BooksView({ selectedId }: { selectedId?: string }) {
   const liveStatsOf = (book: (typeof books)[number]) =>
     book.stats
       ? {
-          ...book.stats,
-          monthReturn: live.get(book.id)?.monthReturn ?? book.stats.monthReturn,
+          strategies: book.stats.strategies,
+          sharpe: book.stats.sharpe,
+          maxDrawdown: book.stats.maxDrawdown,
+          dayReturn: live.get(book.id)?.dayReturn ?? 0,
+          allTime: live.get(book.id)?.allTime ?? book.stats.allTime,
           weekReturn: live.get(book.id)?.weekReturn,
         }
       : null;
@@ -53,7 +56,7 @@ export async function BooksView({ selectedId }: { selectedId?: string }) {
     color: book.color,
     locked: !viewer,
     member: mineIds.has(book.id),
-    monthReturn: liveStatsOf(book)?.monthReturn ?? null,
+    dayReturn: liveStatsOf(book)?.dayReturn ?? null,
   }));
 
   let selected: SelectedBook | null = null;
@@ -167,7 +170,7 @@ export async function BooksView({ selectedId }: { selectedId?: string }) {
           canView: viewers.has(key),
         }));
         const decimal = (await getLocale()) === "en" ? "." : ",";
-        const num = (value: number | undefined) => (value === undefined ? "" : String(value).replace(".", decimal));
+        const num = (value: number | null | undefined) => (value === undefined || value === null ? "" : String(value).replace(".", decimal));
         editable = {
           name: book.name,
           description: book.description,
@@ -175,7 +178,8 @@ export async function BooksView({ selectedId }: { selectedId?: string }) {
           strategies: num(book.stats?.strategies),
           sharpe: num(book.stats?.sharpe),
           maxDrawdown: num(book.stats?.maxDrawdown),
-          monthReturn: num(book.stats?.monthReturn),
+          dailyReturn: num(book.stats?.dailyReturn),
+          allTime: num(book.stats?.allTime),
         };
       }
     }

@@ -1,5 +1,5 @@
 import { after, NextResponse } from "next/server";
-import { announceProposalStatus } from "@/lib/discord/announce";
+import { proposalChanged } from "@/lib/discord/proposal-events";
 import { readJson } from "@/lib/security/read-json";
 import { isModeratorRequest } from "@/lib/proposals/auth";
 import { getProposalRepository } from "@/lib/proposals/repository";
@@ -29,7 +29,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!proposal) {
     return NextResponse.json({ error: "Proposition introuvable." }, { status: 404 });
   }
-  // annonce anonyme sur Discord, seulement si le statut change vraiment
-  if (before?.status !== proposal.status) after(() => announceProposalStatus(proposal.status));
+  // Discord (compteur, verdict, message privé à l'auteur), seulement si le statut change vraiment
+  if (before?.status !== proposal.status) after(() => proposalChanged(proposal, before?.status ?? "pending"));
   return NextResponse.json({ proposal: toPublic(proposal) });
 }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import styles from "@/components/auth/AuthPanel.module.css";
 import { PseudoForm } from "@/components/auth/PseudoForm";
-import { Mascot } from "@/components/ui/Mascot";
+import { Minitel } from "@/components/ui/Minitel";
 import { safeCallbackUrl } from "@/lib/auth/safe-redirect";
 import { getT } from "@/lib/i18n/server";
 import { getViewer } from "@/lib/auth/viewer";
@@ -42,8 +42,8 @@ export default async function WelcomePage({ searchParams }: Props) {
     <div className="container" style={{ paddingTop: 56, paddingBottom: 96 }}>
       <div className={styles.card}>
         <div className={styles.top}>
-          <Mascot width={34} />
-          <h1>{changing ? t("Change de pseudo", "Change your username") : t("Bienvenue sur Griffin Lab", "Welcome to Griffin Lab")}</h1>
+          <Minitel width={40} auto />
+          <h1>{changing ? t("Change de pseudo", "Change your username") : t("Bienvenue sur Fleija", "Welcome to Fleija")}</h1>
           <p>
             {changing
               ? t(

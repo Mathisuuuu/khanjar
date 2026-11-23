@@ -4,7 +4,7 @@ import { Inter, JetBrains_Mono, Newsreader } from "next/font/google";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { GlassPointer } from "@/components/ui/GlassPointer";
-import { MascotSprite } from "@/components/ui/Mascot";
+import { AnimatedFavicon } from "@/components/layout/AnimatedFavicon";
 import { site, siteText } from "@/content/site";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -14,7 +14,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 // titres des publications de recherche (façon article)
-const serif = Newsreader({ subsets: ["latin"], variable: "--font-serif", display: "swap", style: ["normal", "italic"] });
+// (pas de préchargement : elle ne sert que sur les pages de recherche)
+const serif = Newsreader({ subsets: ["latin"], variable: "--font-serif", display: "swap", style: ["normal", "italic"], preload: false });
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -41,8 +42,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <a href="#main" className="skip-link">
             {locale === "en" ? "Skip to content" : "Aller au contenu"}
           </a>
-          <MascotSprite />
           <GlassPointer />
+          <AnimatedFavicon />
           <Header user={user} />
           <main id="main">{children}</main>
           <Footer />

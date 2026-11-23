@@ -58,7 +58,7 @@ export default async function ForgotPasswordPage({ searchParams }: Props) {
 
   if (token) {
     return (await isResetLinkValid(token)) ? (
-      <Shell title={t("Nouveau mot de passe", "New password")} lead={t("Choisis ton nouveau mot de passe Griffin Lab.", "Choose your new Griffin Lab password.")}>
+      <Shell title={t("Nouveau mot de passe", "New password")} lead={t("Choisis ton nouveau mot de passe Fleija.", "Choose your new Fleija password.")}>
         <ResetLinkForm token={token} />
       </Shell>
     ) : (

@@ -5,7 +5,7 @@ import { z } from "zod";
 const email = z.string().trim().toLowerCase().email("Adresse e-mail invalide.").max(200);
 
 /** Pseudos qui pourraient faire croire à un compte officiel. */
-const RESERVED = ["admin", "administrateur", "moderateur", "moderation", "griffin", "griffinlab", "support", "staff"];
+const RESERVED = ["admin", "administrateur", "moderateur", "moderation", "griffin", "griffinlab", "fleija", "support", "staff"];
 
 export const pseudoSchema = z
   .string()

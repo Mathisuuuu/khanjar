@@ -12,7 +12,7 @@ interface ImagesBadgeProps {
   href?: string;
   /** Link target attribute (e.g., "_blank" for new tab) */
   target?: string;
-  /** Ajout Griffin Lab : rend un <button> qui appelle cette fonction (ex. ouvrir le lecteur PDF). */
+  /** Ajout Fleija : rend un <button> qui appelle cette fonction (ex. ouvrir le lecteur PDF). */
   onClick?: () => void;
   /** Folder dimensions { width, height } in pixels */
   folderSize?: { width: number; height: number };
