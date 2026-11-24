@@ -18,10 +18,26 @@ const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", displ
 const serif = Newsreader({ subsets: ["latin"], variable: "--font-serif", display: "swap", style: ["normal", "italic"], preload: false });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getT();
+  const [t, locale] = await Promise.all([getT(), getLocale()]);
+  const text = siteText(t);
+  // « Fleija » en tête du titre : c'est ce que Google affiche et ce que les gens cherchent
+  const title = `${site.name} · ${text.tagline.replace(/\.$/, "")}`;
   return {
-    title: { default: site.name, template: `%s · ${site.name}` },
-    description: siteText(t).description,
+    metadataBase: new URL(process.env.AUTH_URL ?? "https://fleija.live"),
+    title: { default: title, template: `%s · ${site.name}` },
+    description: text.description,
+    applicationName: site.name,
+    keywords: ["Fleija", "bot de trading", "trading algorithmique", "stratégie de trading", "communauté", "trading bot", "SSRN"],
+    // aperçu des liens partagés (Discord, WhatsApp, X…) ; l'image vient de app/opengraph-image.tsx
+    openGraph: {
+      type: "website",
+      siteName: site.name,
+      title,
+      description: text.description,
+      locale: locale === "en" ? "en_US" : "fr_FR",
+      alternateLocale: locale === "en" ? "fr_FR" : "en_US",
+    },
+    twitter: { card: "summary_large_image", title, description: text.description },
   };
 }
 
