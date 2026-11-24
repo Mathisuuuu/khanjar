@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useState, useTransition } from "react";
+import { useActionState, useEffect, useId, useState, useTransition } from "react";
 import {
   addBookMemberAction,
   createBookAction,
   deleteBookAction,
   removeBookMemberAction,
+  searchBookMemberAction,
+  type MemberSuggestion,
   setStrategyAccessAction,
   updateBookAction,
   type BookFormState,
@@ -392,6 +394,125 @@ function ManagedRow({ bookId, member, admin }: { bookId: string; member: Managed
   );
 }
 
+/**
+ * Champ « Ajouter un membre » avec suggestions : dès la première lettre, la liste
+ * montre les comptes dont le pseudo la contient. Flèches + Entrée ou clic pour
+ * choisir, Échap pour fermer ; le choix remplit le champ, « Donner l'accès » valide.
+ */
+function MemberPicker({ bookId, initial, error }: { bookId: string; initial: string; error: string | null }) {
+  const t = useT();
+  const [value, setValue] = useState(initial);
+  const [results, setResults] = useState<MemberSuggestion[]>([]);
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(-1);
+  const listId = useId();
+
+  useEffect(() => {
+    const query = value.trim().replace(/^@/, "");
+    if (!query) {
+      setResults([]);
+      return;
+    }
+    let stale = false;
+    const timer = setTimeout(async () => {
+      try {
+        const found = await searchBookMemberAction(bookId, query);
+        if (!stale) {
+          setResults(found);
+          setActive(-1);
+        }
+      } catch {
+        if (!stale) setResults([]);
+      }
+    }, 150);
+    return () => {
+      stale = true;
+      clearTimeout(timer);
+    };
+  }, [bookId, value]);
+
+  const choose = (pseudo: string) => {
+    setValue(pseudo);
+    setResults([]);
+    setOpen(false);
+  };
+  const shown = open && results.length > 0;
+
+  return (
+    <label className={styles.field}>
+      <span>{t("Ajouter un membre (pseudo)", "Add a member (username)")}</span>
+      <div className={styles.picker}>
+        <input
+          name="pseudo"
+          required
+          maxLength={40}
+          autoComplete="off"
+          spellCheck={false}
+          placeholder={t("pseudo", "username")}
+          value={value}
+          aria-invalid={!!error}
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={shown}
+          aria-controls={listId}
+          aria-activedescendant={shown && active >= 0 ? `${listId}-${active}` : undefined}
+          onChange={(event) => {
+            setValue(event.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setOpen(false)}
+          onKeyDown={(event) => {
+            if (!shown) return;
+            if (event.key === "ArrowDown") {
+              event.preventDefault();
+              setActive((i) => (i + 1) % results.length);
+            } else if (event.key === "ArrowUp") {
+              event.preventDefault();
+              setActive((i) => (i <= 0 ? results.length - 1 : i - 1));
+            } else if (event.key === "Enter" && active >= 0) {
+              event.preventDefault();
+              choose(results[active].pseudo);
+            } else if (event.key === "Escape") {
+              setOpen(false);
+            }
+          }}
+        />
+        {shown && (
+          <ul id={listId} role="listbox" className={styles.pickerList}>
+            {results.map((result, i) => (
+              <li
+                key={result.pseudo}
+                id={`${listId}-${i}`}
+                role="option"
+                aria-selected={i === active}
+                className={styles.pickerOption}
+                // mousedown plutôt que click : passe avant la perte du focus qui ferme la liste
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  choose(result.pseudo);
+                }}
+                onMouseEnter={() => setActive(i)}
+              >
+                {result.avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- petite photo Discord, pas besoin de next/image
+                  <img src={result.avatar} alt="" width={22} height={22} className={styles.pickerAvatar} />
+                ) : (
+                  <span className={styles.pickerAvatar} aria-hidden="true">
+                    {result.pseudo.slice(0, 1).toUpperCase()}
+                  </span>
+                )}
+                <span>{result.pseudo}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      {error && <small className={styles.error}>{error}</small>}
+    </label>
+  );
+}
+
 function ManageBook({
   bookId,
   editable,
@@ -414,11 +535,13 @@ function ManageBook({
       <summary>{t("Gérer ce book", "Manage this book")}</summary>
 
       <form action={addAction} className={styles.form}>
-        <label className={styles.field}>
-          <span>{t("Ajouter un membre (pseudo)", "Add a member (username)")}</span>
-          <input name="pseudo" required maxLength={40} placeholder={t("pseudo", "username")} defaultValue={addState.values?.pseudo} aria-invalid={!!addState.fieldErrors?.pseudo} />
-          {addState.fieldErrors?.pseudo && <small className={styles.error}>{message(addState.fieldErrors.pseudo)}</small>}
-        </label>
+        <MemberPicker
+          // après un ajout réussi, le champ repart vide
+          key={addState.ok ? addState.message : "edit"}
+          bookId={bookId}
+          initial={addState.values?.pseudo ?? ""}
+          error={addState.fieldErrors?.pseudo ? message(addState.fieldErrors.pseudo) : null}
+        />
         {addState.message && <p className={addState.ok ? styles.ok : styles.error}>{message(addState.message)}</p>}
         <Button type="submit" size="sm" variant="glass" disabled={adding}>
           {adding ? "…" : t("Donner l'accès", "Grant access")}

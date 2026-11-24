@@ -15,6 +15,7 @@ import {
 } from "@/lib/books/repository";
 import { saveStrategy, strategyFileIds } from "@/lib/books/strategies";
 import { getDb } from "@/lib/db";
+import { getAvatars } from "@/lib/discord/links";
 import { getProposalRepository } from "@/lib/proposals/repository";
 import { readUploads } from "@/lib/research/uploads";
 import { consume } from "@/lib/security/rate-limit";
@@ -163,6 +164,35 @@ export async function addBookMemberAction(bookId: string, _prev: BookFormState, 
   await addBookMember(bookId, profile.user_key);
   revalidateBooks(bookId);
   return { ok: true, message: `${profile.pseudo} a maintenant accès à ce book.` };
+}
+
+export type MemberSuggestion = { pseudo: string; avatar: string | null };
+
+/**
+ * Suggestions pour le champ « Ajouter un membre » : les comptes dont le pseudo
+ * contient le texte tapé (sans tenir compte de la casse), hors comptes bannis et
+ * membres déjà dans ce book. Ceux qui commencent par le texte passent en premier.
+ */
+export async function searchBookMemberAction(bookId: string, query: string): Promise<MemberSuggestion[]> {
+  const viewer = await requireTeam(`/books/${bookId}`);
+  const q = String(query ?? "").trim().replace(/^@/, "").slice(0, 40);
+  if (!q) return [];
+  if (!(await consume(`book-member-search:${viewer.id}`, 600, 60 * 60))) return [];
+
+  // %, _ et \ tapés sont cherchés tels quels, pas comme jokers
+  const like = q.replace(/[\\%_]/g, (c) => `\\${c}`);
+  const db = await getDb();
+  const rows = await db.query<{ user_key: string; pseudo: string }>(
+    `SELECT p.user_key, p.pseudo FROM profiles p
+     WHERE p.pseudo ILIKE '%' || $1 || '%'
+       AND NOT EXISTS (SELECT 1 FROM banned_accounts b WHERE b.user_key = p.user_key)
+       AND NOT EXISTS (SELECT 1 FROM book_members m WHERE m.book_id::text = $2 AND m.user_key = p.user_key)
+     ORDER BY (lower(p.pseudo) LIKE lower($1) || '%') DESC, lower(p.pseudo)
+     LIMIT 8`,
+    [like, bookId],
+  );
+  const avatars = await getAvatars(rows.map((row) => row.user_key));
+  return rows.map((row) => ({ pseudo: row.pseudo, avatar: avatars.get(row.user_key) ?? null }));
 }
 
 export async function removeBookMemberAction(bookId: string, userKey: string) {

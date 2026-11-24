@@ -247,6 +247,58 @@
   resize: vertical;
 }
 
+/* champ « Ajouter un membre » : suggestions de pseudos sous le champ */
+.picker {
+  position: relative;
+}
+
+.pickerList {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 248px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  list-style: none;
+  background: var(--card);
+  border: 1px solid var(--border-2);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.pickerOption {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 8px;
+  font-size: 14px;
+  color: var(--fg);
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.pickerOption[aria-selected="true"] {
+  background: rgba(34, 197, 94, 0.14);
+}
+
+.pickerAvatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-2);
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .field input:focus,
 .field textarea:focus {
   outline: none;
