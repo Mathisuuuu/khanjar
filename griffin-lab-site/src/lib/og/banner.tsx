@@ -5,11 +5,12 @@ import { ANTENNA, BODY, C, SX, SY, type Rect } from "@/components/ui/minitel-art
 /**
  * Bannière de partage (1200 × 630) : l'aperçu affiché quand on colle le lien du
  * site sur Discord, WhatsApp, X, LinkedIn… Le Minitel de Fleija à gauche, ce
- * qu'est le site et comment il marche à droite. Rendue une fois à la construction.
+ * qu'est le site et comment il marche à droite, en anglais (lue partout). Rendue
+ * une fois à la construction.
  */
 
 export const BANNER_SIZE = { width: 1200, height: 630 };
-export const BANNER_ALT = "Fleija, le bot de trading construit par sa communauté : propose une stratégie, elle passe le script de test, elle entre dans un book.";
+export const BANNER_ALT = "Fleija, the trading bot built by its community: submit a strategy, it goes through the test script, it joins a book.";
 
 type Font = { name: string; data: ArrayBuffer; weight: 400 | 700 | 800; style: "normal" };
 
@@ -49,7 +50,7 @@ const MINITEL: Rect[] = [[3, -4, 1, 1, C.light], ...ANTENNA, ...BODY, ...EYES, [
 const CELL = 20;
 const TOP = 4; // l'antenne monte jusqu'à la ligne −4
 
-const STEPS = ["Tu proposes ta stratégie", "Elle passe le script de test", "Validée : elle entre dans un book"];
+const STEPS = ["You submit your strategy", "It goes through the test script", "Validated: it joins a book"];
 
 export async function renderBanner() {
   const fonts = await loadFonts();
@@ -90,10 +91,10 @@ export async function renderBanner() {
             FLEIJA
           </div>
           <div style={{ display: "flex", marginTop: 10, fontSize: 54, fontWeight: 800, lineHeight: 1.06, letterSpacing: -2 }}>
-            Le bot de trading construit par sa communauté
+            The trading bot built by its community
           </div>
           <div style={{ display: "flex", marginTop: 18, fontSize: 25, lineHeight: 1.36, color: "#a1a1aa" }}>
-            Propose une idée, un script ou un papier de recherche. Validée, elle te débloque tout le book, gratuitement.
+            Submit an idea, a script or a research paper. Once validated, it unlocks the whole book for you, for free.
           </div>
           <div style={{ display: "flex", flexDirection: "column", marginTop: 24, gap: 10 }}>
             {STEPS.map((step, i) => (
