@@ -1,21 +1,22 @@
 import "server-only";
 import { getDb, type Queryable } from "@/lib/db";
-import { rollAllTime, type Book } from "./repository";
+import type { Book } from "./repository";
 
 /**
  * Simulation des books comme de vrais portefeuilles : une valeur (base 100)
  * par heure, tirée au hasard et enregistrée dans `book_ticks`.
  *
- * - Chaque heure : rendement aléatoire (loi normale) autour d'une tendance qui
- *   vise le rendement moyen par jour du book (`daily_return`, +0,8 %). Un rappel
- *   doux ramène le mois écoulé vers cette moyenne.
+ * - Chaque heure : rendement aléatoire (loi normale) autour d'une tendance. Un
+ *   rappel doux ramène le mois écoulé vers cette tendance.
  * - La volatilité dépend du nombre de stratégies : plus un book en a, plus ses
  *   journées sont régulières (écart type d'une journée : 1,6 % pour 6 stratégies,
- *   × √(6 / n) sinon). Avec +0,8 % de moyenne, les jours de gain sont nettement
- *   plus nombreux que les jours de perte (environ 7 sur 10 pour 6 stratégies).
+ *   × √(6 / n) sinon).
+ * - La tendance est réglée pour qu'une journée ait 60 % de chances d'être
+ *   positive : moyenne d'une journée = 0,2533 × son écart type (Φ⁻¹(0,6)), soit
+ *   environ +0,4 % par jour pour 6 stratégies (vérifié par simulation : 60 %).
  * - « 1 J » : rendement de la dernière journée complète (minuit à minuit, UTC),
- *   donc un nouveau chiffre chaque jour. « All time » : rendement depuis le
- *   lancement, cumulé chaque jour avec cette journée.
+ *   donc un nouveau chiffre chaque jour. « All time » : fixe, celui réglé par
+ *   l'équipe sur /books (la simulation n'y touche jamais).
  * - Pas de tâche planifiée : à chaque lecture, les heures manquantes sont
  *   générées (et 30 jours d'historique la première fois).
  */
@@ -26,7 +27,9 @@ const MONTH_HOURS = 30 * DAY_HOURS;
 const WEEK_HOURS = 7 * DAY_HOURS;
 /** Écart type d'une journée pour un book de 6 stratégies (en fraction). */
 const DAILY_VOL_6 = 0.016;
-/** Force du rappel vers le rendement moyen visé. */
+/** Φ⁻¹(0,6) : une journée de moyenne μ et d'écart type σ est positive 60 % du temps si μ = 0,2533 σ. */
+const POSITIVE_DAY_Z = 0.2533471031357997;
+/** Force du rappel vers la tendance. */
 const REVERSION = 0.6;
 /** On garde un peu plus d'un mois d'historique. */
 const KEEP_HOURS = 40 * DAY_HOURS;
@@ -46,8 +49,8 @@ export type BookLive = {
 const floorHour = (time: number) => Math.floor(time / HOUR) * HOUR;
 const floorDay = (time: number) => Math.floor(time / (DAY_HOURS * HOUR)) * DAY_HOURS * HOUR;
 
-/** Volatilité horaire d'un book selon son nombre de stratégies. */
-const hourlyVol = (strategies: number) => (DAILY_VOL_6 * Math.sqrt(6 / Math.max(1, strategies))) / Math.sqrt(DAY_HOURS);
+/** Écart type d'une journée selon le nombre de stratégies (en rendement logarithmique). */
+const dailyVol = (strategies: number) => DAILY_VOL_6 * Math.sqrt(6 / Math.max(1, strategies));
 
 /** Tirage selon une loi normale centrée réduite (Box-Muller). */
 function gaussian(): number {
@@ -74,8 +77,9 @@ async function extend(tx: Queryable, book: Book, now: number) {
   if (!history.length) history.push({ at, equity: 100 });
   if (at >= end) return;
 
-  const drift = Math.log(1 + stats.dailyReturn / 100) / DAY_HOURS;
-  const vol = hourlyVol(stats.strategies);
+  // tendance par heure : 60 % de journées positives (voir POSITIVE_DAY_Z)
+  const drift = (POSITIVE_DAY_Z * dailyVol(stats.strategies)) / DAY_HOURS;
+  const vol = dailyVol(stats.strategies) / Math.sqrt(DAY_HOURS);
   const times: string[] = [];
   const values: number[] = [];
   while (at < end) {
@@ -150,19 +154,9 @@ export async function liveStats(books: Book[]): Promise<Map<string, BookLive>> {
     const open = equityAt(today - DAY_HOURS * HOUR);
     const dayReturn = close && open ? (close / open - 1) * 100 : 0;
 
-    // « all time » cumulé jusqu'à minuit aujourd'hui (une fois par jour, enregistré en base)
-    let allTime = book.stats!.allTime;
-    const since = book.stats!.allTimeAt ? floorDay(Date.parse(book.stats!.allTimeAt)) : null;
-    if (allTime !== null && since !== null && since < today && close) {
-      const from = equityAt(since);
-      // (point de départ disparu de l'historique : on repart d'aujourd'hui sans changer le chiffre)
-      if (from) allTime = ((1 + allTime / 100) * (close / from) - 1) * 100;
-      await rollAllTime(book.id, allTime, new Date(today).toISOString());
-    }
-
     result.set(book.id, {
       dayReturn,
-      allTime,
+      allTime: book.stats!.allTime, // fixe : seule l'équipe le change, sur /books
       weekReturn: (last.equity / base - 1) * 100,
       week: week.map((value) => (value / base - 1) * 100),
       updatedAt: new Date(last.at).toISOString(),

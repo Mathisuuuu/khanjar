@@ -22,9 +22,10 @@ export type Book = {
 };
 
 /**
- * Chiffres réglés par l'équipe. `dailyReturn` : rendement moyen visé par jour (%) ;
- * `allTime` : rendement depuis le lancement (%) à la date `allTimeAt`, cumulé
- * ensuite chaque jour par la simulation (lib/books/simulation.ts).
+ * Chiffres réglés par l'équipe. `dailyReturn` : ancien rendement moyen visé par
+ * jour (%), plus utilisé par la simulation (60 % de jours positifs, voir
+ * lib/books/simulation.ts) ; `allTime` : rendement depuis le lancement (%), fixe :
+ * seule l'équipe le change.
  */
 export type BookStats = {
   strategies: number;
@@ -242,15 +243,4 @@ export async function contributionsOf(userKeys: string[]): Promise<{ userKey: st
     [userKeys],
   );
   return rows.map((row) => ({ userKey: row.author_id, groupId: row.group_id }));
-}
-
-/** Cumule le « all time » jusqu'à `at` (début de journée, UTC) : appelé une fois par jour par la simulation. */
-export async function rollAllTime(bookId: string, allTime: number, at: string): Promise<void> {
-  if (!isUuid(bookId)) return;
-  const db = await getDb();
-  await db.query("UPDATE books SET all_time_return = $2, all_time_at = $3 WHERE id = $1 AND all_time_at < $3", [
-    bookId,
-    Math.round(allTime * 100) / 100,
-    at,
-  ]);
 }
