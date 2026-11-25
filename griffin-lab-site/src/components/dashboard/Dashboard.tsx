@@ -15,17 +15,32 @@ import type { DashboardBook, DashboardTab } from "./types";
 const VIEWS = ["overview", "calendar", "analytics", "strategies", "members"] as const;
 type View = (typeof VIEWS)[number];
 
-type Props = { tabs: DashboardTab[]; book: DashboardBook; signedIn: boolean; hasBooks: boolean };
+type Props = { tabs: DashboardTab[]; book: DashboardBook };
 
 /**
  * Dashboard d'un book : les books à gauche, des onglets en haut (vue d'ensemble,
  * calendrier, analyses, stratégies, membres). Tout tient dans l'écran ; l'onglet
  * ouvert est gardé dans l'adresse (#calendrier…).
  */
-export function Dashboard({ tabs, book, signedIn, hasBooks }: Props) {
+export function Dashboard({ tabs, book }: Props) {
   const t = useT();
   const locale = useLocale();
   const [view, setView] = useState<View>("overview");
+  // colonne des books repliée ou non (retenue sur cet appareil)
+  const [folded, setFolded] = useState(false);
+  useEffect(() => {
+    try {
+      setFolded(window.localStorage.getItem("dashboard-side") === "folded");
+    } catch {}
+  }, []);
+  const fold = () => {
+    setFolded((was) => {
+      try {
+        window.localStorage.setItem("dashboard-side", was ? "open" : "folded");
+      } catch {}
+      return !was;
+    });
+  };
 
   const names: Record<View, { label: string; hash: string; icon: ReactNode }> = {
     overview: { label: t("Vue d'ensemble", "Overview"), hash: "", icon: <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" /> },
@@ -62,9 +77,26 @@ export function Dashboard({ tabs, book, signedIn, hasBooks }: Props) {
   const hash = names[view].hash ? `#${names[view].hash}` : "";
 
   return (
-    <div className={styles.page}>
-      <aside className={styles.side} aria-label="Books">
-        <p className={styles.sideTitle}>Books</p>
+    <div className={`${styles.page} ${folded ? styles.folded : ""}`}>
+      <aside className={styles.side} aria-label={t("Vos books", "Your books")}>
+        <div className={styles.sideHead}>
+          <p className={styles.sideTitle}>{t("Vos books", "Your books")}</p>
+          <button
+            type="button"
+            className={styles.foldButton}
+            onClick={fold}
+            aria-expanded={!folded}
+            aria-label={folded ? t("Déplier la colonne des books", "Expand the books column") : t("Replier la colonne des books", "Collapse the books column")}
+            title={folded ? t("Déplier", "Expand") : t("Replier", "Collapse")}
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 5h16v14H4zM9 5v14" />
+                <path d={folded ? "M13 10l2 2-2 2" : "M16 10l-2 2 2 2"} />
+              </g>
+            </svg>
+          </button>
+        </div>
         <nav>
           <ul className={styles.bookList}>
             {tabs.map((tab) => (
@@ -74,10 +106,13 @@ export function Dashboard({ tabs, book, signedIn, hasBooks }: Props) {
                   className={styles.bookItem}
                   aria-current={tab.id === book.id ? "page" : undefined}
                   scroll={false}
+                  title={folded ? (tab.example ? t("Book d'exemple", "Example book") : tab.name) : undefined}
                 >
                   <i style={{ background: tab.color }} aria-hidden="true" />
-                  <span>{tab.example ? t("Book d'exemple", "Example book") : tab.name}</span>
-                  {tab.example && <em className={styles.badge}>{t("Démo", "Demo")}</em>}
+                  <span className={styles.bookName}>
+                    <span>{tab.example ? t("Book d'exemple", "Example book") : tab.name}</span>
+                    {tab.example && <em className={styles.badge}>{t("Démo", "Demo")}</em>}
+                  </span>
                 </Link>
               </li>
             ))}
@@ -91,33 +126,6 @@ export function Dashboard({ tabs, book, signedIn, hasBooks }: Props) {
 
       <div className={styles.main}>
         <header className={styles.head}>
-          <div className={styles.headTop}>
-            <h1>
-              <span className={styles.bookDot} style={{ background: book.color }} aria-hidden="true" />
-              {book.name}
-            </h1>
-            {streak > 0 && (
-              <span className={styles.streak} title={t("Jours positifs d'affilée", "Positive days in a row")}>
-                <b>{streak}</b> {streak > 1 ? t("jours positifs d'affilée", "positive days in a row") : t("jour positif", "positive day")}{" "}
-                <span aria-hidden="true">🔥</span>
-              </span>
-            )}
-          </div>
-          {book.example && (
-            <p className={styles.notice}>
-              {hasBooks
-                ? t("Book d'exemple : chiffres, stratégies et membres inventés.", "Example book: made-up figures, strategies and members.")
-                : t(
-                    "Tu n'es dans aucun book : voici un book d'exemple, avec des chiffres, des stratégies et des membres inventés.",
-                    "You're not in a book yet: here's an example book, with made-up figures, strategies and members.",
-                  )}{" "}
-              {!hasBooks && (
-                <Link href={signedIn ? "/submit" : "/sign-in?callbackUrl=/dashboards"}>
-                  {signedIn ? t("Proposer une stratégie →", "Submit a strategy →") : t("Se connecter →", "Sign in →")}
-                </Link>
-              )}
-            </p>
-          )}
           <nav className={styles.viewTabs} aria-label={t("Onglets du dashboard", "Dashboard tabs")}>
             {VIEWS.map((v) => (
               <button key={v} type="button" aria-current={view === v ? "page" : undefined} onClick={() => open(v)}>
@@ -130,6 +138,12 @@ export function Dashboard({ tabs, book, signedIn, hasBooks }: Props) {
               </button>
             ))}
           </nav>
+          {streak > 0 && (
+            <span className={styles.streak} title={t("Jours positifs d'affilée", "Positive days in a row")}>
+              <b>{streak}</b> {streak > 1 ? t("jours positifs d'affilée", "positive days in a row") : t("jour positif", "positive day")}{" "}
+              <span aria-hidden="true">🔥</span>
+            </span>
+          )}
         </header>
 
         <div className={styles.content}>

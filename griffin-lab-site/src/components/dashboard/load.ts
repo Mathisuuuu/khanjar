@@ -9,23 +9,26 @@ import { getLocale } from "@/lib/i18n/server";
 import type { DashboardBook, DashboardTab } from "./types";
 
 /**
- * Données de /dashboards : les books de la personne (tous pour l'équipe) et le
- * book d'exemple, à part. Sans book, ou sans compte, on montre l'exemple.
+ * Données de /dashboards : les books dont la personne fait partie, puis le
+ * book d'exemple. Sans book, ou sans compte, on montre l'exemple. L'équipe peut
+ * ouvrir n'importe quel book par son adresse (?book=…) sans qu'il soit listé.
  */
 export async function loadDashboard(requested?: string) {
   const [viewer, locale] = await Promise.all([getViewer(), getLocale()]);
   const t = makeT(locale);
   const team = !!viewer && (viewer.isTeam || viewer.isAdmin);
-  const books = viewer ? await (team ? listBooks() : listBooksOf(viewer.id)) : [];
+  const books = viewer ? await listBooksOf(viewer.id) : [];
   const example = exampleBook(locale);
 
+  const own = books.find((b) => b.id === requested);
+  const other = !own && team && requested && requested !== EXAMPLE_ID ? (await listBooks()).find((b) => b.id === requested) : undefined;
+  const chosen = requested === EXAMPLE_ID ? null : (own ?? other ?? books[0] ?? null);
   const tabs: DashboardTab[] = [
-    ...books.map((b) => ({ id: b.id, name: b.name, color: b.color })),
+    ...[...books, ...(other ? [other] : [])].map((b) => ({ id: b.id, name: b.name, color: b.color })),
     { id: EXAMPLE_ID, name: t("Exemple", "Example"), color: example.color, example: true },
   ];
-  const chosen = requested === EXAMPLE_ID ? null : (books.find((b) => b.id === requested) ?? books[0] ?? null);
   const book = chosen ? await realBook(chosen, viewer) : example;
-  return { tabs, book, signedIn: !!viewer, hasBooks: books.length > 0 };
+  return { tabs, book };
 }
 
 async function realBook(book: Book, viewer: Viewer | null): Promise<DashboardBook> {
