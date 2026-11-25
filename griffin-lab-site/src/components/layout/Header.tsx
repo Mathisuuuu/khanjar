@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { BrandIcon } from "@/components/ui/BrandIcon";
 import { Button } from "@/components/ui/Button";
 import { Minitel } from "@/components/ui/Minitel";
-import { LanguageSwitch } from "@/components/i18n/LanguageSwitch";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { mainNav, site } from "@/content/site";
 import styles from "./Header.module.css";
@@ -58,8 +57,6 @@ export function Header({ user }: { user: HeaderUser }) {
         </nav>
 
         <div className={styles.actions}>
-          <LanguageSwitch className={`glass ${styles.round} ${styles.lang}`} />
-
           {/* rond « liquid glass » pour mettre le Discord en avant */}
           <a
             href={site.discordUrl}
@@ -130,9 +127,6 @@ export function Header({ user }: { user: HeaderUser }) {
               <a href={site.discordUrl} target="_blank" rel="noopener noreferrer">
                 Discord
               </a>
-            </li>
-            <li>
-              <LanguageSwitch className={styles.menuLang} label />
             </li>
           </ul>
         </nav>

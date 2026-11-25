@@ -13,7 +13,8 @@ import { Button } from "@/components/ui/Button";
 import { site } from "@/content/site";
 import { getAccountOverview } from "@/lib/account/overview";
 import { intlLocale, makeT } from "@/lib/i18n/core";
-import { getLocale, getMessage, getT } from "@/lib/i18n/server";
+import { getBrowserLocale, getChosenLocale, getLocale, getMessage, getT } from "@/lib/i18n/server";
+import { LanguageForm } from "@/components/account/LanguageForm";
 import { marketLabel } from "@/lib/proposals/types";
 import { getDiscordLink } from "@/lib/discord/links";
 import { linkConfigured } from "@/lib/discord/oauth";
@@ -49,6 +50,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
 
   const sections = [
     { id: "profil", label: t("Profil", "Profile") },
+    { id: "langue", label: t("Langue", "Language") },
     { id: "securite", label: t("Connexion et sécurité", "Sign-in and security") },
     { id: "activite", label: t("Mon activité", "My activity") },
     { id: "acces", label: t("Accès au book", "Book access") },
@@ -60,10 +62,12 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const dateFormat = new Intl.DateTimeFormat(intlLocale(locale), { day: "numeric", month: "long", year: "numeric" });
   const formatDate = (value: string | Date | null) => (value ? dateFormat.format(new Date(value)) : null);
 
-  const [data, discordLink, certificates] = await Promise.all([
+  const [data, discordLink, certificates, chosenLocale, browserLocale] = await Promise.all([
     getAccountOverview(viewer),
     getDiscordLink(viewer.id),
     listCertificates(viewer.id),
+    getChosenLocale(),
+    getBrowserLocale(),
   ]);
   const isDiscordAccount = viewer.id.startsWith("discord:");
   const discordNotices: Record<string, [string, string, boolean]> = {
@@ -201,6 +205,18 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                 ))}
             </div>
             <VisibilityForm current={data.visibility} />
+          </section>
+
+          {/* Langue */}
+          <section className={styles.section} id="langue">
+            <h2>{t("Langue", "Language")}</h2>
+            <p className={styles.sectionLead}>
+              {t(
+                "Le site s'affiche dans la langue de ton navigateur. Tu peux la changer ici.",
+                "The site uses your browser's language. You can change it here.",
+              )}
+            </p>
+            <LanguageForm current={chosenLocale ?? "auto"} detected={browserLocale} />
           </section>
 
           {/* Connexion et sécurité */}

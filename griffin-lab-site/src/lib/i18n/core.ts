@@ -5,7 +5,7 @@
  */
 export type Locale = "fr" | "en";
 
-/** Cookie qui mémorise la langue choisie avec le bouton FR / EN. */
+/** Cookie qui mémorise la langue choisie dans les paramètres du compte (sinon : langue du navigateur). */
 export const LOCALE_COOKIE = "lang";
 
 export type T = <A>(fr: A, en: A) => A;

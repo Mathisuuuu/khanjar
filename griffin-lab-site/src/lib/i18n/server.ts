@@ -6,17 +6,26 @@ import "./en-messages";
 import { translateMessage } from "./messages";
 
 /**
- * Langue de la requête : celle choisie avec le bouton FR / EN (cookie), sinon
- * celle du navigateur (français si elle commence par « fr », anglais sinon).
+ * Langue de la requête : celle choisie dans les paramètres du compte (cookie),
+ * sinon celle du navigateur (français si elle commence par « fr », anglais sinon).
  */
 export const getLocale = cache(async (): Promise<Locale> => {
+  return (await getChosenLocale()) ?? (await getBrowserLocale());
+});
+
+/** Langue forcée dans les paramètres du compte (cookie), ou `null` : celle du navigateur. */
+export async function getChosenLocale(): Promise<Locale | null> {
   const chosen = (await cookies()).get(LOCALE_COOKIE)?.value;
-  if (isLocale(chosen)) return chosen;
+  return isLocale(chosen) ? chosen : null;
+}
+
+/** Langue du navigateur (en-tête Accept-Language) : français si elle commence par « fr », anglais sinon. */
+export async function getBrowserLocale(): Promise<Locale> {
   const accept = (await headers()).get("accept-language") ?? "";
   const first = accept.split(",")[0]?.trim().toLowerCase() ?? "";
   if (!first) return "fr";
   return first.startsWith("fr") ? "fr" : "en";
-});
+}
 
 export async function getT() {
   return makeT(await getLocale());
