@@ -161,3 +161,26 @@ export function yearly(days: { date: string; value: number }[]): { year: string;
   }
   return [...years].map(([year, equity]) => ({ year, value: (equity - 1) * 100 }));
 }
+
+export type Group = { key: string; value: number; positive: number; count: number };
+
+/** Par mois (« AAAA-MM ») ou par année (« AAAA ») : rendement composé et nombre de jours positifs. */
+export function grouped(days: { date: string; value: number }[], by: "month" | "year"): Group[] {
+  const groups = new Map<string, Group>();
+  for (const day of days) {
+    const key = by === "month" ? day.date.slice(0, 7) : day.date.slice(0, 4);
+    const g = groups.get(key) ?? { key, value: 1, positive: 0, count: 0 };
+    g.value *= 1 + day.value / 100;
+    g.positive += day.value > 0 ? 1 : 0;
+    g.count++;
+    groups.set(key, g);
+  }
+  return [...groups.values()].map((g) => ({ ...g, value: (g.value - 1) * 100 }));
+}
+
+/** Jours positifs d'affilée à la fin de la série (0 si le dernier jour est négatif). */
+export function positiveStreak(values: number[]): number {
+  let streak = 0;
+  for (let i = values.length - 1; i >= 0 && values[i] > 0; i--) streak++;
+  return streak;
+}

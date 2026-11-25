@@ -1,242 +1,174 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { BookCanvas } from "@/components/books/BookCanvas";
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
-import { formatNumber, formatPercent } from "@/lib/shared/format";
+import { positiveStreak } from "@/lib/dashboard/metrics";
 import { CalendarTile } from "./CalendarTile";
 import { ChartsTile } from "./ChartsTile";
+import { Overview } from "./Overview";
 import { StrategiesTile } from "./StrategiesTile";
 import styles from "./Dashboard.module.css";
 import type { DashboardBook, DashboardTab } from "./types";
 
-const VIEWS = ["calendar", "strategies", "charts", "members"] as const;
+const VIEWS = ["overview", "calendar", "analytics", "strategies", "members"] as const;
 type View = (typeof VIEWS)[number];
 
 type Props = { tabs: DashboardTab[]; book: DashboardBook; signedIn: boolean; hasBooks: boolean };
 
 /**
- * Dashboard d'un book : une mosaïque de 4 tuiles (calendrier, stratégies,
- * graphes, membres). Chaque tuile s'agrandit en plein écran (#calendrier…),
- * Échap revient à la mosaïque.
+ * Dashboard d'un book : les books à gauche, des onglets en haut (vue d'ensemble,
+ * calendrier, analyses, stratégies, membres). Tout tient dans l'écran ; l'onglet
+ * ouvert est gardé dans l'adresse (#calendrier…).
  */
 export function Dashboard({ tabs, book, signedIn, hasBooks }: Props) {
   const t = useT();
   const locale = useLocale();
-  const [view, setView] = useState<View | null>(null);
-  const pct = (v: number, d = 1) => formatPercent(v, d, true, locale);
+  const [view, setView] = useState<View>("overview");
 
-  const names: Record<View, { title: string; hash: string }> = {
-    calendar: { title: t("Calendrier", "Calendar"), hash: t("calendrier", "calendar") },
-    strategies: { title: t("Stratégies", "Strategies"), hash: t("strategies", "strategies") },
-    charts: { title: t("Graphes", "Charts"), hash: t("graphes", "charts") },
-    members: { title: t("Membres", "Members"), hash: t("membres", "members") },
+  const names: Record<View, { label: string; hash: string; icon: ReactNode }> = {
+    overview: { label: t("Vue d'ensemble", "Overview"), hash: "", icon: <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" /> },
+    calendar: { label: t("Calendrier", "Calendar"), hash: t("calendrier", "calendar"), icon: <path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4" /> },
+    analytics: { label: t("Analyses", "Analytics"), hash: t("analyses", "analytics"), icon: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /> },
+    strategies: { label: t("Stratégies", "Strategies"), hash: t("strategies", "strategies"), icon: <path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" /> },
+    members: {
+      label: t("Membres", "Members"),
+      hash: t("membres", "members"),
+      icon: <path d="M16 19v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM22 19v-1a4 4 0 0 0-3-3.9M16 4.1a3 3 0 0 1 0 5.8" />,
+    },
   };
 
-  // vue ouverte depuis l'adresse (#graphes…), et retour à la mosaïque avec Échap
+  // onglet ouvert depuis l'adresse (#analyses…)
   useEffect(() => {
     const fromHash = () => {
       const hash = decodeURIComponent(window.location.hash.slice(1));
-      const found = VIEWS.find((v) => names[v].hash === hash || v === hash);
-      setView(found ?? null);
+      setView(VIEWS.find((v) => hash && (names[v].hash === hash || v === hash)) ?? "overview");
     };
     fromHash();
     window.addEventListener("hashchange", fromHash);
     return () => window.removeEventListener("hashchange", fromHash);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locale]);
-  useEffect(() => {
-    if (!view) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !(event.target instanceof HTMLElement && event.target.closest("svg"))) open(null);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  });
 
-  const open = (next: View | null) => {
+  const open = (next: View) => {
     setView(next);
-    const url = `${window.location.pathname}${window.location.search}${next ? `#${names[next].hash}` : ""}`;
-    window.history.replaceState(null, "", url);
-    if (next) document.getElementById("dashboard-grid")?.scrollIntoView({ block: "start" });
+    const hash = names[next].hash;
+    window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${hash ? `#${hash}` : ""}`);
   };
 
-  const stats = book.stats;
+  const streak = useMemo(() => positiveStreak(book.days.filter((d) => !d.partial).map((d) => d.value)), [book.days]);
   const bookHref = book.example ? null : `/books/${book.id}`;
-  const visibleStrategies = book.strategies.length + book.hiddenStrategies;
-
-  const tiles: { id: View; subtitle?: string; body: ReactNode; flush?: boolean }[] = [
-    {
-      id: "calendar",
-      subtitle: t("Le rendement du book, jour par jour", "The book's return, day by day"),
-      body: <CalendarTile key={book.id} days={book.days} />,
-    },
-    {
-      id: "strategies",
-      subtitle:
-        visibleStrategies > 1
-          ? t(`${visibleStrategies} stratégies dans ce book`, `${visibleStrategies} strategies in this book`)
-          : t("Les stratégies de ce book", "This book's strategies"),
-      body: <StrategiesTile strategies={book.strategies} hidden={book.hiddenStrategies} bookHref={bookHref} />,
-    },
-    {
-      id: "charts",
-      body: <ChartsTile key={book.id} days={book.days} color={book.color} expanded={view === "charts"} />,
-    },
-    {
-      id: "members",
-      flush: true,
-      body: (
-        <BookCanvas
-          key={`${book.id}-${view === "members" ? "big" : "small"}`}
-          name={book.name}
-          color={book.color}
-          members={book.members}
-          groups={book.groups}
-          links={book.links}
-          showResearch={book.groups.length > 0}
-          stats={stats}
-          wheel={view === "members" ? "zoom" : "ctrl"}
-        />
-      ),
-    },
-  ];
-
-  const summary = stats
-    ? [
-        { label: t("1 jour", "1 day"), value: pct(stats.dayReturn, 2), tone: stats.dayReturn },
-        ...(stats.weekReturn !== undefined ? [{ label: t("7 jours", "7 days"), value: pct(stats.weekReturn), tone: stats.weekReturn }] : []),
-        ...(stats.allTime !== null ? [{ label: "All time", value: pct(stats.allTime), tone: stats.allTime }] : []),
-        { label: "Sharpe", value: formatNumber(stats.sharpe, 2, locale) },
-        { label: t("DD max", "Max DD"), value: pct(stats.maxDrawdown), tone: -1 },
-        { label: t("Stratégies", "Strategies"), value: String(stats.strategies) },
-        { label: t("Membres", "Members"), value: String(book.members.length) },
-      ]
-    : [];
+  const hash = names[view].hash ? `#${names[view].hash}` : "";
 
   return (
     <div className={styles.page}>
-      <header className={styles.top}>
-        <h1>Dashboards</h1>
-        <nav className={styles.tabs} aria-label={t("Choisir un book", "Choose a book")}>
-          {tabs.map((tab) => (
-            <Link
-              key={tab.id}
-              href={`/dashboards?book=${tab.id}${view ? `#${names[view].hash}` : ""}`}
-              className={`${styles.tab} ${tab.example ? styles.exampleTab : ""}`}
-              aria-current={tab.id === book.id ? "page" : undefined}
-              scroll={false}
-            >
-              <i style={{ background: tab.color }} aria-hidden="true" />
-              {tab.name}
-            </Link>
-          ))}
-        </nav>
-        {summary.length > 0 && (
-          <dl className={styles.summary} aria-label={t(`Chiffres de ${book.name}`, `${book.name} figures`)}>
-            {summary.map((s) => (
-              <div key={s.label}>
-                <dt>{s.label}</dt>
-                <dd className={s.tone === undefined ? undefined : s.tone >= 0 ? styles.up : styles.down}>{s.value}</dd>
-              </div>
+      <aside className={styles.side} aria-label="Books">
+        <p className={styles.sideTitle}>Books</p>
+        <nav>
+          <ul className={styles.bookList}>
+            {tabs.map((tab) => (
+              <li key={tab.id}>
+                <Link
+                  href={`/dashboards?book=${tab.id}${hash}`}
+                  className={styles.bookItem}
+                  aria-current={tab.id === book.id ? "page" : undefined}
+                  scroll={false}
+                >
+                  <i style={{ background: tab.color }} aria-hidden="true" />
+                  <span>{tab.example ? t("Book d'exemple", "Example book") : tab.name}</span>
+                  {tab.example && <em className={styles.badge}>{t("Démo", "Demo")}</em>}
+                </Link>
+              </li>
             ))}
-          </dl>
-        )}
-        {bookHref && (
-          <Link href={bookHref} className={styles.textLink}>
-            {t("Ouvrir le book →", "Open the book →")}
-          </Link>
-        )}
-      </header>
+          </ul>
+        </nav>
+        <div className={styles.sideFoot}>
+          <Link href="/submit">{t("Proposer une stratégie", "Submit a strategy")}</Link>
+          <Link href="/books">{t("Tous les books", "All books")}</Link>
+        </div>
+      </aside>
 
-      {book.example && (
-        <div className={styles.notice}>
-          <p>
-            <b>{t("Book d'exemple", "Example book")}</b> ·{" "}
-            {hasBooks
-              ? t("chiffres, stratégies et membres inventés.", "made-up figures, strategies and members.")
-              : t(
-                  "tu n'es dans aucun book : chiffres, stratégies et membres inventés pour te montrer le dashboard.",
-                  "you're not in a book yet: made-up figures, strategies and members to show you the dashboard.",
-                )}
-          </p>
-          {!hasBooks && (
-            <Link href={signedIn ? "/submit" : "/sign-in?callbackUrl=/dashboards"} className={styles.textLink}>
-              {signedIn ? t("Proposer une stratégie →", "Submit a strategy →") : t("Se connecter →", "Sign in →")}
-            </Link>
+      <div className={styles.main}>
+        <header className={styles.head}>
+          <div className={styles.headTop}>
+            <h1>
+              <span className={styles.bookDot} style={{ background: book.color }} aria-hidden="true" />
+              {book.name}
+            </h1>
+            {streak > 0 && (
+              <span className={styles.streak} title={t("Jours positifs d'affilée", "Positive days in a row")}>
+                <b>{streak}</b> {streak > 1 ? t("jours positifs d'affilée", "positive days in a row") : t("jour positif", "positive day")}{" "}
+                <span aria-hidden="true">🔥</span>
+              </span>
+            )}
+          </div>
+          {book.example && (
+            <p className={styles.notice}>
+              {hasBooks
+                ? t("Book d'exemple : chiffres, stratégies et membres inventés.", "Example book: made-up figures, strategies and members.")
+                : t(
+                    "Tu n'es dans aucun book : voici un book d'exemple, avec des chiffres, des stratégies et des membres inventés.",
+                    "You're not in a book yet: here's an example book, with made-up figures, strategies and members.",
+                  )}{" "}
+              {!hasBooks && (
+                <Link href={signedIn ? "/submit" : "/sign-in?callbackUrl=/dashboards"}>
+                  {signedIn ? t("Proposer une stratégie →", "Submit a strategy →") : t("Se connecter →", "Sign in →")}
+                </Link>
+              )}
+            </p>
+          )}
+          <nav className={styles.viewTabs} aria-label={t("Onglets du dashboard", "Dashboard tabs")}>
+            {VIEWS.map((v) => (
+              <button key={v} type="button" aria-current={view === v ? "page" : undefined} onClick={() => open(v)}>
+                <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+                  <g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    {names[v].icon}
+                  </g>
+                </svg>
+                {names[v].label}
+              </button>
+            ))}
+          </nav>
+        </header>
+
+        <div className={styles.content}>
+          {view === "overview" && <Overview key={book.id} book={book} />}
+          {view === "calendar" && (
+            <Panel>
+              <CalendarTile key={book.id} days={book.days} />
+            </Panel>
+          )}
+          {view === "analytics" && (
+            <Panel>
+              <ChartsTile key={book.id} days={book.days} color={book.color} expanded />
+            </Panel>
+          )}
+          {view === "strategies" && (
+            <Panel>
+              <StrategiesTile strategies={book.strategies} hidden={book.hiddenStrategies} bookHref={bookHref} />
+            </Panel>
+          )}
+          {view === "members" && (
+            <Panel flush>
+              <BookCanvas
+                key={book.id}
+                name={book.name}
+                color={book.color}
+                members={book.members}
+                groups={book.groups}
+                links={book.links}
+                showResearch={book.groups.length > 0}
+                stats={book.stats}
+              />
+            </Panel>
           )}
         </div>
-      )}
-
-      <div className={`${styles.grid} ${view ? styles.single : ""}`} id="dashboard-grid">
-        {tiles.map((tile) =>
-          view && view !== tile.id ? null : (
-            <section key={tile.id} className={styles.tile} aria-labelledby={`tile-${tile.id}`}>
-              <header className={styles.tileHead}>
-                <div className={styles.tileTitle}>
-                  <h2 id={`tile-${tile.id}`}>{names[tile.id].title}</h2>
-                  {tile.subtitle && <p>{tile.subtitle}</p>}
-                </div>
-                {view ? (
-                  <div className={styles.tileNav}>
-                    <button
-                      type="button"
-                      onClick={() => open(VIEWS[(VIEWS.indexOf(tile.id) + VIEWS.length - 1) % VIEWS.length])}
-                      aria-label={t("Tuile précédente", "Previous tile")}
-                      title={t("Tuile précédente", "Previous tile")}
-                    >
-                      ‹
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => open(VIEWS[(VIEWS.indexOf(tile.id) + 1) % VIEWS.length])}
-                      aria-label={t("Tuile suivante", "Next tile")}
-                      title={t("Tuile suivante", "Next tile")}
-                    >
-                      ›
-                    </button>
-                    <button type="button" onClick={() => open(null)} className={styles.expand} title={t("Revenir à la mosaïque (Échap)", "Back to the mosaic (Esc)")}>
-                      <CollapseIcon />
-                      <span>{t("Réduire", "Collapse")}</span>
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => open(tile.id)}
-                    className={styles.expand}
-                    aria-label={t(`Agrandir : ${names[tile.id].title}`, `Expand: ${names[tile.id].title}`)}
-                    title={t("Agrandir", "Expand")}
-                  >
-                    <ExpandIcon />
-                  </button>
-                )}
-              </header>
-              <div className={`${styles.tileBody} ${tile.flush ? styles.flush : ""}`}>{tile.body}</div>
-            </section>
-          ),
-        )}
       </div>
-
     </div>
   );
 }
 
-function ExpandIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-      <path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+function Panel({ children, flush = false }: { children: ReactNode; flush?: boolean }) {
+  return <section className={`${styles.panel} ${flush ? styles.flush : ""}`}>{children}</section>;
 }
-
-function CollapseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-      <path d="M20 10h-6V4M4 14h6v6M14 10l7-7M10 14l-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-

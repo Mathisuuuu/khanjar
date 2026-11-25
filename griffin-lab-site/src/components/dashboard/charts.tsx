@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import styles from "./Dashboard.module.css";
 
 /** Petits graphes SVG du dashboard (courbes, aires, barres), avec infobulle au survol et au clavier. */
@@ -311,6 +311,7 @@ export function BarChart({
   colorOf,
   ariaLabel,
   marker,
+  gradient = false,
 }: {
   values: number[];
   labels: string[];
@@ -320,10 +321,15 @@ export function BarChart({
   colorOf: (v: number, i: number) => string;
   ariaLabel: string;
   marker?: Marker;
+  /** Barres en dégradé (couleur pleine en haut, qui s'estompe vers le bas). */
+  gradient?: boolean;
 }) {
   const { ref, size } = useSize<HTMLDivElement>();
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const count = values.length;
   const f = frame(size.w, size.h, count, values, true);
+  const colors = gradient ? [...new Set(values.map((v, i) => colorOf(v, i)))] : [];
+  const fillOf = (v: number, i: number) => (gradient ? `url(#${uid}-${colorOf(v, i).replace(/[^a-zA-Z0-9]/g, "")})` : colorOf(v, i));
   const { tip, setTip, move, onKeyDown } = useHover(count, f.x, PAD.top);
   const slot = Math.max(1, (size.w - PAD.left - PAD.right) / Math.max(1, count));
   // 2 px d'écart entre les barres (1 px quand elles sont très fines)
@@ -349,6 +355,16 @@ export function BarChart({
           onKeyDown={onKeyDown}
           onBlur={() => setTip(null)}
         >
+          {gradient && (
+            <defs>
+              {colors.map((c) => (
+                <linearGradient key={c} id={`${uid}-${c.replace(/[^a-zA-Z0-9]/g, "")}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={c} stopOpacity={1} />
+                  <stop offset="100%" stopColor={c} stopOpacity={0.35} />
+                </linearGradient>
+              ))}
+            </defs>
+          )}
           <Axes f={f} format={axisFormat} labels={labels} count={count} band />
           <MarkerLine f={f} marker={marker} />
           {values.map((v, i) => {
@@ -362,7 +378,7 @@ export function BarChart({
                 width={barW}
                 height={height}
                 rx={Math.min(3, barW / 2)}
-                fill={colorOf(v, i)}
+                fill={fillOf(v, i)}
                 opacity={tip && tip.index !== i ? 0.5 : 1}
               />
             );
