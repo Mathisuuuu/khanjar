@@ -1,7 +1,9 @@
 import { after, NextResponse } from "next/server";
 import { proposalChanged } from "@/lib/discord/proposal-events";
 import { isAdminRequest, isModeratorRequest } from "@/lib/proposals/auth";
+import { getLocale } from "@/lib/i18n/server";
 import { getCurrentAuthor } from "@/lib/proposals/author";
+import { rememberAuthorEmail } from "@/lib/proposals/notify-email";
 import { getProposalRepository } from "@/lib/proposals/repository";
 import { fieldErrors, newProposalSchema } from "@/lib/proposals/schema";
 import { toPublic } from "@/lib/proposals/types";
@@ -50,6 +52,13 @@ export async function POST(request: Request) {
   }
 
   const proposal = await getProposalRepository().create(parsed.data, author);
-  after(() => proposalChanged(proposal, null)); // compteur Discord et message privé à l'auteur, après la réponse
+  const locale = await getLocale();
+  // après la réponse : adresse de suivi retenue, puis compteur Discord, message privé et e-mail à l'auteur
+  after(async () => {
+    await rememberAuthorEmail(author.id, author.email, locale).catch((error) =>
+      console.error("Adresse de suivi non enregistrée :", error instanceof Error ? error.message : error),
+    );
+    await proposalChanged(proposal, null);
+  });
   return NextResponse.json({ proposal: toPublic(proposal) }, { status: 201 });
 }

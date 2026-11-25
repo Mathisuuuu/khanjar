@@ -9,7 +9,10 @@ import { createTransport, type Transporter } from "nodemailer";
  * En développement sans SMTP_URL, l'e-mail est affiché dans la console.
  */
 
-export type Mail = { to: string; subject: string; text: string; html: string };
+/** Pièce jointe ; avec `cid`, elle peut aussi s'afficher dans le corps (`<img src="cid:…">`). */
+export type MailAttachment = { filename: string; content: Buffer; contentType?: string; cid?: string };
+
+export type Mail = { to: string; subject: string; text: string; html: string; attachments?: MailAttachment[] };
 
 let transport: Transporter | undefined;
 
@@ -25,11 +28,18 @@ export function canSendMail(): boolean {
 export async function sendMail(mail: Mail): Promise<void> {
   if (!isMailConfigured()) {
     if (process.env.NODE_ENV === "production") throw new Error("Envoi d'e-mails non configuré (SMTP_URL, MAIL_FROM).");
-    console.log(`\n[e-mail de développement] À : ${mail.to}\nObjet : ${mail.subject}\n\n${mail.text}\n`);
-    // aperçu du rendu HTML : data/dernier-email.html (dossier ignoré par git)
+    const files = mail.attachments?.map((a) => a.filename).join(", ");
+    console.log(`\n[e-mail de développement] À : ${mail.to}\nObjet : ${mail.subject}${files ? `\nPièces jointes : ${files}` : ""}\n\n${mail.text}\n`);
+    // aperçu du rendu HTML : data/dernier-email.html, pièces jointes à côté (dossier ignoré par git)
     const { mkdir, writeFile } = await import("node:fs/promises");
     await mkdir("data", { recursive: true });
-    await writeFile("data/dernier-email.html", mail.html).catch(() => undefined);
+    let html = mail.html;
+    for (const attachment of mail.attachments ?? []) {
+      const name = `dernier-email-${attachment.filename}`;
+      await writeFile(`data/${name}`, attachment.content).catch(() => undefined);
+      if (attachment.cid) html = html.replaceAll(`cid:${attachment.cid}`, name);
+    }
+    await writeFile("data/dernier-email.html", html).catch(() => undefined);
     return;
   }
   transport ??= createTransport(process.env.SMTP_URL);

@@ -77,8 +77,8 @@ export default async function PrivacyPage() {
               </li>
               <li>
                 {t(
-                  "Connexion avec Discord ou Google : l'identifiant de ton compte chez ce service et le pseudo que tu choisis chez nous. Pour Discord, nous gardons aussi le lien vers ta photo de profil (affichée dans les books). Ton nom, ton adresse e-mail et ta photo Google ne sont pas enregistrés dans notre base : ils restent dans le cookie de session de ton navigateur, le temps de la session.",
-                  "Sign-in with Discord or Google: your account identifier with that service and the username you choose with us. For Discord, we also keep the link to your profile picture (shown in the books). Your Google name, email address and picture are not stored in our database: they stay in your browser's session cookie for the length of the session.",
+                  "Connexion avec Discord ou Google : l'identifiant de ton compte chez ce service et le pseudo que tu choisis chez nous. Pour Discord, nous gardons aussi le lien vers ta photo de profil (affichée dans les books). Ton nom et ta photo Google ne sont pas enregistrés dans notre base : ils restent dans le cookie de session de ton navigateur, le temps de la session. Ton adresse e-mail n'est enregistrée que si tu fais une proposition, pour t'en envoyer le suivi.",
+                  "Sign-in with Discord or Google: your account identifier with that service and the username you choose with us. For Discord, we also keep the link to your profile picture (shown in the books). Your Google name and picture are not stored in our database: they stay in your browser's session cookie for the length of the session. Your email address is stored only if you submit a proposal, to send you its progress.",
                 )}
               </li>
               <li>
@@ -101,8 +101,8 @@ export default async function PrivacyPage() {
             <h2>{t("Pourquoi", "Why")}</h2>
             <ul>
               <li>{t("Faire fonctionner ton compte et te reconnaître à la connexion.", "To run your account and recognise you when you sign in.")}</li>
-              <li>{t("Tester tes propositions et t'envoyer leur avancement et ton certificat (sur le site, et en message privé Discord si tu as lié ton compte).", "To test your submissions and send you their progress and your certificate (on the site, and by Discord private message if you linked your account).")}</li>
-              <li>{t("T'envoyer les e-mails nécessaires : confirmation d'adresse, réinitialisation du mot de passe.", "To send you the emails we need to: address confirmation, password reset.")}</li>
+              <li>{t("Tester tes propositions et t'envoyer leur avancement et ton certificat (sur le site, par e-mail, et en message privé Discord si tu as lié ton compte).", "To test your submissions and send you their progress and your certificate (on the site, by email, and by Discord private message if you linked your account).")}</li>
+              <li>{t("T'envoyer les e-mails nécessaires : confirmation d'adresse, réinitialisation du mot de passe, suivi de tes propositions.", "To send you the emails we need to: address confirmation, password reset, progress of your submissions.")}</li>
               <li>{t("Protéger le site contre les abus (essais de mots de passe, envois en masse) et modérer.", "To protect the site against abuse (password guessing, mass submissions) and to moderate.")}</li>
             </ul>
           </article>

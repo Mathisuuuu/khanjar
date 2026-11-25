@@ -2,13 +2,15 @@ import "server-only";
 import { announceProposalStatus, plain } from "@/lib/discord/announce";
 import { sendCertificate } from "@/lib/discord/certificate";
 import { STATUS_COLORS, botConfigured, fleijaEmbed, linkButton, openDm, postMessage, siteUrl } from "@/lib/discord/dm";
+import { emailProposalChange } from "@/lib/proposals/notify-email";
 import type { Proposal, ProposalStatus, ProposalType } from "@/lib/proposals/types";
 
 /**
  * Ce que Discord fait quand une proposition change de statut :
  * - #strategy-counter : compteur remis à jour, verdict annoncé (validée ou refusée) ;
  * - message privé à l'auteur à chaque étape (reçue, en test, validée avec son
- *   certificat, refusée avec le motif), s'il a un compte Discord connu du site.
+ *   certificat, refusée avec le motif), s'il a un compte Discord connu du site ;
+ * - le même suivi par e-mail (lib/proposals/notify-email.ts).
  * À lancer après la réponse (`after`) : une erreur Discord ne bloque jamais le site.
  */
 
@@ -66,5 +68,5 @@ async function notifyAuthor(proposal: Proposal, before: ProposalStatus | null): 
 /** `before` : statut d'avant, `null` pour une proposition qui vient d'être déposée. */
 export async function proposalChanged(proposal: Proposal, before: ProposalStatus | null): Promise<void> {
   if (before === proposal.status) return;
-  await Promise.all([announceProposalStatus(proposal.status), notifyAuthor(proposal, before)]);
+  await Promise.all([announceProposalStatus(proposal.status), notifyAuthor(proposal, before), emailProposalChange(proposal, before)]);
 }

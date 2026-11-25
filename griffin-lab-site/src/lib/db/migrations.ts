@@ -326,6 +326,18 @@ const MIGRATIONS: string[] = [
   ALTER TABLE proposals ADD COLUMN certificate_posted_at timestamptz;
   UPDATE proposals SET validated_at = updated_at WHERE status = 'validated';
   `,
+
+  /* 18 : adresse où envoyer le suivi des propositions (file, test, validée avec
+     le certificat, refusée), retenue au dépôt d'une proposition, avec la langue
+     du site à ce moment-là. Sert aussi pour les comptes Discord et Google. */
+  `
+  CREATE TABLE IF NOT EXISTS notification_emails (
+    user_key   text PRIMARY KEY,
+    email      text NOT NULL,
+    locale     text NOT NULL DEFAULT 'fr' CHECK (locale IN ('fr', 'en')),
+    updated_at timestamptz NOT NULL DEFAULT now()
+  );
+  `,
 ];
 
 export async function migrate(db: Database): Promise<void> {
