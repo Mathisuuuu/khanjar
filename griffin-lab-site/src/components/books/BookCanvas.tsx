@@ -15,6 +15,8 @@ type Props = {
   links: { member: string; group: string }[];
   showResearch: boolean;
   stats: BookStats | null;
+  /** `ctrl` : la molette fait défiler la page, Ctrl + molette zoome (canevas dans une page qui défile). */
+  wheel?: "zoom" | "ctrl";
 };
 
 type View = { x: number; y: number; k: number };
@@ -70,7 +72,7 @@ function initialPositions(members: CanvasMember[], groups: CanvasGroup[], links:
  * les autres suivent. Molette ou pincement pour zoomer, glisser le fond pour
  * se déplacer.
  */
-export function BookCanvas({ name, color, members, groups, links, showResearch, stats }: Props) {
+export function BookCanvas({ name, color, members, groups, links, showResearch, stats, wheel = "zoom" }: Props) {
   const t = useT();
   const locale = useLocale();
   const percent = (value: number) => formatPercent(value, 1, true, locale);
@@ -260,13 +262,14 @@ export function BookCanvas({ name, color, members, groups, links, showResearch, 
     const svg = svgRef.current;
     if (!svg) return;
     const onWheel = (event: WheelEvent) => {
+      if (wheel === "ctrl" && !event.ctrlKey && !event.metaKey) return;
       event.preventDefault();
       const rect = svg.getBoundingClientRect();
       zoomAt(Math.exp(-event.deltaY * 0.0015), { x: event.clientX - rect.left, y: event.clientY - rect.top });
     };
     svg.addEventListener("wheel", onWheel, { passive: false });
     return () => svg.removeEventListener("wheel", onWheel);
-  }, [zoomAt]);
+  }, [zoomAt, wheel]);
 
   /* ---------- Gestes : déplacer un rond, déplacer le fond, pincer ---------- */
 

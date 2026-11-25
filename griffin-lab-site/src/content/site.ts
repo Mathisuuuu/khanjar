@@ -25,6 +25,7 @@ export const mainNav = (t: T): NavLink[] => [
   { href: "/#concept", label: t("Concept", "Concept") },
   { href: "/research", label: t("Recherches", "Research") },
   { href: "/books", label: "Books" },
+  { href: "/dashboards", label: "Dashboards" },
   { href: "/about", label: t("À propos", "About") },
 ];
 
@@ -33,6 +34,7 @@ export const footerNav = (t: T): NavLink[] => [
   { href: "/submit", label: t("Proposer", "Submit") },
   { href: "/research", label: t("Recherches", "Research") },
   { href: "/books", label: "Books" },
+  { href: "/dashboards", label: "Dashboards" },
   { href: "/about#about-us", label: t("Qui nous sommes", "Who we are") },
   { href: "/about#rules", label: t("Règles", "Rules") },
   { href: "/#test", label: t("Script de test", "Test script") },

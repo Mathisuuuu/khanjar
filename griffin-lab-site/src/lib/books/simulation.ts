@@ -1,6 +1,7 @@
 import "server-only";
 import { getDb, type Queryable } from "@/lib/db";
 import type { Book } from "./repository";
+import { backtestDay } from "./backtest";
 
 /**
  * Simulation des books comme de vrais portefeuilles : une valeur (base 100)
@@ -18,7 +19,9 @@ import type { Book } from "./repository";
  *   donc un nouveau chiffre chaque jour. « All time » : fixe, celui réglé par
  *   l'équipe sur /books (la simulation n'y touche jamais).
  * - Pas de tâche planifiée : à chaque lecture, les heures manquantes sont
- *   générées (et 30 jours d'historique la première fois).
+ *   générées (30 jours d'historique la première fois).
+ * - Avant la simulation : un backtest de 10 ans, jour par jour (`book_backtest`),
+ *   pour les graphes et le calendrier des dashboards (voir `dailyReturns`).
  */
 
 const HOUR = 3600_000;
@@ -31,8 +34,10 @@ const DAILY_VOL_6 = 0.016;
 const POSITIVE_DAY_Z = 0.2533471031357997;
 /** Force du rappel vers la tendance. */
 const REVERSION = 0.6;
-/** On garde un peu plus d'un mois d'historique. */
-const KEEP_HOURS = 40 * DAY_HOURS;
+/** On garde 10 ans d'heures (les dashboards affichent tout l'historique du book). */
+const KEEP_HOURS = 3650 * DAY_HOURS;
+/** Durée du backtest, en jours. */
+const BACKTEST_DAYS = 3650;
 
 export type BookLive = {
   /** Rendement de la dernière journée complète (UTC), en %. */
@@ -133,9 +138,10 @@ export async function liveStats(books: Book[]): Promise<Map<string, BookLive>> {
   await advanceBooks(simulated);
 
   const db = await getDb();
+  // seulement les 8 derniers jours : la semaine et la dernière journée complète
   const rows = await db.query<{ book_id: string; at: Date; equity: number }>(
-    `SELECT book_id, at, equity FROM book_ticks WHERE book_id = ANY($1) ORDER BY book_id, at`,
-    [simulated.map((b) => b.id)],
+    `SELECT book_id, at, equity FROM book_ticks WHERE book_id = ANY($1) AND at >= $2 ORDER BY book_id, at`,
+    [simulated.map((b) => b.id), new Date(floorHour(Date.now()) - (WEEK_HOURS + DAY_HOURS) * HOUR).toISOString()],
   );
 
   const today = floorDay(Date.now());
@@ -163,4 +169,65 @@ export async function liveStats(books: Book[]): Promise<Map<string, BookLive>> {
     });
   }
   return result;
+}
+
+/** Rendement d'une journée (UTC) : `partial` pour la journée en cours, `backtest` avant la simulation. */
+export type DayReturn = { date: string; value: number; partial?: boolean; backtest?: boolean };
+
+/** Génère (une seule fois) les 10 ans de backtest qui précèdent `before` (date « AAAA-MM-JJ »). */
+async function ensureBacktest(book: Book, before: string): Promise<void> {
+  const db = await getDb();
+  const [row] = await db.query<{ n: number }>("SELECT count(*)::int AS n FROM book_backtest WHERE book_id = $1", [book.id]);
+  if (Number(row?.n ?? 0) > 0) return;
+  const end = new Date(`${before}T00:00:00Z`).getTime();
+  const days: string[] = [];
+  const values: number[] = [];
+  for (let i = BACKTEST_DAYS; i >= 1; i--) {
+    days.push(new Date(end - i * DAY_HOURS * HOUR).toISOString().slice(0, 10));
+    values.push(backtestDay(book.stats!.strategies));
+  }
+  await db.query(
+    `INSERT INTO book_backtest (book_id, day, ret)
+     SELECT $1, t.day, t.ret FROM unnest($2::date[], $3::float8[]) AS t(day, ret)
+     ON CONFLICT DO NOTHING`,
+    [book.id, days, values],
+  );
+}
+
+/**
+ * Rendements jour par jour d'un book (en %), du plus ancien au plus récent :
+ * clôture à minuit UTC / clôture de la veille. La journée en cours est marquée `partial`.
+ */
+export async function dailyReturns(book: Book): Promise<DayReturn[]> {
+  if (!book.stats) return [];
+  await advanceBooks([book]);
+  const db = await getDb();
+  const rows = await db.query<{ at: Date; equity: number }>(
+    `SELECT at, equity FROM book_ticks
+     WHERE book_id = $1 AND (extract(hour FROM at AT TIME ZONE 'UTC') = 0
+       OR at = (SELECT max(at) FROM book_ticks WHERE book_id = $1))
+     ORDER BY at`,
+    [book.id],
+  );
+  const points = rows.map((row) => ({ at: new Date(row.at).getTime(), equity: Number(row.equity) }));
+  const live: DayReturn[] = [];
+  for (let i = 0; i + 1 < points.length; i++) {
+    const open = points[i];
+    if (open.at % (DAY_HOURS * HOUR) !== 0) continue;
+    const close = points[i + 1];
+    live.push({
+      date: new Date(open.at).toISOString().slice(0, 10),
+      value: (close.equity / open.equity - 1) * 100,
+      ...(close.at - open.at < DAY_HOURS * HOUR ? { partial: true } : {}),
+    });
+  }
+  if (!live.length) return live;
+
+  // backtest : les 10 ans qui précèdent le premier jour simulé
+  await ensureBacktest(book, live[0].date);
+  const backtest = await db.query<{ day: string; ret: number }>(
+    "SELECT to_char(day, 'YYYY-MM-DD') AS day, ret FROM book_backtest WHERE book_id = $1 AND day < $2 ORDER BY day",
+    [book.id, live[0].date],
+  );
+  return [...backtest.map((row) => ({ date: row.day, value: Number(row.ret), backtest: true })), ...live];
 }

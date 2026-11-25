@@ -338,6 +338,18 @@ const MIGRATIONS: string[] = [
     updated_at timestamptz NOT NULL DEFAULT now()
   );
   `,
+
+  /* 19 : backtest de chaque book sur 10 ans (un rendement par jour, en %),
+     généré une fois, juste avant le début de la simulation horaire (book_ticks).
+     Sert aux graphes et au calendrier des dashboards. */
+  `
+  CREATE TABLE IF NOT EXISTS book_backtest (
+    book_id uuid NOT NULL REFERENCES books (id) ON DELETE CASCADE,
+    day     date NOT NULL,
+    ret     double precision NOT NULL,
+    PRIMARY KEY (book_id, day)
+  );
+  `,
 ];
 
 export async function migrate(db: Database): Promise<void> {
