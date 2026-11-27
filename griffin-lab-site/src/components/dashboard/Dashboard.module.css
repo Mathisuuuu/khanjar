@@ -774,171 +774,225 @@
   color: var(--fg);
 }
 
-/* ---------- Tuile 1 : calendrier ---------- */
+/* ---------- Calendrier ---------- */
 
-.calendar {
+.cal {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  flex: 1;
+  gap: 12px;
   min-height: 0;
-  gap: 6px;
 }
 
-.monthBar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-
-.navButton {
-  width: 32px;
-  height: 32px;
-  font-size: 20px;
-  line-height: 1;
-  color: var(--fg-2);
-  border: 1px solid var(--border);
-  border-radius: 9px;
-}
-
-.navButton:hover:not(:disabled) {
-  color: var(--fg);
-  background: var(--card-2);
-}
-
-.navButton:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
-.monthTotal {
-  margin-left: auto;
-  font-family: var(--mono);
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.weekdays,
-.days {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 4px;
-}
-
-.weekdays span {
-  font-size: 11px;
-  color: var(--fg-3);
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.days {
-  flex: 1;
-  gap: 3px;
-  grid-auto-rows: minmax(26px, 1fr);
-}
-
-.blank {
-  border-radius: 8px;
-}
-
-.day {
-  position: relative;
-  display: grid;
-  place-items: center;
-  min-width: 0;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  transition:
-    transform 0.12s,
-    border-color 0.12s;
-}
-
-.day:hover:not(:disabled),
-.picked {
-  border-color: rgba(255, 255, 255, 0.55);
-}
-
-.picked {
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
-}
-
-.noData {
-  background: rgba(255, 255, 255, 0.025);
-  cursor: default;
-}
-
-.partial {
-  border: 1px dashed rgba(255, 255, 255, 0.5);
-}
-
-.dayNumber {
-  position: absolute;
-  top: 3px;
-  left: 6px;
-  font-size: 10.5px;
-  color: rgba(247, 248, 248, 0.6);
-}
-
-.noData .dayNumber {
-  color: var(--fg-3);
-  opacity: 0.6;
-}
-
-.dayValue {
-  padding-top: 4px;
-  font-family: var(--mono);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--fg);
-}
-
-.calendarFoot {
+.calHead {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 8px 16px;
-  min-height: 26px;
-  font-size: 13px;
-  color: var(--fg-2);
 }
 
-.monthStats,
-.dayDetail {
+.calNav {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 14px;
+  align-items: center;
+  gap: 6px;
 }
 
-.monthStats b,
-.dayDetail span {
-  font-family: var(--mono);
+.calNav > button {
+  display: grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  font-size: 18px;
+  color: var(--fg-2);
+  border-radius: 8px;
 }
 
-.dayDetail b {
+.calNav > button:hover:not(:disabled) {
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.calNav > button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.calNav > .calNow {
+  padding: 0 12px;
+  font-size: 12.5px;
+  color: var(--fg);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.calMonth select {
+  appearance: none;
+  padding: 2px 6px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg);
   text-transform: capitalize;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
-.dayDetail small {
-  color: var(--fg-3);
+.calMonth select:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
-.legend {
+.calMonth option {
+  color: var(--fg);
+  background: #141416;
+}
+
+.calStats {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fg-2);
+}
+
+.calChip,
+.calChipUp,
+.calChipDown {
+  padding: 2px 9px;
   font-family: var(--mono);
+  font-size: 12px;
+  border-radius: 7px;
+}
+
+.calChip {
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.calChipUp {
+  color: #dcfce7;
+  background: rgba(34, 197, 94, 0.35);
+}
+
+.calChipDown {
+  color: #fee2e2;
+  background: rgba(239, 68, 68, 0.35);
+}
+
+/* 7 jours + la colonne des semaines */
+.calGrid {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) minmax(96px, 0.9fr);
+  gap: 6px;
+  min-height: 0;
+}
+
+.calWeekday {
+  padding: 5px 0;
+  font-size: 12px;
+  color: var(--fg-2);
+  text-align: center;
+  text-transform: capitalize;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+}
+
+.calDay,
+.calBlank {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-height: 0;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+}
+
+.calBlank {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.calDay i {
+  position: absolute;
+  top: 4px;
+  right: 7px;
   font-size: 11px;
+  font-style: normal;
   color: var(--fg-3);
 }
 
-.legend i {
-  width: 90px;
-  height: 8px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, rgba(239, 68, 68, 0.8), rgba(239, 68, 68, 0.16) 48%, rgba(34, 197, 94, 0.16) 52%, rgba(34, 197, 94, 0.8));
+.calDay b {
+  font-family: var(--mono);
+  font-size: clamp(12px, 1vw, 15px);
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.calDay small {
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.calUp {
+  background: rgba(22, 101, 52, 0.55);
+  border-color: rgba(74, 222, 128, 0.55);
+}
+
+.calDown {
+  background: rgba(127, 29, 29, 0.6);
+  border-color: rgba(248, 113, 113, 0.55);
+}
+
+.calUp i,
+.calDown i {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.calPartial {
+  border-style: dashed;
+}
+
+.calWeek {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-height: 0;
+  padding: 0 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.calWeek small {
+  font-size: 11.5px;
+  color: var(--fg-2);
+  white-space: nowrap;
+}
+
+.calWeek b {
+  font-family: var(--mono);
+  font-size: clamp(13px, 1.1vw, 16px);
+}
+
+.calWeek em {
+  align-self: flex-start;
+  padding: 1px 7px;
+  font-size: 10.5px;
+  font-style: normal;
+  color: var(--fg);
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
 }
 
 /* ---------- Tuile 2 : stratégies ---------- */
@@ -1514,19 +1568,27 @@
     padding: 12px 14px;
   }
 
-  .days {
+  .calGrid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-rows: none !important;
+    grid-auto-rows: 52px;
     gap: 3px;
-    grid-auto-rows: minmax(40px, auto);
   }
 
-  .dayNumber {
+  .calWeek,
+  .calWeekdayBlank,
+  .calDay small {
+    display: none;
+  }
+
+  .calDay b {
+    font-size: 10px;
+  }
+
+  .calDay i {
     top: 2px;
-    left: 4px;
-    font-size: 9.5px;
-  }
-
-  .dayValue {
-    font-size: 10.5px;
+    right: 4px;
+    font-size: 9px;
   }
 
   .strategyBody {
