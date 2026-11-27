@@ -9,7 +9,8 @@ next-env.d.ts
 
 # environnement local
 .env
-.env.local
+.env.*
+!.env.example
 .discord-token
 
 # données locales (base embarquée de développement, anciens fichiers JSON)

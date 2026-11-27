@@ -56,7 +56,11 @@ export function Dashboard({ tabs, book }: Props) {
   // onglet ouvert depuis l'adresse (#analyses…)
   useEffect(() => {
     const fromHash = () => {
-      const hash = decodeURIComponent(window.location.hash.slice(1));
+      // un « % » mal formé dans l'adresse ne doit pas faire planter la page
+      let hash = "";
+      try {
+        hash = decodeURIComponent(window.location.hash.slice(1));
+      } catch {}
       // l'ancien onglet « Stratégies » (#strategies) ouvre l'onglet fusionné
       const found = VIEWS.find((v) => hash && (names[v].hash === hash || v === hash));
       setView(found ?? (hash === "strategies" ? "members" : "overview"));
