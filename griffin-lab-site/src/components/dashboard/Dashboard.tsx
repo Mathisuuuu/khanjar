@@ -12,7 +12,7 @@ import { StrategiesTile } from "./StrategiesTile";
 import styles from "./Dashboard.module.css";
 import type { DashboardBook, DashboardTab } from "./types";
 
-const VIEWS = ["overview", "calendar", "analytics", "strategies", "members"] as const;
+const VIEWS = ["overview", "calendar", "analytics", "members"] as const;
 type View = (typeof VIEWS)[number];
 
 type Props = { tabs: DashboardTab[]; book: DashboardBook };
@@ -46,9 +46,8 @@ export function Dashboard({ tabs, book }: Props) {
     overview: { label: t("Vue d'ensemble", "Overview"), hash: "", icon: <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" /> },
     calendar: { label: t("Calendrier", "Calendar"), hash: t("calendrier", "calendar"), icon: <path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4" /> },
     analytics: { label: t("Analyses", "Analytics"), hash: t("analyses", "analytics"), icon: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /> },
-    strategies: { label: t("Stratégies", "Strategies"), hash: t("strategies", "strategies"), icon: <path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" /> },
     members: {
-      label: t("Membres", "Members"),
+      label: t("Membres et stratégies", "Members & strategies"),
       hash: t("membres", "members"),
       icon: <path d="M16 19v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM22 19v-1a4 4 0 0 0-3-3.9M16 4.1a3 3 0 0 1 0 5.8" />,
     },
@@ -58,7 +57,9 @@ export function Dashboard({ tabs, book }: Props) {
   useEffect(() => {
     const fromHash = () => {
       const hash = decodeURIComponent(window.location.hash.slice(1));
-      setView(VIEWS.find((v) => hash && (names[v].hash === hash || v === hash)) ?? "overview");
+      // l'ancien onglet « Stratégies » (#strategies) ouvre l'onglet fusionné
+      const found = VIEWS.find((v) => hash && (names[v].hash === hash || v === hash));
+      setView(found ?? (hash === "strategies" ? "members" : "overview"));
     };
     fromHash();
     window.addEventListener("hashchange", fromHash);
@@ -158,24 +159,24 @@ export function Dashboard({ tabs, book }: Props) {
               <ChartsTile key={book.id} days={book.days} color={book.color} expanded />
             </Panel>
           )}
-          {view === "strategies" && (
-            <Panel>
-              <StrategiesTile strategies={book.strategies} hidden={book.hiddenStrategies} bookHref={bookHref} />
-            </Panel>
-          )}
           {view === "members" && (
-            <Panel flush>
-              <BookCanvas
-                key={book.id}
-                name={book.name}
-                color={book.color}
-                members={book.members}
-                groups={book.groups}
-                links={book.links}
-                showResearch={book.groups.length > 0}
-                stats={book.stats}
-              />
-            </Panel>
+            <div className={styles.membersView}>
+              <Panel flush>
+                <BookCanvas
+                  key={book.id}
+                  name={book.name}
+                  color={book.color}
+                  members={book.members}
+                  groups={book.groups}
+                  links={book.links}
+                  showResearch={book.groups.length > 0}
+                  stats={book.stats}
+                />
+              </Panel>
+              <Panel>
+                <StrategiesTile strategies={book.strategies} hidden={book.hiddenStrategies} bookHref={bookHref} />
+              </Panel>
+            </div>
           )}
         </div>
       </div>

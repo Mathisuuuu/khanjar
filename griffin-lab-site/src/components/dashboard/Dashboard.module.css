@@ -13,7 +13,7 @@
   grid-template-columns: 184px minmax(0, 1fr);
   /* hauteur de la fenêtre moins l'en-tête du site (73 px, bordure comprise) */
   height: calc(100svh - 73px);
-  min-height: 620px;
+  min-height: 520px;
   border-top: 1px solid var(--border);
   background: linear-gradient(180deg, #1a1a1d 0%, #0d0d0f 50%, #000 100%);
   transition: grid-template-columns 0.2s ease;
@@ -282,6 +282,15 @@
   overflow: hidden;
 }
 
+/* onglet « Membres et stratégies » : le graphe des membres et la liste côte à côte */
+.membersView {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 1fr) clamp(320px, 30vw, 440px);
+  gap: 14px;
+  min-height: 0;
+}
+
 .empty {
   margin: auto;
   padding: 24px;
@@ -343,16 +352,41 @@
   gap: 14px;
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
 }
 
+/* la courbe prend la place qui reste ; elle rétrécit avant les listes */
 .rail .chartCard {
-  flex: 1;
-  min-height: 150px;
+  flex: 1 1 0;
+  min-height: 110px;
 }
 
 .railList {
   flex: none;
   padding-bottom: 12px;
+}
+
+/* les derniers jours rétrécissent ensuite (lignes du bas masquées) */
+.railList:has(ul) {
+  flex: 0 1 auto;
+  min-height: 0;
+}
+
+.railList ul {
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (max-height: 820px) {
+  .railList li:nth-child(n + 6) {
+    display: none;
+  }
+}
+
+@media (max-height: 720px) {
+  .railList li:nth-child(n + 5) {
+    display: none;
+  }
 }
 
 .railList ul,
@@ -1432,6 +1466,14 @@
     flex: none;
   }
 
+  .rail {
+    overflow: visible;
+  }
+
+  .railList li:nth-child(n) {
+    display: grid;
+  }
+
   .panel {
     min-height: 520px;
     overflow: visible;
@@ -1440,6 +1482,10 @@
   .flush {
     height: calc(100svh - 240px);
     min-height: 420px;
+  }
+
+  .membersView {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .charts {
