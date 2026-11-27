@@ -105,7 +105,7 @@ export const strategyStats = (t: T): StrategyStat[] => [
     label: t("Refusées", "Rejected"),
     thisWeek: 9,
     factLabel: t("Motif le plus fréquent", "Most common reason"),
-    factValue: t("Drawdown > rendement annuel", "Drawdown > annual return"),
+    factValue: t("Overthinking", "Overthinking"),
     total: 56,
   },
 ];
