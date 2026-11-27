@@ -15,6 +15,7 @@
   height: calc(100svh - 73px);
   min-height: 620px;
   border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, #1a1a1d 0%, #0d0d0f 50%, #000 100%);
   transition: grid-template-columns 0.2s ease;
 }
 
@@ -35,8 +36,8 @@
   min-height: 0;
   padding: 18px 12px 14px;
   overflow: auto;
-  background: var(--bg-2);
-  border-right: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.35);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sideHead {
@@ -198,8 +199,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 8px 28px 0;
-  background: radial-gradient(120% 140% at 85% -40%, rgba(56, 189, 248, 0.1), transparent 60%);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .streak {
@@ -259,7 +259,6 @@
   flex: 1;
   flex-direction: column;
   width: 100%;
-  max-width: 1160px;
   min-height: 0;
   padding: 16px 28px 18px;
 }
@@ -272,9 +271,10 @@
   min-height: 0;
   padding: 16px 18px;
   overflow: auto;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  background: rgba(20, 20, 22, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .flush {
@@ -318,11 +318,124 @@
 /* ---------- Vue d'ensemble ---------- */
 
 .overview {
-  display: flex;
+  display: grid;
   flex: 1;
-  flex-direction: column;
+  grid-template-columns: minmax(0, 1fr) clamp(260px, 22vw, 340px);
   gap: 14px;
   min-height: 0;
+}
+
+.overview:not(:has(.rail)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.overviewMain {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.rail .chartCard {
+  flex: 1;
+  min-height: 150px;
+}
+
+.railList {
+  flex: none;
+  padding-bottom: 12px;
+}
+
+.railList ul,
+.railList dl {
+  display: grid;
+  gap: 2px;
+  list-style: none;
+}
+
+.railList li {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 64px;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+  font-size: 12.5px;
+}
+
+.railList li span {
+  color: var(--fg-3);
+}
+
+.railList li i {
+  height: 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 3px;
+}
+
+.railList li i b {
+  display: block;
+  height: 100%;
+  min-width: 3px;
+  border-radius: 3px;
+}
+
+.railList em {
+  font-family: var(--mono);
+  font-style: normal;
+  font-weight: 600;
+  text-align: right;
+}
+
+.railList dl > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 12.5px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.railList dl > div:first-child {
+  border-top: 0;
+}
+
+.railList dt {
+  color: var(--fg-3);
+}
+
+.railList dd {
+  white-space: nowrap;
+}
+
+.railList dd small {
+  margin-left: 4px;
+  font-size: 11.5px;
+  color: var(--fg-3);
+}
+
+.blank {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.blank p {
+  max-width: 420px;
+  font-size: 14px;
+  color: var(--fg-2);
 }
 
 .actions {
@@ -333,13 +446,15 @@
 
 .action {
   display: flex;
-  flex: 0 1 300px;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 340px;
   align-items: center;
   gap: 12px;
   padding: 11px 16px;
   color: var(--fg-2);
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: rgba(20, 20, 22, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 12px;
   transition:
     border-color 0.15s,
@@ -348,6 +463,14 @@
 
 .action span {
   display: grid;
+  min-width: 0;
+}
+
+.action b,
+.action small {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .action b {
@@ -361,16 +484,26 @@
 }
 
 .action:hover {
-  background: var(--card-2);
-  border-color: var(--border-2);
+  background: rgba(34, 34, 38, 0.9);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.action > svg {
+  box-sizing: content-box;
+  flex: none;
+  padding: 8px;
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
 }
 
 .actionMain {
   border-color: rgba(74, 222, 128, 0.45);
 }
 
-.actionMain svg {
+.actionMain > svg {
   color: var(--accent-2);
+  background: rgba(74, 222, 128, 0.14);
 }
 
 .perfHead {
@@ -423,8 +556,8 @@
   font: inherit;
   font-size: 13.5px;
   color: var(--fg);
-  background: var(--card);
-  border: 1px solid var(--border-2);
+  background: rgba(18, 18, 20, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 999px;
   cursor: pointer;
 }
@@ -463,9 +596,42 @@
   min-height: 0;
   padding: 14px 18px;
   overflow: hidden;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  background: rgba(20, 20, 22, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 20px 40px -28px rgba(0, 0, 0, 0.9);
+}
+
+/* cartes de chiffres : une couleur chacune (--tone), un halo et un liseré */
+.stat {
+  position: relative;
+  border-color: color-mix(in srgb, var(--tone) 26%, rgba(255, 255, 255, 0.1));
+}
+
+.card.stat h3 {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--fg-2);
+  text-transform: uppercase;
+}
+
+.card.stat h3 svg {
+  box-sizing: content-box;
+  padding: 6px;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 15%, transparent);
+  border-radius: 8px;
+}
+
+.spark {
+  order: 9;
+  width: 100%;
+  height: 24px;
+  margin-top: auto;
+  opacity: 0.9;
 }
 
 .card h3 {
@@ -1160,6 +1326,16 @@
 
 /* ---------- Écrans moyens et petits : la page défile ---------- */
 
+@media (max-width: 1279px) {
+  .overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rail {
+    display: none;
+  }
+}
+
 @media (max-width: 1100px) {
   .page:not(.folded) {
     grid-template-columns: 172px minmax(0, 1fr);
@@ -1246,6 +1422,14 @@
 
   .chartCard {
     height: 300px;
+  }
+
+  .rail {
+    display: flex;
+  }
+
+  .rail .chartCard {
+    flex: none;
   }
 
   .panel {
